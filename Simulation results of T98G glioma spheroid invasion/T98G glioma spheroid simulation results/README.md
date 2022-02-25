@@ -8,3 +8,6 @@ Folder **CT run 1-3** contain the coverage test results on the final parameter s
 
 Folder **Average results** contain the post-processing of the final results for each run. 
 
+See the README.md file for each folder for more details. 
+
+All simulation results were generated using R 4.0.3 "Bunny-Wunnies Freak out".  
