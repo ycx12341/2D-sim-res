@@ -3,10 +3,8 @@
 # This .R file reads in the final simulation output (error-calibrated version) 
 # from the 3 different runs of the T98G glioma simulation pattern and calculate 
 # their Bhattacharyya distance (multivariate version) with the reference data. 
-# The final output which yields the minimum B-C distance was chosen as the 
-# final result of the post-day 14 SCC pattern's simulation. In addition, the 
-# plots of actual ESS and bandwidth factors at the end of different rounds are 
-# generated in this file. 
+# In addition, the plots of actual ESS and bandwidth factors at the end of 
+# different rounds are generated in this file. 
 
 # Clear the workspace, load the necessary package and the file which contains
 # the source functions. 
