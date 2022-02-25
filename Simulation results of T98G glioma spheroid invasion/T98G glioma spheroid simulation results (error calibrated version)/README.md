@@ -4,7 +4,7 @@ invasion patterns. Due to the stochastic nature of cell movements in the individ
 
 Folder **Run 1-3** contains the detailed code and the simulation output. 
 
-Folder **CT run 2** contains the coverage test results on the final parameter samples from the run which was chosen as the final results.. 
+Folder **CT on run 2** contains the coverage test results on the final parameter samples from the run which was chosen as the final results.. 
 
 Folder **Average results** contains the post-processing of the final results for each run. 
 
