@@ -8,8 +8,6 @@ Folder **CT on run 2** contains the coverage test results on the final parameter
 
 Folder **Average results** contains the post-processing of the final results for each run. 
 
-Folder **Posterior comparisons** contains the comparison between the posteriors obtained using non-error calibrated ABC and the ones obtained using error calibrated ABC.  
-
 See the README.md file for each folder for more details. 
 
 All simulation results were generated using R 4.0.3 "Bunny-Wunnies Freak out".  
