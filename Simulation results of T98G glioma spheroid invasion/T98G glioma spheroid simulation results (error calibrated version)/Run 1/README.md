@@ -7,7 +7,7 @@ File **Glioma simulation full reference densities.rds** contains the reference d
 
 The main files **paras sampl rx.R** and function file **PDE 2D ABC functions adjusted.R** evaluates the parameters of the current round (**Round x parameters log transform.txt**), record the discrepancy measurements in **Round x Least Sqaure.txt** and the best fitted simulation output in **Round_x_parasxxxx_res.rds**, then generates the parameters to be evaluated in the next round (**Round x+1 parameters log transform.txt**). 
 
-File **Round x information list log transform.rds** contains the parameter weights, tempering factors which further rescale them into proper resampling probabilities and the actual effective sample size for the parameters being evaluated in the current round. 
+File **Round x information list log transform.rds** contains the parameter weights, tempering factors which further rescale these weights into proper resampling probabilities and the actual effective sample size for the parameters being evaluated in the current round. 
 
 After the final parameter samples are obtained, their average values were taken and substituted back to the pattern generation function in order to produce the final results. The numerical outputs are stored in **paras r6 average results.rds**, the pattern plots are shown in **paras r6 d1 pattern plot run 1.png**, **paras r6 d3 pattern plot run 1.png**, **grey shades plot day 1 paras r6 run 1.png** and **grey shades plot day 3 paras r6 run 1.png**. 
 
