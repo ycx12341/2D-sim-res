@@ -1,4 +1,4 @@
-## T98G glioma spheroid simulation results ## 
+## T98G glioma spheroid simulation results (error calibrated version) ## 
 This folder contains all the necessary code and simulation output regarding the application of error calibrated ABC on the reference dataset derived from the T98G glioma 
 invasion patterns. Due to the stochastic nature of cell movements in the individual based model (IBM), the same analysis was carried out three times with different seed being used in the random number generator in R (**set.seed()**). The posterior diagnostics - "Coverage test" is only conducted on the final parameter samples from the run which was chosen as the final results.
 
