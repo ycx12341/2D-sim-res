@@ -7,6 +7,21 @@
 # Set the workspace, then load the necessary packages. 
 rm(list = ls())
 library(readr)
+library(doParallel)
+library(latex2exp)
+
+# Set the directory to store the results. 
+# save.sims.dir <- "Cov_results_r7"
+save.sims.dir <- "Cov_results_r7_pert_all"
+save.sims <- TRUE
+if (save.sims) {
+  if (!dir.exists(save.sims.dir)) dir.create(save.sims.dir)
+}
+
+# Set the cluster. 
+n.thread <- detectCores()/2
+cl <- makeCluster(n.thread)
+registerDoParallel(cl)
 
 # Calculate the correct bw that would yield the desirable ESS.
 calculate.bw <- function(ss.mat, lb.bw, ub.bw, ess.target, step.size) {
@@ -167,22 +182,22 @@ for (i in 1:length(paras.r7.output)) {
   # are still unoccupied. Hence, adding perturbation to all data points would 
   # corrupt the nature of the dataset. 
   for (j in 1:length(den.mat.d1.temp.unpert)) {
-    #if(den.mat.d1.temp.unpert[j] != 0) {
-     den.mat.d1.temp.pert[j] <- rnorm(1, den.mat.d1.temp.unpert[j], 
+    if(den.mat.d1.temp.unpert[j] != 0) {
+       den.mat.d1.temp.pert[j] <- rnorm(1, den.mat.d1.temp.unpert[j], 
                                       sd = sd.r7.d1.min)
      while (den.mat.d1.temp.pert[j] < 0 || den.mat.d1.temp.pert[j] > 1) {
        den.mat.d1.temp.pert[j] <- rnorm(1, den.mat.d1.temp.unpert[j], 
                                         sd = sd.r7.d1.min)
      }
-    #}
-    #if (den.mat.d3.temp.unpert[j] != 0) {
-      den.mat.d3.temp.pert[j] <- rnorm(1, den.mat.d3.temp.unpert[j], 
+    }
+    if (den.mat.d3.temp.unpert[j] != 0) {
+        den.mat.d3.temp.pert[j] <- rnorm(1, den.mat.d3.temp.unpert[j], 
                                        sd = sd.r7.d3.min)
       while (den.mat.d3.temp.pert[j] < 0 || den.mat.d3.temp.pert[j] > 1) {
         den.mat.d3.temp.pert[j] <- rnorm(1, den.mat.d3.temp.unpert[j], 
                                          sd = sd.r7.d3.min)
       }
-    #}
+    }
   }
   
   # Sum of squared differences between the perturbed densities and the 
@@ -254,13 +269,8 @@ for (i in 1:length(paras.r7.output.pert)) {
 # data. Calculate the resampling probabilities of each parameter vector based
 # on the least square difference between their simulation output and the "new
 # reference data". 
-
-# Create an empty list to store the results. 
-ls.r7.crage <- vector(mode = "list")
-
-# Search for the bandwidth factor which will give the resampling weights and
-# yields the correct ESS. 
-for (i in 1:length(ls.r7.diff.mat)) {
+ 
+ests <- foreach (i = 1:length(ls.r7.diff.mat), .combine = rbind) %dopar% {
   diff.mat.temp <- ls.r7.diff.mat[[i]]
   # Initial interval for the bandwidth factors. 
   lb.bw.temp <- 14.00 #4.60
@@ -288,23 +298,33 @@ for (i in 1:length(ls.r7.diff.mat)) {
                                      step.size = 0.01)
     }
   }
-  # Store the results into the list.  
+  # Save the results for each "pseudo-reference dataset" into .rds files in 
+  # the correct directory. 
+  readr::write_rds(info.list.temp, path = paste0("./", save.sims.dir, 
+                                                 "/info_list_r7_", 
+                                                 ls.r7.pert.sort.min[i], 
+                                                 ".rds"))
+  c(i, info.list.temp$bw.obj, info.list.temp$ess.obj)
+}
+stopCluster(cl)
+
+# Read in the results obtained in the previous step, store them into one 
+# single list. 
+ls.r7.crage <- vector(mode = "list")
+for (i in 1:length(ls.r7.diff.mat)) {
+  info.list.temp <- read_rds(paste0("./", save.sims.dir, 
+                                    "/info_list_r7_", 
+                                    ls.r7.pert.sort.min[i], ".rds"))
   ls.r7.crage[[i]] <- info.list.temp
-  names(ls.r7.crage)[i] <- paste0("info_list_r7_",ls.r7.pert.sort.min[i])
-  # Optional, can be used to track the progress. 
-  # print(c(i, info.list.temp$bw.obj, info.list.temp$ess.obj))
+  names(ls.r7.crage)[i] <- paste0("info_list_r7_",
+                                   ls.r7.pert.sort.min[i])
 }
 
-# Save the results into .rds files
-#write_rds(ls.r7.crage, 
-#"Coverage_test_disp_wt_prob_r7_d1_d3_pert_sep_non_zero.rds")
-write_rds(ls.r7.crage, "Coverage_test_disp_wt_prob_r7_d1_d3_pert_sep.rds")
+# Save the coverage test results into a single .rds file.
+# write_rds(ls.r7.crage, "Coverage_test_d1_d3_pert_non_zero.rds")
+write_rds(ls.r7.crage, "Coverage_test_d1_d3_pert_all.rds")
 
-# ls.r7.crage <- 
-# read_rds("Coverage_test_disp_wt_prob_r7_d1_d3_pert_sep_non_zero.rds")
 
-# Calculation of coverage probabilities and check if they show deviations 
-# to uniform distributions. 
 
 # Add indices to the parameter vectors. 
 paras.r7 <- cbind(seq(1,10000,by = 1), paras.r7)
@@ -336,15 +356,10 @@ for (i in 1:200) {
 }
 
 # Store the coverage probabilities
-# write.table(cov.mat, 
-#"Coverage probabilities glioma r7 d1 d3 perturbed separately non zero 
-# only.txt")
-write.table(cov.mat, 
-            "Coverage probabilities glioma r7 d1 d3 perturbed separately.txt")
+# write.table(cov.mat, "Coverage probabilities glioma r7 d1 d3 perturbed non zero only.txt")
+write.table(cov.mat, "Coverage probabilities glioma r7 d1 d3 perturbed separately.txt")
 
-# cov.mat <- read.table("Coverage probabilities glioma r7 d1 d3 
-# perturbed separately non zero only.txt", sep = "",
-# header = TRUE)
+cov.mat <- read.table("Coverage probabilities glioma r7 d1 d3 perturbed non zero only.txt", sep = "",header = TRUE)
 
 
 # Histograms plots & uniformity check.
@@ -354,31 +369,36 @@ set.seed(874513)
 RNGkind(sample.kind = "Rejection")
 unif.sample <- runif(200, 0, 1)
 
-hist(cov.mat[,1], main = "Coverage check of dn's final sample", 
+hist(cov.mat[,1], main = TeX("Coverage check of $d_{n}$'s final sample", 
+                             bold = TRUE), 
      xlim = c(0,1), xlab = "Probabilities", freq = FALSE)
 ks.test(cov.mat[,1], unif.sample)
 # No evidence against H0 (non-zero)
 # Moderate evidence against H0 (all)
 
-hist(cov.mat[,2], main = "Coverage check of rn's final sample", 
+hist(cov.mat[,2], main = TeX("Coverage check of $r_{n}$'s final sample",
+                             bold = TRUE), 
      xlim = c(0,1), xlab = "Probabilities", freq = FALSE)
 ks.test(cov.mat[,2], unif.sample) 
 # No evidence against H0 (non-zero). 
 # Weak evidence against H0. (all)
 
-hist(cov.mat[,3], main = "Coverage check of R_{init.}'s final sample", 
+hist(cov.mat[,3], main = TeX("Coverage check of $R_{init.}$'s final sample",
+                             bold = TRUE), 
      xlim = c(0,1), xlab = "Probabilities", freq = FALSE)
 ks.test(cov.mat[,3], unif.sample) 
 # No evidence against H0 (non-zero). 
 # Moderate evidence against H0. (all)
 
-hist(cov.mat[,4], main = "Coverage check of P_{ext.}'s final sample", 
+hist(cov.mat[,4], main = TeX("Coverage check of $P_{ext.}$'s final sample",
+                             bold = TRUE),
      xlim = c(0,1), xlab = "Probabilities", freq = FALSE)
 ks.test(cov.mat[,4], unif.sample) 
 # No evidence against H0 (non-zero). 
 # No evidence against H0. (all)
 
-hist(cov.mat[,5], main = "Coverage check of P_{mit.}'s final sample", 
+hist(cov.mat[,5], main = TeX("Coverage check of $P_{mit.}$'s final sample",
+                             bold = TRUE),
      xlim = c(0,1), xlab = "Probabilities", freq = FALSE)
 ks.test(cov.mat[,5], unif.sample) 
 # No evidence against H0 (non-zero). 
