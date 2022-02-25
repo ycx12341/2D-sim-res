@@ -1,0 +1,11 @@
+Slice,Count,Total Area,Average Size,%Area,Mean
+pattern glioma t3 -40um pt4_1.png,0,0,NaN,0.000,NaN
+pattern glioma t3 -40um pt4_2.png,0,0,NaN,0.000,NaN
+pattern glioma t3 -40um pt4_3.png,5,16,3.200,1.000,255
+pattern glioma t3 -40um pt4_4.png,10,154,15.400,9.625,255
+pattern glioma t3 -40um pt4_5.png,10,388,38.800,24.250,255
+pattern glioma t3 -40um pt4_6.png,9,638,70.889,39.875,255
+pattern glioma t3 -40um pt4_7.png,8,363,45.375,22.688,255
+pattern glioma t3 -40um pt4_8.png,7,136,19.429,8.500,255
+pattern glioma t3 -40um pt4_9.png,2,3,1.500,0.188,255
+pattern glioma t3 -40um pt4_10.png,3,11,3.667,0.688,255
