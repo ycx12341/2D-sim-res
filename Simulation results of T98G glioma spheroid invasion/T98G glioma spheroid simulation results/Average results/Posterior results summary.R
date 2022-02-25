@@ -80,7 +80,7 @@ bcd.run3.ref <- bhattacharyya.dist(mu1 = ref.mean, mu2 = run3.mean,
 # be taken as the final result. 
 
 write_rds(list(paras.ests.3runs = paras.ests, paras.final.est = paras.r7.run2.mean),
-          "Glioma final parameter estimates err calib.rds")
+          "Glioma final parameter estimates non err calib.rds")
 
 # Plots of actual ESS and corresponding bandwidth factors at the end of 
 # each round. 
