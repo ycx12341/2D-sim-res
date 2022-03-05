@@ -1,4 +1,9 @@
 # Glioma data processing.R
+# Author: Yunchen Xiao
+# This .R file reads in the glioma cells density measurements at different
+# locations and timepoints then write them into a single .rds file 
+# (Original measurements in .csv files were made using ImageJ software). 
+
 # Set the workspace and load the necessary package. 
 library(readr)
 
