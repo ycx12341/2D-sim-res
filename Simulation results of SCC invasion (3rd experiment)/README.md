@@ -8,3 +8,7 @@ Folder **Run 1**, **Run 2** and **Run 3** contain the necessary code and simulat
 Folder **Time dependent models** contains the chosen regression model fitted to the final estimates of the 2nd experiment regarding the simulation study of SCC. 
 
 Folder **Posterior analysis** contains the comparison plots of prior and posterior parameter densities. 
+
+Folder **CT on run 3** contains the coverage test results on the final parameter samples from the run chosen as the final result.
+
+Folder **Average results** contains the post-processing of the final results for each run.
