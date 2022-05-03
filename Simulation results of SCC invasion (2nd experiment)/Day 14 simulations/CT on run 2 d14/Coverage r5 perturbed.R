@@ -171,24 +171,26 @@ est <- foreach (i = 1:length(ls.r5.diff.mat), .combine = rbind) %dopar% {
   info.list.temp <- calculate.bw(ss.mat = diff.mat.temp, lb.bw = lb.bw.temp,
                                  ub.bw = ub.bw.temp, ess.target = 1640.25, 
                                  step.size = 0.01)
+  bw.obj.curr <- unname(info.list.temp$bw.obj)
   # Change the lower and upper bounds of the interval if the current interval
   # did not yield the correct ESS. 
-  while (info.list.temp$bw.obj == lb.bw.temp || info.list.temp$bw.obj == 
-         ub.bw.temp) {
-    if (info.list.temp$bw.obj == lb.bw.temp) {
-      lb.bw.temp <- lb.bw.temp - 0.1
+  while (isTRUE(all.equal(bw.obj.curr, lb.bw.temp)) || isTRUE(all.equal(bw.obj.curr, ub.bw.temp))) {
+    if (isTRUE(all.equal(bw.obj.curr, lb.bw.temp))) {
       ub.bw.temp <- lb.bw.temp + 0.01
+      lb.bw.temp <- lb.bw.temp - 0.1
       info.list.temp <- calculate.bw(ss.mat = diff.mat.temp, 
                                      lb.bw = lb.bw.temp,
                                      ub.bw = ub.bw.temp, ess.target = 1640.25,
                                      step.size = 0.01)
-    } else if (info.list.temp$bw.obj == ub.bw.temp) {
+      bw.obj.curr <- unname(info.list.temp$bw.obj)
+    } else if (isTRUE(all.equal(bw.obj.curr, ub.bw.temp))) {
       lb.bw.temp <- ub.bw.temp - 0.01
       ub.bw.temp <- ub.bw.temp + 0.1
       info.list.temp <- calculate.bw(ss.mat = diff.mat.temp, 
                                      lb.bw = lb.bw.temp,
                                      ub.bw = ub.bw.temp, ess.target = 1640.25,
                                      step.size = 0.01)
+      bw.obj.curr <- unname(info.list.temp$bw.obj)
     }
   }
   # Save the results for each "pseudo-reference dataset" into .rds files in 
