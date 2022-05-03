@@ -1,4 +1,4 @@
-% Post_process.m
+% SCC_posterior_d6_run2.m
 % Author: Yunchen Xiao
 % This MATLAB file generates the plots of probability densities of the
 % parameter estimations at the end of each round of the second run of 
