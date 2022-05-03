@@ -1,10 +1,11 @@
-% Parameter_estimations.m
+% ESS_BW_plots.m
 % Author: Yunchen Xiao
 
 % This MATLAB file generates the plots of actual effective sample size
 % (ESS) and bandwidth factors for resampling weights calculation for each  
 % round of the simulations in the case study on T98G glioma invasion 
 % pattern. 
+
 %% Environment settings
 clc
 clear all
