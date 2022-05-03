@@ -56,6 +56,18 @@ lgd = legend({'Initial density($d_{n}$)','Post-round 1 density($d_{n}$)','Post-r
 xlabel('$d_{n}$ values')
 ylabel('Probability density')
 
+figure
+yline(1/(0.02 - 0.000069),'b','Linewidth',3.5);
+xlim([0.000069 0.0005]);
+hold on;
+plot(xvi,m, 'k-')
+plot(mean(dn_init),0,'xb','markersize',20)
+plot(mean(dn_r6),0,'xk','markersize',20)
+hold off;
+lgd = legend({'Initial density($d_{n}$)', 'Post-round 5 density($d_{n}$)'},'Interpreter','latex','Location','northeast','Orientation','vertical','Fontsize',12);
+xlabel('$d_{n}$ values')
+ylabel('Probability density')
+
 %% Density plot of rn
 rn_init = table2array(paras_init(:,3));
 rn_r2 = table2array(paras_r2(:,3));
@@ -83,6 +95,18 @@ plot(mean(rn_r5),0,'xm','markersize',20)
 plot(mean(rn_r6),0,'xk','markersize',20)
 hold off;
 lgd = legend({'Initial density($r_{n}$)','Post-round 1 density($r_{n}$)','Post-round 2 density($r_{n}$)','Post-round 3 density($r_{n}$)','Post-round 4 density($r_{n}$)', 'Post-round 5 density($r_{n}$)'},'Interpreter','latex','Location','southwest','Orientation','vertical','Fontsize',10);
+xlabel('$r_{n}$ values')
+ylabel('Probability density')
+
+figure
+yline(1/(0.0035 - 0),'b','Linewidth',3.5);
+xlim([0 0.0035]);
+hold on;
+plot(xvi,m, 'k-')
+plot(mean(rn_init),0,'xb','markersize',20)
+plot(mean(rn_r6),0,'xk','markersize',20)
+hold off;
+lgd = legend({'Initial density($r_{n}$)','Post-round 5 density($r_{n}$)'},'Interpreter','latex','Location','northeast','Orientation','vertical','Fontsize',10);
 xlabel('$r_{n}$ values')
 ylabel('Probability density')
 
@@ -117,6 +141,19 @@ lgd = legend({'Initial density($R_{init.}$)','Post-round 1 density($R_{init.}$)'
 xlabel('$R_{init.}$ values')
 ylabel('Probability density')
 
+figure
+yline(1/(0.15 - 0.01),'b','Linewidth',3.5);
+xlim([0.01 0.25]);
+%ylim([0 13]);
+hold on;
+plot(xvi,m, 'k-')
+plot(mean(r_init_init),0,'xb','markersize',20)
+plot(mean(r_init_r6),0,'xk','markersize',20)
+hold off;
+lgd = legend({'Initial density($R_{init.}$)','Post-round 5 density($R_{init.}$)'},'Interpreter','latex','Location','northeast','Orientation','vertical','Fontsize',10);
+xlabel('$R_{init.}$ values')
+ylabel('Probability density')
+
 %% Density plots of p.ext
 p_ext_init = table2array(paras_init(:,5));
 p_ext_r2 = table2array(paras_r2(:,5));
@@ -148,6 +185,19 @@ lgd = legend({'Initial density($P_{ext.}$)','Post-round 1 density($P_{ext.}$)','
 xlabel('$P_{ext.}$ values')
 ylabel('Probability density')
 
+figure
+yline(1/(0.1 - 0.01),'b','Linewidth',3.5);
+xlim([0.01 0.1]);
+ylim([0 20]);
+hold on;
+plot(xvi,m, 'k-')
+plot(mean(p_ext_init),0,'xb','markersize',20)
+plot(mean(p_ext_r6),0,'xk','markersize',20)
+hold off;
+lgd = legend({'Initial density($P_{ext.}$)','Post-round 5 density($P_{ext.}$)'},'Interpreter','latex','Location','northwest','Orientation','vertical','Fontsize',10);
+xlabel('$P_{ext.}$ values')
+ylabel('Probability density')
+
 %% Density plots of p.mit
 p_mit_init = table2array(paras_init(:,6));
 p_mit_r2 = table2array(paras_r2(:,6));
@@ -176,5 +226,18 @@ plot(mean(p_mit_r5),0,'xm','markersize',20)
 plot(mean(p_mit_r6),0,'xk','markersize',20)
 hold off;
 lgd = legend({'Initial density($P_{mit.}$)','Post-round 1 density($P_{mit.}$)','Post-round 2 density($P_{mit.}$)','Post-round 3 density($P_{mit.}$)','Post-round 4 density($P_{mit.}$)', 'Post-round 5 density($P_{mit.}$)'},'Interpreter','latex','Location','northeast','Orientation','vertical','Fontsize',10);
+xlabel('$P_{mit.}$ values')
+ylabel('Probability density')
+
+figure
+yline(1/(1 - 0.2),'b','Linewidth',3.5);
+xlim([0.2 1]);
+%ylim([0 13]);
+hold on;
+plot(xvi,m, 'k-')
+plot(mean(p_mit_init),0,'xb','markersize',20)
+plot(mean(p_mit_r6),0,'xk','markersize',20)
+hold off;
+lgd = legend({'Initial density($P_{mit.}$)','Post-round 5 density($P_{mit.}$)'},'Interpreter','latex','Location','northeast','Orientation','vertical','Fontsize',10);
 xlabel('$P_{mit.}$ values')
 ylabel('Probability density')
