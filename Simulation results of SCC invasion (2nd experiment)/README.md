@@ -1,4 +1,4 @@
-## Simulation results of SCC invasion ##
+## Simulation results of SCC invasion （2nd experiment) ##
 
 As explained in the main body of the thesis, since the invasive features of tumour cells may change at different periods of the invasion process, we conducted the simulations on each pattern separately. Considering the stochastic nature within the individual-based model, we carried out the each pattern's simulation for 3 times with different seed being used in the random number generator (**set.seed()** command in R).
 
