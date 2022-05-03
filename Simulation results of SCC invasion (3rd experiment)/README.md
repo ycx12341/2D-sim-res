@@ -12,3 +12,6 @@ Folder **Posterior analysis** contains the comparison plots of prior and posteri
 Folder **CT on run 3** contains the coverage test results on the final parameter samples from the run chosen as the final result.
 
 Folder **Average results** contains the post-processing of the final results for each run.
+
+All simulation results were generated using R 4.0.3 "Bunny-Wunnies Freak out".
+
