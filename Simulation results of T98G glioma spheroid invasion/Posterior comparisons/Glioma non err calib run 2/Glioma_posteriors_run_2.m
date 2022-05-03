@@ -1,8 +1,8 @@
-% Post_process.m
+% Glioma_posteriors_run_2.m
 % Author: Yunchen Xiao
 % This MATLAB file generates the plots of probability densities of the
 % parameter estimations at the end of each round of the second run of 
-% applying error-calibrated ABC scheme on the invasion pattern of the SCC 
+% applying non-error calibrated ABC scheme on the invasion pattern of the SCC 
 % reference dataset.
 
 %% Environment settings
@@ -71,6 +71,7 @@ hold off;
 lgd = legend({'Initial density($d_{n}$)', 'Post-round 6 density($d_{n}$)'},'Interpreter','latex','Location','northeast','Orientation','vertical','Fontsize',12);
 xlabel('$d_{n}$ values')
 ylabel('Probability density')
+
 %% Density plot of rn
 rn_init = table2array(paras_init(:,3));
 rn_r2 = table2array(paras_r2(:,3));
@@ -164,6 +165,7 @@ hold off;
 lgd = legend({'Initial density($R_{init.}$)','Post-round 6 density($R_{init.}$)'},'Interpreter','latex','Location','northwest','Orientation','vertical','Fontsize',10);
 xlabel('$R_{init.}$ values')
 ylabel('Probability density')
+
 %% Density plots of p.ext
 p_ext_init = table2array(paras_init(:,5));
 p_ext_r2 = table2array(paras_r2(:,5));
