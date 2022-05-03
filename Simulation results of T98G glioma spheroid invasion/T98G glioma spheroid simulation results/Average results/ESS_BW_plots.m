@@ -1,4 +1,4 @@
-% Parameter_estimations.m
+% ESS_BW_plots.m
 % Author: Yunchen Xiao
 
 % This MATLAB file generates the plots of actual effective sample size
