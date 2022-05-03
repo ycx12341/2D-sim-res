@@ -17,6 +17,8 @@ After the final parameter samples are obtained, their averaged values were taken
 
 File **Full parameter estimates r9 run 3.R** reads in the parameter samples obtained at the end of every round, stores the averaged parameter estimates at the end of every round in **Full parameter estimates 9 rounds run 3.txt** and the averaged final parameter estimates in **Round 9 final full parameter estimates run 3.txt**. Furthermore, it fits the corresponding regression models to the final parameters estimates of the time-dependent parameters, these fitted regression values are stored in **Estimated final parameter values regression.txt**. 
 
+Folder **Detailed density plots** contains the plots of the parameter densities obtained at the end of every round of the current run. 
+
 File **Parameter_estimations.m** reads in the final parameter estimates and the fitted regression values from **Round 9 final full parameter estimates run 3.txt** and **Estimated final parameter values regression.txt** and plots them in **paras r9 dn ests run 3.png**, **paras r9 gamma ests run 3.png**, **paras r9 rn ests run 3.png**, **paras r9 eta ests run 3.png**, **paras r9 dm ests run 3.png**, **paras r9 alpha ests run 3.png**, **paras r9 p_ext ests run 3.png** and **paras r9 p_mit ests run 3.png**.
 
 File **Run 3 posterior summary.R** reads in the **Round x information list log transform.rds** files, extract the actual effective sample sizes and bandwidth factors for each round and store them in **Run 3 ESS BW.txt**. 
