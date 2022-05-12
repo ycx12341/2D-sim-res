@@ -64,13 +64,13 @@ lgd = legend({'Initial density($d_{n}$)','Post-round 1 density($d_{n}$)','Post-r
 xlabel('$d_{n}$ values')
 ylabel('Probability density')
 
-[k,xvii] = ksdensity(dn_r7,'Bandwidth',0.00003);
-[l,xviii] = ksdensity(dn_r8,'Bandwidth',0.00003);
-[q,xix] = ksdensity(dn_r9,'Bandwidth',0.00003);
+[k,xvii] = ksdensity(dn_r7,'Bandwidth',0.0005);
+[l,xviii] = ksdensity(dn_r8,'Bandwidth',0.0005);
+[q,xix] = ksdensity(dn_r9,'Bandwidth',0.0005);
 
 figure
 yline(1/(0.02 - 0.000069),'b','Linewidth',3.5);
-xlim([0.000069 0.002]);
+xlim([0.000069 0.015]);
 hold on;
 plot(xvii,k,'g-',xviii,l,'r-',xix,q,'c-')
 plot(mean(dn_r7),0,'xg','markersize',20)
@@ -114,13 +114,13 @@ lgd = legend({'Initial density($\gamma$)','Post-round 1 density($\gamma$)','Post
 xlabel('$\gamma$ values')
 ylabel('Probability density')
 
-[k,xvii] = ksdensity(gamma_r7,'Bandwidth',0.0002);
-[l,xviii] = ksdensity(gamma_r8,'Bandwidth',0.0002);
-[q,xix] = ksdensity(gamma_r9,'Bandwidth',0.0002);
+[k,xvii] = ksdensity(gamma_r7,'Bandwidth',0.002);
+[l,xviii] = ksdensity(gamma_r8,'Bandwidth',0.002);
+[q,xix] = ksdensity(gamma_r9,'Bandwidth',0.002);
 
 figure
 yline(1/(0.26 - 0.005),'b','Linewidth',3.5);
-xlim([0.005 0.01]);
+xlim([0.005 0.05]);
 hold on;
 plot(xvii,k,'g-',xviii,l,'r-',xix,q,'c-')
 plot(mean(gamma_init),0,'xb','markersize',20)
@@ -143,11 +143,11 @@ rn_r7 = table2array(paras_r7_tv(:,4));
 rn_r8 = table2array(paras_r8_tv(:,4));
 rn_r9 = table2array(paras_r9_tv(:,4));
 
-[g,xii] = ksdensity(rn_r2,'Bandwidth',0.005);
-[h,xiii] = ksdensity(rn_r3,'Bandwidth',0.005);
-[j,xiv] = ksdensity(rn_r4,'Bandwidth',0.005);
-[z,xv] = ksdensity(rn_r5,'Bandwidth',0.005);
-[m,xvi] = ksdensity(rn_r6,'Bandwidth',0.005);
+[g,xii] = ksdensity(rn_r2,'Bandwidth',0.008);
+[h,xiii] = ksdensity(rn_r3,'Bandwidth',0.008);
+[j,xiv] = ksdensity(rn_r4,'Bandwidth',0.008);
+[z,xv] = ksdensity(rn_r5,'Bandwidth',0.008);
+[m,xvi] = ksdensity(rn_r6,'Bandwidth',0.008);
 
 figure
 yline(1/(0.08 - 0.0008),'b','Linewidth',3.5);
@@ -165,13 +165,13 @@ lgd = legend({'Initial density($r_{n}$)','Post-round 1 density($r_{n}$)','Post-r
 xlabel('$r_{n}$ values')
 ylabel('Probability density')
 
-[k,xvii] = ksdensity(rn_r7,'Bandwidth',0.0004);
-[l,xviii] = ksdensity(rn_r8,'Bandwidth',0.0004);
-[q,xix] = ksdensity(rn_r9,'Bandwidth',0.0004);
+[k,xvii] = ksdensity(rn_r7,'Bandwidth',0.008);
+[l,xviii] = ksdensity(rn_r8,'Bandwidth',0.008);
+[q,xix] = ksdensity(rn_r9,'Bandwidth',0.008);
 
 figure
 yline(1/(0.08 - 0.0008),'b','Linewidth',3.5);
-xlim([0.025 0.055]);
+xlim([0.0008 0.08]);
 hold on;
 plot(xvii,k,'g-',xviii,l,'r-',xix,q,'c-')
 plot(mean(rn_init),0,'xb','markersize',20)
@@ -179,7 +179,7 @@ plot(mean(rn_r7),0,'xg','markersize',20)
 plot(mean(rn_r8),0,'xr','markersize',20)
 plot(mean(rn_r9),0,'xc','markersize',20)
 hold off;
-lgd = legend({'Initial density($r_{n}$)','Post-round 6 density($r_{n}$)','Post-round 7 density($r_{n}$)','Post-round 8 density($r_{n}$)'},'Interpreter','latex','Location','northeast','Orientation','vertical','Fontsize',10);
+lgd = legend({'Initial density($r_{n}$)','Post-round 6 density($r_{n}$)','Post-round 7 density($r_{n}$)','Post-round 8 density($r_{n}$)'},'Interpreter','latex','Location','northeast','Orientation','vertical','Fontsize',8);
 xlabel('$r_{n}$ values')
 ylabel('Probability density')
 
@@ -194,15 +194,15 @@ eta_r7 = table2array(paras_r7_tv(:,5));
 eta_r8 = table2array(paras_r8_tv(:,5));
 eta_r9 = table2array(paras_r9_tv(:,5));
 
-[g,xii] = ksdensity(eta_r2,'Bandwidth',0.28);
-[h,xiii] = ksdensity(eta_r3,'Bandwidth',0.28);
-[j,xiv] = ksdensity(eta_r4,'Bandwidth',0.28);
-[z,xv] = ksdensity(eta_r5,'Bandwidth',0.28);
-[m,xvi] = ksdensity(eta_r6,'Bandwidth',0.28);
+[g,xii] = ksdensity(eta_r2,'Bandwidth',0.6);
+[h,xiii] = ksdensity(eta_r3,'Bandwidth',0.6);
+[j,xiv] = ksdensity(eta_r4,'Bandwidth',0.6);
+[z,xv] = ksdensity(eta_r5,'Bandwidth',0.6);
+[m,xvi] = ksdensity(eta_r6,'Bandwidth',0.6);
 
 figure
 yline(1/(18 - 7),'b','Linewidth',3.5);
-xlim([12 18]);
+xlim([7 18]);
 hold on;
 plot(xii,g,'g-',xiii,h,'r-',xiv,j,'c-', xv, z, 'm-', xvi, m, 'k-')
 plot(mean(eta_init),0,'xb','markersize',20)
@@ -216,13 +216,13 @@ lgd = legend({'Initial density($\eta$)','Post-round 1 density($\eta$)','Post-rou
 xlabel('$\eta$ values')
 ylabel('Probability density')
 
-[k,xvii] = ksdensity(eta_r7,'Bandwidth',0.066);
-[l,xviii] = ksdensity(eta_r8,'Bandwidth',0.066);
-[q,xix] = ksdensity(eta_r9,'Bandwidth',0.066);
+[k,xvii] = ksdensity(eta_r7,'Bandwidth',0.6);
+[l,xviii] = ksdensity(eta_r8,'Bandwidth',0.6);
+[q,xix] = ksdensity(eta_r9,'Bandwidth',0.6);
 
 figure
 yline(1/(18 - 7),'b','Linewidth',3.5);
-xlim([15 18]);
+xlim([7 18]);
 hold on;
 plot(xvii,k,'g-',xviii,l,'r-',xix,q,'c-')
 plot(mean(eta_init),0,'xb','markersize',20)
@@ -230,7 +230,7 @@ plot(mean(eta_r7),0,'xg','markersize',20)
 plot(mean(eta_r8),0,'xr','markersize',20)
 plot(mean(eta_r9),0,'xc','markersize',20)
 hold off;
-lgd = legend({'Initial density($\eta$)','Post-round 6 density($\eta$)','Post-round 7 density($\eta$)','Post-round 8 density($\eta$)'},'Interpreter','latex','Location','northeast','Orientation','vertical','Fontsize',10);
+lgd = legend({'Initial density($\eta$)','Post-round 6 density($\eta$)','Post-round 7 density($\eta$)','Post-round 8 density($\eta$)'},'Interpreter','latex','Location','northwest','Orientation','vertical','Fontsize',10);
 xlabel('$\eta$ values')
 ylabel('Probability density')
 
@@ -263,17 +263,17 @@ plot(mean(dm_r4),0,'xc','markersize',20)
 plot(mean(dm_r5),0,'xm','markersize',20)
 plot(mean(dm_r6),0,'xk','markersize',20)
 hold off;
-lgd = legend({'Initial density($d_{m}$)','Post-round 1 density($d_{m}$)','Post-round 2 density($d_{m}$)','Post-round 3 density($d_{m}$)','Post-round 4 density($d_{m}$)', 'Post-round 5 density($d_{m}$)'},'Interpreter','latex','Location','northwest','Orientation','vertical','Fontsize',8);
+lgd = legend({'Initial density($d_{m}$)','Post-round 1 density($d_{m}$)','Post-round 2 density($d_{m}$)','Post-round 3 density($d_{m}$)','Post-round 4 density($d_{m}$)', 'Post-round 5 density($d_{m}$)'},'Interpreter','latex','Location','northwest','Orientation','vertical','Fontsize',7);
 xlabel('$d_{m}$ values')
 ylabel('Probability density')
 
-[k,xvii] = ksdensity(dm_r7,'Bandwidth',0.0003);
-[l,xviii] = ksdensity(dm_r8,'Bandwidth',0.0003);
-[q,xix] = ksdensity(dm_r9,'Bandwidth',0.0003);
+[k,xvii] = ksdensity(dm_r7,'Bandwidth',0.0025);
+[l,xviii] = ksdensity(dm_r8,'Bandwidth',0.0025);
+[q,xix] = ksdensity(dm_r9,'Bandwidth',0.0025);
 
 figure
 yline(1/(0.033 - 0.0001),'b','Linewidth',3.5);
-xlim([0.012 0.022]);
+xlim([0.0001 0.033]);
 hold on;
 plot(xvii,k,'g-',xviii,l,'r-',xix,q,'c-')
 plot(mean(dm_init),0,'xb','markersize',20)
@@ -318,13 +318,13 @@ lgd = legend({'Initial density($\alpha$)','Post-round 1 density($\alpha$)','Post
 xlabel('$\alpha$ values')
 ylabel('Probability density')
 
-[k,xvii] = ksdensity(alpha_r7,'Bandwidth',0.001);
-[l,xviii] = ksdensity(alpha_r8,'Bandwidth',0.001);
-[q,xix] = ksdensity(alpha_r9,'Bandwidth',0.001);
+[k,xvii] = ksdensity(alpha_r7,'Bandwidth',0.008);
+[l,xviii] = ksdensity(alpha_r8,'Bandwidth',0.008);
+[q,xix] = ksdensity(alpha_r9,'Bandwidth',0.008);
 
 figure
 yline(1/(0.18 - 0.07),'b','Linewidth',3.5);
-xlim([0.15 0.18]);
+xlim([0.07 0.18]);
 hold on;
 plot(xvii,k,'g-',xviii,l,'r-',xix,q,'c-')
 plot(mean(alpha_init),0,'xb','markersize',20)
@@ -332,7 +332,7 @@ plot(mean(alpha_r7),0,'xg','markersize',20)
 plot(mean(alpha_r8),0,'xr','markersize',20)
 plot(mean(alpha_r9),0,'xc','markersize',20)
 hold off;
-lgd = legend({'Initial density($\alpha$)','Post-round 6 density($\alpha$)','Post-round 7 density($\alpha$)','Post-round 8 density($\alpha$)'},'Interpreter','latex','Location','northeast','Orientation','vertical','Fontsize',8);
+lgd = legend({'Initial density($\alpha$)','Post-round 6 density($\alpha$)','Post-round 7 density($\alpha$)','Post-round 8 density($\alpha$)'},'Interpreter','latex','Location','northwest','Orientation','vertical','Fontsize',10);
 xlabel('$\alpha$ values')
 ylabel('Probability density')
 
@@ -347,11 +347,11 @@ r_init_r7 = table2array(paras_r7_tv(:,8));
 r_init_r8 = table2array(paras_r8_tv(:,8));
 r_init_r9 = table2array(paras_r9_tv(:,8));
 
-[g,xii] = ksdensity(r_init_r2,'Bandwidth',0.2);
-[h,xiii] = ksdensity(r_init_r3,'Bandwidth',0.2);
-[j,xiv] = ksdensity(r_init_r4,'Bandwidth',0.2);
-[z,xv] = ksdensity(r_init_r5,'Bandwidth',0.2);
-[m,xvi] = ksdensity(r_init_r6,'Bandwidth',0.2);
+[g,xii] = ksdensity(r_init_r2,'Bandwidth',0.3);
+[h,xiii] = ksdensity(r_init_r3,'Bandwidth',0.3);
+[j,xiv] = ksdensity(r_init_r4,'Bandwidth',0.3);
+[z,xv] = ksdensity(r_init_r5,'Bandwidth',0.3);
+[m,xvi] = ksdensity(r_init_r6,'Bandwidth',0.3);
 
 figure
 yline(1/(5 - 1),'b','Linewidth',3.5);
@@ -370,13 +370,13 @@ lgd = legend({'Initial density($R_{init.}$)','Post-round 1 density($R_{init.}$)'
 xlabel('$R_{init.}$ values')
 ylabel('Probability density')
 
-[k,xvii] = ksdensity(r_init_r7,'Bandwidth',0.03);
-[l,xviii] = ksdensity(r_init_r8,'Bandwidth',0.03);
-[q,xix] = ksdensity(r_init_r9,'Bandwidth',0.03);
+[k,xvii] = ksdensity(r_init_r7,'Bandwidth',0.3);
+[l,xviii] = ksdensity(r_init_r8,'Bandwidth',0.3);
+[q,xix] = ksdensity(r_init_r9,'Bandwidth',0.3);
 
 figure
 yline(1/(5 - 1),'b','Linewidth',3.5);
-xlim([1 2.5]);
+xlim([1 5]);
 %ylim([0 13]);
 hold on;
 plot(xvii,k,'g-',xviii,l,'r-',xix,q,'c-')
@@ -423,13 +423,13 @@ lgd = legend({'Initial density($P_{ext.}$)','Post-round 1 density($P_{ext.}$)','
 xlabel('$P_{ext.}$ values')
 ylabel('Probability density')
 
-[k,xvii] = ksdensity(p_ext_r7,'Bandwidth',0.0006);
-[l,xviii] = ksdensity(p_ext_r8,'Bandwidth',0.0006);
-[q,xix] = ksdensity(p_ext_r9,'Bandwidth',0.0006);
+[k,xvii] = ksdensity(p_ext_r7,'Bandwidth',0.008);
+[l,xviii] = ksdensity(p_ext_r8,'Bandwidth',0.008);
+[q,xix] = ksdensity(p_ext_r9,'Bandwidth',0.008);
 
 figure
 yline(1/(0.1 - 0.01),'b','Linewidth',3.5);
-xlim([0.071 0.1]);
+xlim([0.01 0.1]);
 %ylim([0 13]);
 hold on;
 plot(xvii,k,'g-',xviii,l,'r-',xix,q,'c-')
@@ -476,13 +476,13 @@ lgd = legend({'Initial density($P_{mit.}$)','Post-round 1 density($P_{mit.}$)','
 xlabel('$P_{mit.}$ values')
 ylabel('Probability density')
 
-[k,xvii] = ksdensity(p_mit_r7,'Bandwidth',0.005);
-[l,xviii] = ksdensity(p_mit_r8,'Bandwidth',0.005);
-[q,xix] = ksdensity(p_mit_r9,'Bandwidth',0.005);
+[k,xvii] = ksdensity(p_mit_r7,'Bandwidth',0.04);
+[l,xviii] = ksdensity(p_mit_r8,'Bandwidth',0.04);
+[q,xix] = ksdensity(p_mit_r9,'Bandwidth',0.04);
 
 figure
 yline(1/(1 - 0.2),'b','Linewidth',3.5);
-xlim([0.4 0.7]);
+xlim([0.2 1]);
 %ylim([0 13]);
 hold on;
 plot(xvii,k,'g-',xviii,l,'r-',xix,q,'c-')
@@ -517,7 +517,7 @@ dn_quad_ub = table2array(post_reg_coefs_bounds(1,3));
 
 figure
 yline(1/(dn_quad_ub-dn_quad_lb),'b','Linewidth',3.5);
-xlim([dn_quad_lb 0.0008]);
+xlim([dn_quad_lb dn_quad_ub]);
 hold on;
 plot(xii,g,'g-',xiii,h,'r-',xiv,j,'c-', xv, z, 'm-', xvi, m, 'k-')
 plot(mean(dn_quad_init),0,'xb','markersize',20)
@@ -527,17 +527,17 @@ plot(mean(dn_quad_r4),0,'xc','markersize',20)
 plot(mean(dn_quad_r5),0,'xm','markersize',20)
 plot(mean(dn_quad_r6),0,'xk','markersize',20)
 hold off;
-lgd = legend({'Initial density($d_{n, quad}$)','Post-round 1 density($d_{n, quad}$)','Post-round 2 density($d_{n, quad}$)','Post-round 3 density($d_{n, quad}$)','Post-round 4 density($d_{n, quad}$)', 'Post-round 5 density($d_{n, quad}$)'},'Interpreter','latex','Location','northwest','Orientation','vertical','Fontsize',10);
+lgd = legend({'Initial density($d_{n, quad}$)','Post-round 1 density($d_{n, quad}$)','Post-round 2 density($d_{n, quad}$)','Post-round 3 density($d_{n, quad}$)','Post-round 4 density($d_{n, quad}$)', 'Post-round 5 density($d_{n, quad}$)'},'Interpreter','latex','Location','northwest','Orientation','vertical','Fontsize',8);
 xlabel('$d_{n, quad}$ values')
 ylabel('Probability density')
 
-[k,xvii] = ksdensity(dn_quad_r7,'Bandwidth',0.000004);
-[l,xviii] = ksdensity(dn_quad_r8,'Bandwidth',0.000004);
-[q,xix] = ksdensity(dn_quad_r9,'Bandwidth',0.000004);
+[k,xvii] = ksdensity(dn_quad_r7,'Bandwidth',0.00005);
+[l,xviii] = ksdensity(dn_quad_r8,'Bandwidth',0.00005);
+[q,xix] = ksdensity(dn_quad_r9,'Bandwidth',0.00005);
 
 figure
 yline(1/(dn_quad_ub-dn_quad_lb),'b','Linewidth',3.5);
-xlim([0.0005 0.0008]);
+xlim([dn_quad_lb dn_quad_ub]);
 hold on;
 plot(xvii,k,'g-',xviii,l,'r-',xix,q,'c-')
 plot(mean(dn_quad_r7),0,'xg','markersize',20)
@@ -584,20 +584,20 @@ lgd = legend({'Initial density($d_{n, lin}$)','Post-round 1 density($d_{n, lin}$
 xlabel('$d_{n, lin}$ values')
 ylabel('Probability density')
 
-[k,xvii] = ksdensity(dn_lin_r7,'Bandwidth',0.000004);
-[l,xviii] = ksdensity(dn_lin_r8,'Bandwidth',0.000004);
-[q,xix] = ksdensity(dn_lin_r9,'Bandwidth',0.000004);
+[k,xvii] = ksdensity(dn_lin_r7,'Bandwidth',0.00015);
+[l,xviii] = ksdensity(dn_lin_r8,'Bandwidth',0.00015);
+[q,xix] = ksdensity(dn_lin_r9,'Bandwidth',0.00015);
 
 figure
 yline(1/(dn_lin_ub-dn_lin_lb),'b','Linewidth',3.5);
-xlim([-0.002 -0.001]);
+xlim([dn_lin_lb dn_lin_ub]);
 hold on;
 plot(xvii,k,'g-',xviii,l,'r-',xix,q,'c-')
 plot(mean(dn_lin_r7),0,'xg','markersize',20)
 plot(mean(dn_lin_r8),0,'xr','markersize',20)
 plot(mean(dn_lin_r9),0,'xc','markersize',20)
 hold off;
-lgd = legend({'Initial density($d_{n, lin}$)','Post-round 6 density($d_{n, lin}$)','Post-round 7 density($d_{n, lin}$)','Post-round 8 density($d_{n, lin}$)'},'Interpreter','latex','Location','northeast','Orientation','vertical','Fontsize',10);
+lgd = legend({'Initial density($d_{n, lin}$)','Post-round 6 density($d_{n, lin}$)','Post-round 7 density($d_{n, lin}$)','Post-round 8 density($d_{n, lin}$)'},'Interpreter','latex','Location','northwest','Orientation','vertical','Fontsize',8);
 xlabel('$d_{n, lin}$ values')
 ylabel('Probability density')
 
@@ -637,20 +637,20 @@ lgd = legend({'Initial density($\gamma_{quad}$)','Post-round 1 density($\gamma_{
 xlabel('$\gamma_{quad}$ values')
 ylabel('Probability density')
 
-[k,xvii] = ksdensity(gamma_quad_r7,'Bandwidth',0.0001832);
-[l,xviii] = ksdensity(gamma_quad_r8,'Bandwidth',0.0001832);
-[q,xix] = ksdensity(gamma_quad_r9,'Bandwidth',0.0001832);
+[k,xvii] = ksdensity(gamma_quad_r7,'Bandwidth',0.001);
+[l,xviii] = ksdensity(gamma_quad_r8,'Bandwidth',0.001);
+[q,xix] = ksdensity(gamma_quad_r9,'Bandwidth',0.001);
 
 figure
 yline(1/(gamma_quad_ub-gamma_quad_lb),'b','Linewidth',3.5);
-xlim([-0.023 -0.012]);
+xlim([gamma_quad_lb -0.012]);
 hold on;
 plot(xvii,k,'g-',xviii,l,'r-',xix,q,'c-')
 plot(mean(gamma_quad_r7),0,'xg','markersize',20)
 plot(mean(gamma_quad_r8),0,'xr','markersize',20)
 plot(mean(gamma_quad_r9),0,'xc','markersize',20)
 hold off;
-lgd = legend({'Initial density($\gamma_{quad}$)','Post-round 6 density($\gamma_{quad}$)','Post-round 7 density($\gamma_{quad}$)','Post-round 8 density($\gamma_{quad}$)'},'Interpreter','latex','Location','northeast','Orientation','vertical','Fontsize',10);
+lgd = legend({'Initial density($\gamma_{quad}$)','Post-round 6 density($\gamma_{quad}$)','Post-round 7 density($\gamma_{quad}$)','Post-round 8 density($\gamma_{quad}$)'},'Interpreter','latex','Location','northwest','Orientation','vertical','Fontsize',8);
 xlabel('$\gamma_{quad}$ values')
 ylabel('Probability density')
 
@@ -690,13 +690,13 @@ lgd = legend({'Initial density($\gamma_{lin}$)','Post-round 1 density($\gamma_{l
 xlabel('$\gamma_{lin}$ values')
 ylabel('Probability density')
 
-[k,xvii] = ksdensity(gamma_lin_r7,'Bandwidth',0.001402);
-[l,xviii] = ksdensity(gamma_lin_r8,'Bandwidth',0.001402);
-[q,xix] = ksdensity(gamma_lin_r9,'Bandwidth',0.001402);
+[k,xvii] = ksdensity(gamma_lin_r7,'Bandwidth',0.015);
+[l,xviii] = ksdensity(gamma_lin_r8,'Bandwidth',0.015);
+[q,xix] = ksdensity(gamma_lin_r9,'Bandwidth',0.015);
 
 figure
 yline(1/(gamma_lin_ub-gamma_lin_lb),'b','Linewidth',3.5);
-xlim([0.10 0.20]);
+xlim([gamma_lin_lb gamma_lin_ub]);
 hold on;
 plot(xvii,k,'g-',xviii,l,'r-',xix,q,'c-')
 plot(mean(gamma_lin_r7),0,'xg','markersize',20)
@@ -744,20 +744,20 @@ lgd = legend({'Initial density($r_{n, quad}$)','Post-round 1 density($r_{n, quad
 xlabel('$r_{n, quad}$ values')
 ylabel('Probability density')
 
-[k,xvii] = ksdensity(rn_quad_r7,'Bandwidth',0.00003417);
-[l,xviii] = ksdensity(rn_quad_r8,'Bandwidth',0.00003417);
-[q,xix] = ksdensity(rn_quad_r9,'Bandwidth',0.00003417);
+[k,xvii] = ksdensity(rn_quad_r7,'Bandwidth',0.0005);
+[l,xviii] = ksdensity(rn_quad_r8,'Bandwidth',0.0005);
+[q,xix] = ksdensity(rn_quad_r9,'Bandwidth',0.0005);
 
 figure
 yline(1/(rn_quad_ub-rn_quad_lb),'b','Linewidth',3.5);
-xlim([-0.004 -0.0025]);
+xlim([rn_quad_lb rn_quad_ub]);
 hold on;
 plot(xvii,k,'g-',xviii,l,'r-',xix,q,'c-')
 plot(mean(rn_quad_r7),0,'xg','markersize',20)
 plot(mean(rn_quad_r8),0,'xr','markersize',20)
 plot(mean(rn_quad_r9),0,'xc','markersize',20)
 hold off;
-lgd = legend({'Initial density($r_{n, quad}$)','Post-round 6 density($r_{n, quad}$)','Post-round 7 density($r_{n, quad}$)','Post-round 8 density($r_{n, quad}$)'},'Interpreter','latex','Location','northeast','Orientation','vertical','Fontsize',8);
+lgd = legend({'Initial density($r_{n, quad}$)','Post-round 6 density($r_{n, quad}$)','Post-round 7 density($r_{n, quad}$)','Post-round 8 density($r_{n, quad}$)'},'Interpreter','latex','Location','northwest','Orientation','vertical','Fontsize',7);
 xlabel('$r_{n, quad}$ values')
 ylabel('Probability density')
 
@@ -797,13 +797,13 @@ lgd = legend({'Initial density($r_{n, lin}$)','Post-round 1 density($r_{n, lin}$
 xlabel('$r_{n, lin}$ values')
 ylabel('Probability density')
 
-[k,xvii] = ksdensity(rn_lin_r7,'Bandwidth',0.0002725);
-[l,xviii] = ksdensity(rn_lin_r8,'Bandwidth',0.0002725);
-[q,xix] = ksdensity(rn_lin_r9,'Bandwidth',0.0002725);
+[k,xvii] = ksdensity(rn_lin_r7,'Bandwidth',0.0025);
+[l,xviii] = ksdensity(rn_lin_r8,'Bandwidth',0.0025);
+[q,xix] = ksdensity(rn_lin_r9,'Bandwidth',0.0025);
 
 figure
 yline(1/(rn_lin_ub-rn_lin_lb),'b','Linewidth',3.5);
-xlim([0.0105 0.03]);
+xlim([rn_lin_lb rn_lin_ub]);
 hold on;
 plot(xvii,k,'g-',xviii,l,'r-',xix,q,'c-')
 plot(mean(rn_lin_r7),0,'xg','markersize',20)
@@ -850,20 +850,20 @@ lgd = legend({'Initial density($\eta_{quad}$)','Post-round 1 density($\eta_{quad
 xlabel('$\eta_{quad}$ values')
 ylabel('Probability density')
 
-[k,xvii] = ksdensity(eta_quad_r7,'Bandwidth',0.006553);
-[l,xviii] = ksdensity(eta_quad_r8,'Bandwidth',0.006553);
-[q,xix] = ksdensity(eta_quad_r9,'Bandwidth',0.006553);
+[k,xvii] = ksdensity(eta_quad_r7,'Bandwidth',0.07);
+[l,xviii] = ksdensity(eta_quad_r8,'Bandwidth',0.07);
+[q,xix] = ksdensity(eta_quad_r9,'Bandwidth',0.07);
 
 figure
 yline(1/(eta_quad_ub-eta_quad_lb),'b','Linewidth',3.5);
-xlim([0.7 1.1]);
+xlim([eta_quad_lb eta_quad_ub]);
 hold on;
 plot(xvii,k,'g-',xviii,l,'r-',xix,q,'c-')
 plot(mean(eta_quad_r7),0,'xg','markersize',20)
 plot(mean(eta_quad_r8),0,'xr','markersize',20)
 plot(mean(eta_quad_r9),0,'xc','markersize',20)
 hold off;
-lgd = legend({'Initial density($\eta_{quad}$)','Post-round 6 density($\eta_{quad}$)','Post-round 7 density($\eta_{quad}$)','Post-round 8 density($\eta_{quad}$)'},'Interpreter','latex','Location','northwest','Orientation','vertical','Fontsize',8);
+lgd = legend({'Initial density($\eta_{quad}$)','Post-round 6 density($\eta_{quad}$)','Post-round 7 density($\eta_{quad}$)','Post-round 8 density($\eta_{quad}$)'},'Interpreter','latex','Location','northeast','Orientation','vertical','Fontsize',8);
 xlabel('$\eta_{quad}$ values')
 ylabel('Probability density')
 
@@ -903,13 +903,13 @@ lgd = legend({'Initial density($\eta_{lin}$)','Post-round 1 density($\eta_{lin}$
 xlabel('$\eta_{lin}$ values')
 ylabel('Probability density')
 
-[k,xvii] = ksdensity(eta_lin_r7,'Bandwidth',0.06752);
-[l,xviii] = ksdensity(eta_lin_r8,'Bandwidth',0.06752);
-[q,xix] = ksdensity(eta_lin_r9,'Bandwidth',0.06752);
+[k,xvii] = ksdensity(eta_lin_r7,'Bandwidth',0.7);
+[l,xviii] = ksdensity(eta_lin_r8,'Bandwidth',0.7);
+[q,xix] = ksdensity(eta_lin_r9,'Bandwidth',0.7);
 
 figure
 yline(1/(eta_lin_ub-eta_lin_lb),'b','Linewidth',3.5);
-xlim([-7.5 -4]);
+xlim([eta_lin_lb eta_lin_ub]);
 hold on;
 plot(xvii,k,'g-',xviii,l,'r-',xix,q,'c-')
 plot(mean(eta_lin_r7),0,'xg','markersize',20)
@@ -956,13 +956,13 @@ lgd = legend({'Initial density($\alpha_{quad}$)','Post-round 1 density($\alpha_{
 xlabel('$\alpha_{quad}$ values')
 ylabel('Probability density')
 
-[k,xvii] = ksdensity(alpha_quad_r7,'Bandwidth',0.00006592);
-[l,xviii] = ksdensity(alpha_quad_r8,'Bandwidth',0.00006592);
-[q,xix] = ksdensity(alpha_quad_r9,'Bandwidth',0.00006592);
+[k,xvii] = ksdensity(alpha_quad_r7,'Bandwidth',0.0008);
+[l,xviii] = ksdensity(alpha_quad_r8,'Bandwidth',0.0008);
+[q,xix] = ksdensity(alpha_quad_r9,'Bandwidth',0.0008);
 
 figure
 yline(1/(alpha_quad_ub-alpha_quad_lb),'b','Linewidth',3.5);
-xlim([0.004 0.01]);
+xlim([alpha_quad_lb alpha_quad_ub]);
 hold on;
 plot(xvii,k,'g-',xviii,l,'r-',xix,q,'c-')
 plot(mean(alpha_quad_r7),0,'xg','markersize',20)
@@ -1009,20 +1009,20 @@ lgd = legend({'Initial density($\alpha_{lin}$)','Post-round 1 density($\alpha_{l
 xlabel('$\alpha_{lin}$ values')
 ylabel('Probability density')
 
-[k,xvii] = ksdensity(alpha_lin_r7,'Bandwidth',0.0004337);
-[l,xviii] = ksdensity(alpha_lin_r8,'Bandwidth',0.0004337);
-[q,xix] = ksdensity(alpha_lin_r9,'Bandwidth',0.0004337);
+[k,xvii] = ksdensity(alpha_lin_r7,'Bandwidth',0.005);
+[l,xviii] = ksdensity(alpha_lin_r8,'Bandwidth',0.005);
+[q,xix] = ksdensity(alpha_lin_r9,'Bandwidth',0.005);
 
 figure
 yline(1/(alpha_lin_ub-alpha_lin_lb),'b','Linewidth',3.5);
-xlim([-0.07 -0.04]);
+xlim([alpha_lin_lb alpha_lin_ub]);
 hold on;
 plot(xvii,k,'g-',xviii,l,'r-',xix,q,'c-')
 plot(mean(alpha_lin_r7),0,'xg','markersize',20)
 plot(mean(alpha_lin_r8),0,'xr','markersize',20)
 plot(mean(alpha_lin_r9),0,'xc','markersize',20)
 hold off;
-lgd = legend({'Initial density($\alpha_{lin}$)','Post-round 6 density($\alpha_{lin}$)','Post-round 7 density($\alpha_{lin}$)','Post-round 8 density($\alpha_{lin}$)'},'Interpreter','latex','Location','northwest','Orientation','vertical','Fontsize',8);
+lgd = legend({'Initial density($\alpha_{lin}$)','Post-round 6 density($\alpha_{lin}$)','Post-round 7 density($\alpha_{lin}$)','Post-round 8 density($\alpha_{lin}$)'},'Interpreter','latex','Location','northwest','Orientation','vertical','Fontsize',10);
 xlabel('$\alpha_{lin}$ values')
 ylabel('Probability density')
 
@@ -1062,20 +1062,20 @@ lgd = legend({'Initial density($P_{mit, quad}$)','Post-round 1 density($P_{mit, 
 xlabel('$P_{mit, quad}$ values')
 ylabel('Probability density')
 
-[k,xvii] = ksdensity(p_mit_quad_r7,'Bandwidth',0.0004609);
-[l,xviii] = ksdensity(p_mit_quad_r8,'Bandwidth',0.0004609);
-[q,xix] = ksdensity(p_mit_quad_r9,'Bandwidth',0.0004609);
+[k,xvii] = ksdensity(p_mit_quad_r7,'Bandwidth',0.008);
+[l,xviii] = ksdensity(p_mit_quad_r8,'Bandwidth',0.008);
+[q,xix] = ksdensity(p_mit_quad_r9,'Bandwidth',0.008);
 
 figure
 yline(1/(p_mit_quad_ub-p_mit_quad_lb),'b','Linewidth',3.5);
-xlim([-0.12 -0.065]);
+xlim([-0.2 p_mit_quad_ub]);
 hold on;
 plot(xvii,k,'g-',xviii,l,'r-',xix,q,'c-')
 plot(mean(p_mit_quad_r7),0,'xg','markersize',20)
 plot(mean(p_mit_quad_r8),0,'xr','markersize',20)
 plot(mean(p_mit_quad_r9),0,'xc','markersize',20)
 hold off;
-lgd = legend({'Initial density($P_{mit, quad}$)','Post-round 6 density($P_{mit, quad}$)','Post-round 7 density($P_{mit, quad}$)','Post-round 8 density($P_{mit, quad}$)'},'Interpreter','latex','Location','northwest','Orientation','vertical','Fontsize',8);
+lgd = legend({'Initial density($P_{mit, quad}$)','Post-round 6 density($P_{mit, quad}$)','Post-round 7 density($P_{mit, quad}$)','Post-round 8 density($P_{mit, quad}$)'},'Interpreter','latex','Location','northwest','Orientation','vertical','Fontsize',10);
 xlabel('$P_{mit, quad}$ values')
 ylabel('Probability density')
 
@@ -1115,13 +1115,13 @@ lgd = legend({'Initial density($P_{mit, lin}$)','Post-round 1 density($P_{mit, l
 xlabel('$P_{mit, lin}$ values')
 ylabel('Probability density')
 
-[k,xvii] = ksdensity(p_mit_lin_r7,'Bandwidth',0.003182);
-[l,xviii] = ksdensity(p_mit_lin_r8,'Bandwidth',0.003182);
-[q,xix] = ksdensity(p_mit_lin_r9,'Bandwidth',0.003182);
+[k,xvii] = ksdensity(p_mit_lin_r7,'Bandwidth',0.05);
+[l,xviii] = ksdensity(p_mit_lin_r8,'Bandwidth',0.05);
+[q,xix] = ksdensity(p_mit_lin_r9,'Bandwidth',0.05);
 
 figure
 yline(1/(p_mit_lin_ub-p_mit_lin_lb),'b','Linewidth',3.5);
-xlim([0.4 1.0]);
+xlim([p_mit_lin_lb p_mit_lin_ub]);
 hold on;
 plot(xvii,k,'g-',xviii,l,'r-',xix,q,'c-')
 plot(mean(p_mit_lin_r7),0,'xg','markersize',20)

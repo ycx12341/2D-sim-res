@@ -1,8 +1,9 @@
 % Post_process.m
 % Author: Yunchen Xiao
-% This MATLAB file generates the plots of posterior densities of the
-% parameter samples obtained by applying ABC scheme on the reference 
-% SCC invasion dataset.
+% This MATLAB file generates the plots of prior and posterior probability 
+% densities of the parameter estimates at the end of the evaluations for 
+% each pattern of the second experiment applying ABC-LS scheme on the 
+% SCC invasion patterns.
 
 % Environment settings
 clc
@@ -46,7 +47,7 @@ plot(mean(dn_d3_post), 0, 'xk', 'markersize', 20)
 hold off;
 xlabel('mean ($\hat{d_{n}}$)')
 ylabel('Probability density')
-title({'Post-day 3', '$d_{n}$ posterior'})
+title({'Post day 3', '$d_{n}$ posterior'})
 
 figure
 plot(xiii, h, 'm-')
@@ -57,40 +58,23 @@ plot(mean(dn_d6_post), 0, 'xm', 'markersize', 20)
 hold off;
 xlabel('mean ($\hat{d_{n}}$)')
 ylabel('Probability density')
-title({'Post-day 6', '$d_{n}$ posterior'})
+title({'Post day 6', '$d_{n}$ posterior'})
 
 figure
 plot(xiv, j, 'b-')
-xlim([0.000069, 0.005]);
-ylim([0, 700])
+xlim([0.000069, 0.015]);
+ylim([0, 600])
 hold on;
-plot(mean(dn_d9_post), 0, 'xb', 'markersize', 20)
-hold off;
-xlabel('mean ($\hat{d_{n}}$)')
-ylabel('Probability density')
-title({'Post-day 9', '$d_{n}$ posterior'})
-
-figure
 plot(xv, z, 'r-')
-xlim([0.000069, 0.005]);
-ylim([0, 700])
-hold on;
-plot(mean(dn_d12_post), 0, 'xr', 'markersize', 20)
-hold off;
-xlabel('mean ($\hat{d_{n}}$)')
-ylabel('Probability density')
-title({'Post-day 12', '$d_{n}$ posterior'})
-
-figure
 plot(xvi, m, 'g-')
-xlim([0.000069, 0.02]);
-ylim([0, 250])
-hold on;
+plot(mean(dn_d9_post), 0, 'xm', 'markersize', 20)
+plot(mean(dn_d12_post), 0, 'xr', 'markersize', 20)
 plot(mean(dn_d14_post), 0, 'xg', 'markersize', 20)
 hold off;
 xlabel('mean ($\hat{d_{n}}$)')
 ylabel('Probability density')
-title({'Post-day 14', '$d_{n}$ posterior'})
+lgd = legend({'$d_{n}$ posterior (Post day 9)','$d_{n}$ posterior (Post day 12)','$d_{n}$ posterior (Post day 14)'},'Interpreter','latex','Location','northeast','Orientation','vertical','Fontsize',10);
+title('$d_{n}$ posteriors')
 
 %% gamma posteriors
 gamma_d3_post = table2array(paras_d3_all(:,3));
@@ -99,7 +83,7 @@ gamma_d9_post = table2array(paras_d9_all(:,3));
 gamma_d12_post = table2array(paras_d12_all(:,3));
 gamma_d14_post = table2array(paras_d14_all(:,3));
 
-[g,xii] = ksdensity(gamma_d3_post,'Bandwidth',0.0002);
+[g,xii] = ksdensity(gamma_d3_post,'Bandwidth',0.002);
 [h,xiii] = ksdensity(gamma_d6_post,'Bandwidth',0.03);
 [j,xiv] = ksdensity(gamma_d9_post,'Bandwidth',0.04);
 [z,xv] = ksdensity(gamma_d12_post,'Bandwidth',0.04);
@@ -107,58 +91,14 @@ gamma_d14_post = table2array(paras_d14_all(:,3));
 
 figure
 plot(xii, g, 'k-')
-xlim([0.005, 0.007]);
-ylim([0, 3500])
+xlim([0.005, 0.05]);
+%ylim([0, 3500])
 hold on;
 plot(mean(gamma_d3_post), 0, 'xk', 'markersize', 20)
 hold off;
 xlabel('mean ($\hat{\gamma}$)')
 ylabel('Probability density')
-title({'Post-day 3', '$\gamma$ posterior'})
-
-%figure
-%plot(xiii, h, 'k-')
-%xlim([0.005, 0.26]);
-%ylim([0, 5])
-%hold on;
-%plot(mean(gamma_d6_post), 0, 'xk', 'markersize', 20)
-%hold off;
-%xlabel('mean ($\hat{\gamma}$)')
-%ylabel('Probability density')
-%title({'Post-day 6', '$\gamma$ posterior'})
-
-%figure
-%plot(xiv, j, 'k-')
-%xlim([0.005 0.26]);
-%ylim([0, 5])
-%hold on;
-%plot(mean(gamma_d9_post), 0, 'xk', 'markersize', 20)
-%hold off;
-%xlabel('mean ($\hat{\gamma}$)')
-%ylabel('Probability density')
-%title({'Post-day 9', '$\gamma$ posterior'})
-
-%figure
-%plot(xv, z, 'k-')
-%xlim([0.005 0.26]);
-%ylim([0, 6])
-%hold on;
-%plot(mean(gamma_d12_post), 0, 'xk', 'markersize', 20)
-%hold off;
-%xlabel('mean ($\hat{d_{n}}$)')
-%ylabel('Probability density')
-%title({'Post-day 12', '$\gamma$ posterior'})
-
-%figure
-%plot(xvi, m, 'k-')
-%xlim([0.005, 0.26]);
-%ylim([0, 5.5])
-%hold on;
-%plot(mean(gamma_d14_post), 0, 'xk', 'markersize', 20)
-%hold off;
-%xlabel('mean ($\hat{\gamma}$)')
-%ylabel('Probability density')
-%title({'Post-day 14', '$\gamma$ posterior'})
+title({'Post day 3', '$\gamma$ posterior'})
 
 figure
 plot(xiii, h, 'm-',xiv, j, 'b-', xv, z, 'r-', xvi, m , 'g-')
@@ -172,7 +112,7 @@ plot(mean(gamma_d14_post), 0, 'xg', 'markersize', 20)
 hold off;
 xlabel('mean ($\hat{\gamma}$)')
 ylabel('Probability density')
-lgd = legend({'$\gamma$ posterior (Post-day 6)','$\gamma$ posterior (Post-day 9)','$\gamma$ posterior (Post-day 12)','$\gamma$ posterior (Post-day 14)'},'Interpreter','latex','Location','northwest','Orientation','vertical','Fontsize',10);
+lgd = legend({'$\gamma$ posterior (Post day 6)','$\gamma$ posterior (Post day 9)','$\gamma$ posterior (Post day 12)','$\gamma$ posterior (Post day 14)'},'Interpreter','latex','Location','northwest','Orientation','vertical','Fontsize',10);
 title('$\gamma$ posteriors')
 
 %% rn posteriors 
@@ -182,7 +122,7 @@ rn_d9_post = table2array(paras_d9_all(:,4));
 rn_d12_post = table2array(paras_d12_all(:,4));
 rn_d14_post = table2array(paras_d14_all(:,4));
 
-[g,xii] = ksdensity(rn_d3_post,'Bandwidth',0.001);
+[g,xii] = ksdensity(rn_d3_post,'Bandwidth',0.003);
 [h,xiii] = ksdensity(rn_d6_post,'Bandwidth',0.01);
 [j,xiv] = ksdensity(rn_d9_post,'Bandwidth',0.015);
 [z,xv] = ksdensity(rn_d12_post,'Bandwidth',0.012);
@@ -190,14 +130,14 @@ rn_d14_post = table2array(paras_d14_all(:,4));
 
 figure
 plot(xii, g, 'k-')
-xlim([0.015, 0.03]);
-ylim([0, 250])
+xlim([0.0008, 0.08]);
+%ylim([0, 250])
 hold on;
 plot(mean(rn_d3_post), 0, 'xk', 'markersize', 20)
 hold off;
 xlabel('mean ($\hat{r_{n}}$)')
 ylabel('Probability density')
-title({'Post-day 3', '$r_{n}$ posterior'})
+title({'Post day 3', '$r_{n}$ posterior'})
 
 figure
 plot(xiii, h, 'm-',xiv, j, 'b-', xv, z, 'r-', xvi, m , 'g-')
@@ -211,7 +151,7 @@ plot(mean(rn_d14_post), 0, 'xg', 'markersize', 20)
 hold off;
 xlabel('mean ($\hat{r_{n}}$)')
 ylabel('Probability density')
-lgd = legend({'$r_{n}$ posterior (Post-day 6)','$r_{n}$ posterior (Post-day 9)','$r_{n}$ posterior (Post-day 12)','$r_{n}$ posterior (Post-day 14)'},'Interpreter','latex','Location','northwest','Orientation','vertical','Fontsize',10);
+lgd = legend({'$r_{n}$ posterior (Post day 6)','$r_{n}$ posterior (Post day 9)','$r_{n}$ posterior (Post day 12)','$r_{n}$ posterior (Post day 14)'},'Interpreter','latex','Location','northwest','Orientation','vertical','Fontsize',10);
 title('$r_{n}$ posteriors')
 
 %% eta posteriors
@@ -236,7 +176,7 @@ plot(mean(eta_d3_post), 0, 'xk', 'markersize', 20)
 hold off;
 xlabel('mean ($\hat{\eta}$)')
 ylabel('Probability density')
-title({'Post-day 3', '$\eta$ posterior'})
+title({'Post day 3', '$\eta$ posterior'})
 
 figure
 plot(xiii, h, 'm-',xiv, j, 'b-', xv, z, 'r-', xvi, m , 'g-')
@@ -250,7 +190,7 @@ plot(mean(eta_d14_post), 0, 'xg', 'markersize', 20)
 hold off;
 xlabel('mean ($\hat{\eta}$)')
 ylabel('Probability density')
-lgd = legend({'$\eta$ posterior (Post-day 6)','$\eta$ posterior (Post-day 9)','$\eta$ posterior (Post-day 12)','$\eta$ posterior (Post-day 14)'},'Interpreter','latex','Location','northwest','Orientation','vertical','Fontsize',10);
+lgd = legend({'$\eta$ posterior (Post day 6)','$\eta$ posterior (Post day 9)','$\eta$ posterior (Post day 12)','$\eta$ posterior (Post day 14)'},'Interpreter','latex','Location','northwest','Orientation','vertical','Fontsize',10);
 title('$\eta$ posteriors')
 
 %% dm posteriors
@@ -275,7 +215,7 @@ plot(mean(dm_d3_post), 0, 'xk', 'markersize', 20)
 hold off;
 xlabel('mean ($\hat{d_{m}}$)')
 ylabel('Probability density')
-title({'Post-day 3', '$d_{m}$ posterior'})
+title({'Post day 3', '$d_{m}$ posterior'})
 
 figure
 plot(xiii, h, 'm-',xiv, j, 'b-', xv, z, 'r-', xvi, m , 'g-')
@@ -289,7 +229,7 @@ plot(mean(dm_d14_post), 0, 'xg', 'markersize', 20)
 hold off;
 xlabel('mean ($\hat{d_{m}}$)')
 ylabel('Probability density')
-lgd = legend({'$d_{m}$ posterior (Post-day 6)','$d_{m}$ posterior (Post-day 9)','$d_{m}$ posterior (Post-day 12)','$d_{m}$ posterior (Post-day 14)'},'Interpreter','latex','Location','northwest','Orientation','vertical','Fontsize',10);
+lgd = legend({'$d_{m}$ posterior (Post day 6)','$d_{m}$ posterior (Post day 9)','$d_{m}$ posterior (Post day 12)','$d_{m}$ posterior (Post day 14)'},'Interpreter','latex','Location','northwest','Orientation','vertical','Fontsize',10);
 title('$d_{m}$ posteriors')
 
 %% alpha posteriors
@@ -314,7 +254,7 @@ plot(mean(alpha_d3_post), 0, 'xk', 'markersize', 20)
 hold off;
 xlabel('mean ($\hat{\alpha}$)')
 ylabel('Probability density')
-title({'Post-day 3', '$\alpha$ posterior'})
+title({'Post day 3', '$\alpha$ posterior'})
 
 figure
 plot(xiii, h, 'm-',xiv, j, 'b-', xv, z, 'r-', xvi, m , 'g-')
@@ -328,7 +268,7 @@ plot(mean(alpha_d14_post), 0, 'xg', 'markersize', 20)
 hold off;
 xlabel('mean ($\hat{\alpha}$)')
 ylabel('Probability density')
-lgd = legend({'$\alpha$ posterior (Post-day 6)','$\alpha$ posterior (Post-day 9)','$\alpha$ posterior (Post-day 12)','$\alpha$ posterior (Post-day 14)'},'Interpreter','latex','Location','northwest','Orientation','vertical','Fontsize',10);
+lgd = legend({'$\alpha$ posterior (Post day 6)','$\alpha$ posterior (Post day 9)','$\alpha$ posterior (Post day 12)','$\alpha$ posterior (Post day 14)'},'Interpreter','latex','Location','northwest','Orientation','vertical','Fontsize',10);
 title('$\alpha$ posteriors')
 
 %% r.init posterior
@@ -368,7 +308,7 @@ plot(mean(p_ext_d3_post), 0, 'xk', 'markersize', 20)
 hold off;
 xlabel('mean ($\hat{P_{ext.}}$)')
 ylabel('Probability density')
-title({'Post-day 3', '$P_{ext.}$ posterior'})
+title({'Post day 3', '$P_{ext.}$ posterior'})
 
 figure
 plot(xiii, h, 'm-',xiv, j, 'b-', xv, z, 'r-', xvi, m , 'g-')
@@ -382,7 +322,7 @@ plot(mean(p_ext_d14_post), 0, 'xg', 'markersize', 20)
 hold off;
 xlabel('mean ($\hat{P_{ext.}}$)')
 ylabel('Probability density')
-lgd = legend({'$P_{ext.}$ posterior (Post-day 6)','$P_{ext.}$ posterior (Post-day 9)','$P_{ext.}$ posterior (Post-day 12)','$P_{ext.}$ posterior (Post-day 14)'},'Interpreter','latex','Location','northwest','Orientation','vertical','Fontsize',10);
+lgd = legend({'$P_{ext.}$ posterior (Post day 6)','$P_{ext.}$ posterior (Post day 9)','$P_{ext.}$ posterior (Post day 12)','$P_{ext.}$ posterior (Post day 14)'},'Interpreter','latex','Location','northwest','Orientation','vertical','Fontsize',10);
 title('$P_{ext.}$ posteriors')
 
 %% p.mit. posteriors
@@ -407,7 +347,7 @@ plot(mean(p_mit_d3_post), 0, 'xk', 'markersize', 20)
 hold off;
 xlabel('mean ($\hat{P_{mit.}}$)')
 ylabel('Probability density')
-title({'Post-day 3', '$P_{mit.}$ posterior'})
+title({'Post day 3', '$P_{mit.}$ posterior'})
 
 figure
 plot(xiii, h, 'm-',xiv, j, 'b-', xv, z, 'r-', xvi, m , 'g-')
@@ -421,5 +361,5 @@ plot(mean(p_mit_d14_post), 0, 'xg', 'markersize', 20)
 hold off;
 xlabel('mean ($\hat{P_{mit.}}$)')
 ylabel('Probability density')
-lgd = legend({'$P_{mit.}$ posterior (Post-day 6)','$P_{mit.}$ posterior (Post-day 9)','$P_{mit.}$ posterior (Post-day 12)','$P_{mit.}$ posterior (Post-day 14)'},'Interpreter','latex','Location','northwest','Orientation','vertical','Fontsize',10);
+lgd = legend({'$P_{mit.}$ posterior (Post day 6)','$P_{mit.}$ posterior (Post day 9)','$P_{mit.}$ posterior (Post day 12)','$P_{mit.}$ posterior (Post day 14)'},'Interpreter','latex','Location','northwest','Orientation','vertical','Fontsize',10);
 title('$P_{mit.}$ posteriors')

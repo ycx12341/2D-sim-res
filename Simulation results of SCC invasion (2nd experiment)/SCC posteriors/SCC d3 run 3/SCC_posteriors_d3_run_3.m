@@ -121,15 +121,15 @@ lgd = legend({'Initial density($\gamma$)','Post-round 1 density($\gamma$)','Post
 xlabel('$\gamma$ values')
 ylabel('Probability density')
 
-[k,xvii] = ksdensity(gamma_r7,'Bandwidth',0.0002);
-[l,xviii] = ksdensity(gamma_r8,'Bandwidth',0.0002);
-[q,xix] = ksdensity(gamma_r9,'Bandwidth',0.0002);
-[w,xx] = ksdensity(gamma_r10,'Bandwidth',0.0002);
-[e,xxi] = ksdensity(gamma_r11,'Bandwidth',0.0002);
+[k,xvii] = ksdensity(gamma_r7,'Bandwidth',0.002);
+[l,xviii] = ksdensity(gamma_r8,'Bandwidth',0.002);
+[q,xix] = ksdensity(gamma_r9,'Bandwidth',0.002);
+[w,xx] = ksdensity(gamma_r10,'Bandwidth',0.002);
+[e,xxi] = ksdensity(gamma_r11,'Bandwidth',0.002);
 
 figure
 yline(1/(0.26 - 0.005),'b','Linewidth',3.5);
-xlim([0.005 0.008]);
+xlim([0.005 0.05]);
 hold on;
 plot(xvii,k,'g-',xviii,l,'r-',xix,q,'c-', xx, w, 'm-', xxi, e, 'k-')
 plot(mean(gamma_init),0,'xb','markersize',20)
@@ -178,15 +178,15 @@ lgd = legend({'Initial density($r_{n}$)','Post-round 1 density($r_{n}$)','Post-r
 xlabel('$r_{n}$ values')
 ylabel('Probability density')
 
-[k,xvii] = ksdensity(rn_r7,'Bandwidth',0.001);
-[l,xviii] = ksdensity(rn_r8,'Bandwidth',0.001);
-[q,xix] = ksdensity(rn_r9,'Bandwidth',0.001);
-[w,xx] = ksdensity(rn_r10,'Bandwidth',0.001);
-[e,xxi] = ksdensity(rn_r11,'Bandwidth',0.001);
+[k,xvii] = ksdensity(rn_r7,'Bandwidth',0.003);
+[l,xviii] = ksdensity(rn_r8,'Bandwidth',0.003);
+[q,xix] = ksdensity(rn_r9,'Bandwidth',0.003);
+[w,xx] = ksdensity(rn_r10,'Bandwidth',0.003);
+[e,xxi] = ksdensity(rn_r11,'Bandwidth',0.003);
 
 figure
 yline(1/(0.08 - 0.0008),'b','Linewidth',3.5);
-xlim([0.0008 0.04]);
+xlim([0.0008 0.08]);
 hold on;
 plot(xvii,k,'g-',xviii,l,'r-',xix,q,'c-', xx, w, 'm-', xxi, e, 'k-')
 plot(mean(rn_init),0,'xb','markersize',20)
@@ -196,7 +196,7 @@ plot(mean(rn_r9),0,'xc','markersize',20)
 plot(mean(rn_r10),0,'xm','markersize',20)
 plot(mean(rn_r11),0,'xk','markersize',20)
 hold off;
-lgd = legend({'Initial density($r_{n}$)','Post-round 6 density($r_{n}$)','Post-round 7 density($r_{n}$)','Post-round 8 density($r_{n}$)','Post-round 9 density($r_{n}$)', 'Post-round 10 density($r_{n}$)'},'Interpreter','latex','Location','northwest','Orientation','vertical','Fontsize',10);
+lgd = legend({'Initial density($r_{n}$)','Post-round 6 density($r_{n}$)','Post-round 7 density($r_{n}$)','Post-round 8 density($r_{n}$)','Post-round 9 density($r_{n}$)', 'Post-round 10 density($r_{n}$)'},'Interpreter','latex','Location','northeast','Orientation','vertical','Fontsize',10);
 xlabel('$r_{n}$ values')
 ylabel('Probability density')
 
