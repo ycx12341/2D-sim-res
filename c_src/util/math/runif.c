@@ -1,3 +1,21 @@
-//
-// Created by Tian Z on 2022/8/9. (ecburxvip@gmail.com)
-//
+/**
+ * runif implementation.
+ * Derived from https://svn.r-project.org/R/
+ */
+
+#include <math.h>
+
+#include "math_ext.h"
+
+double runif(double min, double max) {
+    if (!isfinite(min) || !isfinite(max) || max < min) {
+        return NAN;
+    }
+    if (min == max) { return min; }
+
+    double u;
+    do {
+        u = unif_rand();
+    } while (u <= 0 || u >= 1);
+    return min + (max - min) * u;
+}
