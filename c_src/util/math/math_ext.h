@@ -21,4 +21,14 @@ double runif(double a, double b);
 
 double unif_rand();
 
+/**
+ * Generate regular sequences.
+ * @param buf   A buffer to store the generated sequence.
+ * @param from  Lower bound of the sequence.
+ * @param to    Upper bound of the sequence.
+ * @param num   Length of sequence.
+ * @return The number of sequence.
+ */
+int seq(double *buf, double from, double to, int num);
+
 #endif //C_SRC_MATH_EXT_H
