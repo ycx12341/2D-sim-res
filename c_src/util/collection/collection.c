@@ -1,6 +1,7 @@
-#include "math_ext.h"
+#include "collection.h"
 
 #include <float.h>
+#include <stdlib.h>
 
 int seq(double *buf, double from, double to, const int num) {
     if (num <= 0) { return 0; }

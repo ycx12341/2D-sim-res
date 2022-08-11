@@ -1,9 +1,11 @@
 #include "scc.h"
-#include "../util/math/math_ext.h"
 #include "../util/matrix/matrix.h"
+#include "../util/collection/collection.h"
+#include "../util/math/math_ext.h"
 
-#include <stdio.h>
 #include <math.h>
+#include <float.h>
+#include <stdlib.h>
 
 /* Space discretization */
 #define H               (1.0 / 59.0)
@@ -19,20 +21,14 @@
 
 #define BETA            0
 
-double n0_to_m0(double x) {
-    return 0.5 * x;
-}
-
-double n0_to_f0(double x) {
-    return 1 - 0.5 * x;
-}
-
 /**
  * Purpose: Generate a SCC invasion pattern with the given parameters.
  * O(n^2)
  * @param pars Parameters
  */
-void generate_pattern(sse_pars_t *pars) {
+void generate_pattern(sse_pars_t *pars, const int idx) {
+    int i, j;
+
     /* Space discretization: Create a 60*35 domain. */
     int    x_len = (int) SPACE_LENGTH_X, y_len = (int) SPACE_LENGTH_Y;
     double x[x_len], y[y_len];
@@ -42,27 +38,49 @@ void generate_pattern(sse_pars_t *pars) {
     /*
      * Initial condition
      */
-    double n0[y_len][x_len], n[y_len][x_len], n0_sort[y_len][x_len];
-    double f0[y_len][x_len], f[y_len][x_len];
-    double m0[y_len][x_len], m[y_len][x_len];
+    // double n0[y_len][x_len], n[y_len][x_len], n0_sort[y_len][x_len];
+    // double f0[y_len][x_len], f[y_len][x_len];
+    // double m0[y_len][x_len], m[y_len][x_len];
 
-    for (int j = 0; j < x_len; ++j) {
+    double n0[y_len][x_len], n0_sort[y_len][x_len];
+    double f0[y_len][x_len];
+    double m0[y_len][x_len];
+
+    for (j = 0; j < x_len; ++j) {
         n0[0][j] = x[j] <= 0.1 ? cos(M_PI * x[j] * 5) : 0;
     }
 
-    MATRIX_ITR(y_len, x_len, n0[i][j] = n0[0][j];)
+    MATRIX_ITR(i, y_len, j, x_len, {
+        n0[i][j] = n0[0][j];
+        m0[i][j] = 0.5 * n0[i][j];
+        f0[i][j] = 1 - m0[i][j];
+    })
 
-    MATRIX_MAP(n0, m0, y_len, x_len, n0_to_m0)
-    MATRIX_MAP(n0, f0, y_len, x_len, n0_to_f0)
+    // MATRIX_MAP(n0, m0, y_len, x_len, n0_to_m0)
+    // MATRIX_MAP(n0, f0, y_len, x_len, n0_to_f0)
 
-    MATRIX_COPY(n0, n, y_len, x_len)
-    MATRIX_COPY(f0, f, y_len, x_len)
-    MATRIX_COPY(m0, m, y_len, x_len)
+    // MATRIX_COPY(n0, n, y_len, x_len)
+    // MATRIX_COPY(f0, f, y_len, x_len)
+    // MATRIX_COPY(m0, m, y_len, x_len)
 
 //    MATRIX_PRINT(n, y_len, x_len, "[%.7f]")
 
     /* Sort the initial cells */
-    MATRIX_COPY(n0, n0_sort, y_len, x_len)
+    MATRIX_COPY(n0, n0_sort, i, y_len, j, x_len)
+
+    /* Initial glioma cells will be allocated to the locations with the highest densities in the domain (left boundary). */
+    double n_cells = round(SPACE_LENGTH_Y * pars->init_cells_cols[idx]);
+//    while ( <x.coor.len> <n_cells) {
+//        pair_t res = matrix_max(y_len, x_len, n0_sort);
+//        pair_t sample;
+//        if (res.y._int > 1) {
+//            int sample_idx = unif_index(res.y._int);
+//            sample = matrix_find(y_len, x_len, n0_sort, res.x._double, sample_idx + 1);
+//        } else {
+//            sample = matrix_find(y_len, x_len, n0_sort, res.x._double, 1);
+//        }
+//        n0_sort[sample.x._int][sample.y._int] = -DBL_MAX;
+//    }
 }
 
 /**
@@ -70,6 +88,6 @@ void generate_pattern(sse_pars_t *pars) {
  * invasion pattern and the reference invasion pattern.
  * @param pars Parameters
  */
-void calculate_scc(sse_pars_t *pars) {
-    generate_pattern(pars);
+void calculate_scc(sse_pars_t *pars, const int idx) {
+    generate_pattern(pars, idx);
 }

@@ -1,19 +1,15 @@
 #include <stdio.h>
 
 #include "util/math/math_ext.h"
+#include "util/matrix/matrix.h"
 #include "algorithm/scc.h"
 
 int main() {
-    /* testing code */
-    set_seed(874513);
+    set_seed(SEED);
 
-    printf("runif: %f\n", runif(1, 2));
-    printf("runif: %f\n", runif(1, 2));
-    printf("runif: %f\n", runif(1, 2));
-    printf("runif: %f\n", runif(1, 2));
-    printf("runif: %f\n", runif(1, 2));
-
-    calculate_scc(NULL);
+    sse_pars_t pars;
+    init_pars(&pars);
+    calculate_scc(&pars, 0);
 
     return 0;
 }

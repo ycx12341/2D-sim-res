@@ -19,16 +19,10 @@ void set_seed(unsigned int seed);
  */
 double runif(double a, double b);
 
+void runif_seq(double *seq, int len, double min, double max);
+
 double unif_rand();
 
-/**
- * Generate regular sequences.
- * @param buf   A buffer to store the generated sequence.
- * @param from  Lower bound of the sequence.
- * @param to    Upper bound of the sequence.
- * @param num   Length of sequence.
- * @return The number of sequence.
- */
-int seq(double *buf, double from, double to, int num);
+int unif_index(int dn);
 
 #endif //C_SRC_MATH_EXT_H

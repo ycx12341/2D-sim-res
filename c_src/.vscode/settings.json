@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "math_ext.h": "c",
+        "matrix.h": "c"
+    }
+}

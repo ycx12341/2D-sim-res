@@ -17,6 +17,8 @@ typedef struct {
     double prob_prof[N_DIMS];           // proportion of cells that will undergo mitosis at the end of every day.
 } sse_pars_t;
 
-void calculate_scc(sse_pars_t *pars);
+void calculate_scc(sse_pars_t *pars, int idx);
+
+void init_pars(sse_pars_t* pars_p);
 
 #endif //C_SRC_SCC_H

@@ -19,3 +19,9 @@ double runif(const double min, const double max) {
     } while (u <= 0 || u >= 1);
     return min + (max - min) * u;
 }
+
+void runif_seq(double* seq, const int len, const double min, const double max) {
+    for (int i = 0; i < len; i++) {
+        seq[i] = runif(min, max);
+    }
+}
