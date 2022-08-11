@@ -7,7 +7,7 @@
 
 #include "math_ext.h"
 
-double runif(double min, double max) {
+double runif(const double min, const double max) {
     if (!isfinite(min) || !isfinite(max) || max < min) {
         return NAN;
     }

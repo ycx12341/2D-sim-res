@@ -1,6 +1,6 @@
 /**
  * RNG implementation.
- * Derived from https://github.com/wch/r-source.git
+ * Derived from https://svn.r-project.org/R/
  */
 
 #include "math_ext.h"
@@ -68,7 +68,7 @@ static void sgen_rand(unsigned int seed) {
 /**
  * @return reals: [0,1)-interval
  */
-static double gen_rand(void) {
+static double gen_rand() {
     /* mag01[x] = x * MATRIX_A  for x=0,1 */
     static unsigned int mag01[2] = {0x0, MATRIX_A};
     unsigned int        y;
@@ -112,6 +112,6 @@ double unif_rand() {
     return x;
 }
 
-void set_seed(unsigned int seed) {
+void set_seed(const unsigned int seed) {
     seed_init(seed);
 }
