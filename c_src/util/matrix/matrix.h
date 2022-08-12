@@ -3,32 +3,32 @@
 
 #include "../collection/collection.h"
 
-#define MATRIX_ITR(i, r, j, c, body)            \
-    for (i = 0; i < r; ++i) {                   \
-        for (j = 0; j < c; ++j) {               \
+#define MATRIX_ITR(r, c, body)                  \
+    for (int _i_ = 0; _i_ < r; ++_i_) {         \
+        for (int _j_ = 0; _j_ < c; ++_j_) {     \
             body                                \
         }                                       \
     }
 
-#define MATRIX_MAP(src, dst, i, r, j, c, f)     \
-    for (i = 0; i < r; ++i) {                   \
-        for (j = 0; j < c; ++j) {               \
-            dst[i][j] = f(src[i][j]);           \
+#define MATRIX_MAP(src, dst, r, c, f)           \
+    for (int _i_ = 0; _i_ < r; ++_i_) {         \
+        for (int _j_ = 0; _j_ < c; ++_j_) {     \
+            dst[_i_][_j_] = f(src[_i_][_j_]);   \
         }                                       \
     }
 
-#define MATRIX_PRINT(xs, i, r, j, c, pattern)   \
-    for (i = 0; i < r; ++i) {                   \
-        for (j = 0; j < c; ++j) {               \
-            printf(pattern, xs[i][j]);          \
+#define MATRIX_PRINT(xs, r, c, pattern)         \
+    for (int _i_ = 0; _i_ < r; ++_i_) {         \
+        for (int _j_ = 0; _j_ < c; ++_j_) {     \
+            printf(pattern, xs[_i_][_j_]);      \
         }                                       \
         printf("\n");                           \
     }
 
-#define MATRIX_COPY(src, dst, i, r, j, c)       \
-    for (i = 0; i < r; ++i) {                   \
-        for (j = 0; j < c; ++j) {               \
-            dst[i][j] = src[i][j];              \
+#define MATRIX_COPY(src, dst, r, c)             \
+    for (int _i_ = 0; _i_ < r; ++_i_) {         \
+        for (int _j_ = 0; _j_ < c; ++_j_) {     \
+            dst[_i_][_j_] = src[_i_][_j_];      \
         }                                       \
     }
 

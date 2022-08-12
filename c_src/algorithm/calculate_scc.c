@@ -28,8 +28,6 @@
  * @param pars Parameters
  */
 void generate_pattern(sse_pars_t *pars, const int idx) {
-    int i, j;
-
     /* Space discretization: Create a 60*35 domain. */
     int    x_len = (int) SPACE_LENGTH_X, y_len = (int) SPACE_LENGTH_Y;
     double x[x_len], y[y_len];
@@ -47,14 +45,14 @@ void generate_pattern(sse_pars_t *pars, const int idx) {
     double f0[y_len][x_len];
     double m0[y_len][x_len];
 
-    for (j = 0; j < x_len; ++j) {
+    for (int j = 0; j < x_len; ++j) {
         n0[0][j] = x[j] <= 0.1 ? cos(M_PI * x[j] * 5) : 0;
     }
 
-    MATRIX_ITR(i, y_len, j, x_len, {
-        n0[i][j] = n0[0][j];
-        m0[i][j] = 0.5 * n0[i][j];
-        f0[i][j] = 1 - m0[i][j];
+    MATRIX_ITR(y_len, x_len, {
+        n0[_i_][_j_] = n0[0][_j_];
+        m0[_i_][_j_] = 0.5 * n0[_i_][_j_];
+        f0[_i_][_j_] = 1 - m0[_i_][_j_];
     })
 
     // MATRIX_MAP(n0, m0, y_len, x_len, n0_to_m0)
@@ -65,7 +63,7 @@ void generate_pattern(sse_pars_t *pars, const int idx) {
     // MATRIX_COPY(m0, m, y_len, x_len)
 
     /* Sort the initial cells */
-    MATRIX_COPY(n0, n0_sort, i, y_len, j, x_len)
+    MATRIX_COPY(n0, n0_sort, y_len, x_len)
 //    MATRIX_PRINT(n0_sort, i, y_len, j, x_len, "[%.7f]")
 
     /* Initial glioma cells will be allocated to the locations with the highest densities in the domain (left boundary). */
@@ -87,36 +85,36 @@ void generate_pattern(sse_pars_t *pars, const int idx) {
     }
 
     double ind_position[y_len][x_len];
-    for (i = 0; i < coord->size; ++i) {
+    for (int i = 0; i < coord->size; ++i) {
         node_t pos  = arraylist_get(coord, i);
         ind_position[pos._intPair[0]][pos._intPair[1]] = 1;
     }
     // TODO: need test
 
     double ind_position_init[y_len][x_len];
-    MATRIX_COPY(ind_position, ind_position_init, i, y_len, j, x_len)
+    MATRIX_COPY(ind_position, ind_position_init, y_len, x_len)
 
 
     /* Set the cut points for the domain (to be used later for density matching & discrepancy calculation.) */
     int mat_size = SPACE_LENGTH_Y / 12;
     double x_cut[mat_size], y_cut[mat_size];
-    assert(seq(&y_cut, 1, SPACE_LENGTH_Y, mat_size) == mat_size);
-    assert(seq(&x_cut, 1, SPACE_LENGTH_X, mat_size) == mat_size);
+    assert(seq(y_cut, 1, SPACE_LENGTH_Y, mat_size) == mat_size);
+    assert(seq(x_cut, 1, SPACE_LENGTH_X, mat_size) == mat_size);
     //  todo Test seq
 
     /* Numerical scheme which solves the PDE system */
-    for (int k = 0; k < TIME_STEPS; k++) {
+    for (int i = 0; i < TIME_STEPS; i++) {
 
         /* At the end of everyday, some of the current cells in the domain will undergo extinction or mitosis. */
-        if (k % DAY_TIME_STEPS == 0) {
+        if (i % DAY_TIME_STEPS == 0) {
             double cell_den[coord->size];
-            for (int l = 0; l < coord->size; l++) {
+            for (int j = 0; j < coord->size; j++) {
                 /* code */
             }
         }
 
         /* Solving the PDE model numerically */
-        if (k > round(DAY_TIME_STEPS * (95.0 / 96.0))) {
+        if (i > round(DAY_TIME_STEPS * (95.0 / 96.0))) {
 
         } else {
 
