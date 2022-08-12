@@ -1,11 +1,11 @@
 #include "scc.h"
 #include "../util/matrix/matrix.h"
-#include "../util/collection/collection.h"
 #include "../util/math/math_ext.h"
 
 #include <math.h>
 #include <float.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 /* Space discretization */
 #define H               (1.0 / 59.0)
@@ -63,24 +63,35 @@ void generate_pattern(sse_pars_t *pars, const int idx) {
     // MATRIX_COPY(f0, f, y_len, x_len)
     // MATRIX_COPY(m0, m, y_len, x_len)
 
-//    MATRIX_PRINT(n, y_len, x_len, "[%.7f]")
-
     /* Sort the initial cells */
     MATRIX_COPY(n0, n0_sort, i, y_len, j, x_len)
+//    MATRIX_PRINT(n0_sort, i, y_len, j, x_len, "[%.7f]")
 
     /* Initial glioma cells will be allocated to the locations with the highest densities in the domain (left boundary). */
-    double n_cells = round(SPACE_LENGTH_Y * pars->init_cells_cols[idx]);
-//    while ( <x.coor.len> <n_cells) {
-//        pair_t res = matrix_max(y_len, x_len, n0_sort);
-//        pair_t sample;
-//        if (res.y._int > 1) {
-//            int sample_idx = unif_index(res.y._int);
-//            sample = matrix_find(y_len, x_len, n0_sort, res.x._double, sample_idx + 1);
-//        } else {
-//            sample = matrix_find(y_len, x_len, n0_sort, res.x._double, 1);
-//        }
-//        n0_sort[sample.x._int][sample.y._int] = -DBL_MAX;
-//    }
+    double      n_cells = round(SPACE_LENGTH_Y * pars->init_cells_cols[idx]);
+    arraylist_t *coord  = new_arraylist(true);
+    while (coord->size < n_cells) {
+        pair_t res        = matrix_max(y_len, x_len, n0_sort);
+        pair_t *sample    = malloc(sizeof(pair_t));
+        int    sample_idx = 0;
+
+        if (res.y._int > 1) {
+            sample_idx = unif_index(res.y._int);
+        }
+        *sample = matrix_find(y_len, x_len, n0_sort, res.x._double, sample_idx + 1);
+
+        node_t node;
+        node._ptr = sample;
+        arraylist_append(coord, node);
+        n0_sort[sample->x._int][sample->y._int] = -DBL_MAX;
+    }
+
+    for (int k = 0; k < coord->size; ++k) {
+        node_t node  = arraylist_get(coord, k);
+        pair_t *pair = node._ptr;
+        printf("[%d,%d]", pair->x._int, pair->y._int);
+    }
+    arraylist_free(coord);
 }
 
 /**

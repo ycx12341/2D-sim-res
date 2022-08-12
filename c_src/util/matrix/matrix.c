@@ -1,7 +1,6 @@
 #include "matrix.h"
 #include <float.h>
 #include <math.h>
-#include <stdio.h>
 
 pair_t matrix_max(const int r, const int c, const double matrix[r][c]) {
     double   max   = -DBL_MAX, v;
@@ -31,8 +30,8 @@ pair_t matrix_find(const int r, const int c, const double matrix[r][c], const do
     pair_t res;
     res.x._int = NAN;
     res.y._int = NAN;
-    for (int i = 0; i < 3; ++i) {
-        for (int j = 0; j < 3; ++j) {
+    for (int j = 0; j < c; ++j) {
+        for (int i = 0; i < r; ++i) {
             if (matrix[i][j] == value) { n--; }
             if (n == 0) {
                 res.x._int = i;
