@@ -20,6 +20,7 @@ typedef struct node node_t;
 struct node {
     double _double;
     int    _int;
+    int    _intPair[2];
     void   *_ptr;
 };
 

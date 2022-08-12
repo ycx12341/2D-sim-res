@@ -70,29 +70,26 @@ void generate_pattern(sse_pars_t *pars, const int idx) {
 
     /* Initial glioma cells will be allocated to the locations with the highest densities in the domain (left boundary). */
     double      n_cells = round(SPACE_LENGTH_Y * pars->init_cells_cols[idx]);
-    arraylist_t *coord  = new_arraylist(true);
+    arraylist_t *coord  = new_arraylist(false);
     while (coord->size < n_cells) {
         int    sample_idx = 0;
         pair_t res        = matrix_max(y_len, x_len, n0_sort);
-        pair_t *sample    = malloc(sizeof(pair_t));
-        assert(sample);
-
         if (res.y._int > 1) {
             sample_idx = unif_index(res.y._int);
         }
-        *sample = matrix_find(y_len, x_len, n0_sort, res.x._double, sample_idx + 1);
+        pair_t sample = matrix_find(y_len, x_len, n0_sort, res.x._double, sample_idx + 1);
 
         node_t node;
-        node._ptr = sample;
+        node._intPair[0] = sample.x._int;
+        node._intPair[1] = sample.y._int;
         arraylist_append(coord, node);
-        n0_sort[sample->x._int][sample->y._int] = -DBL_MAX;
+        n0_sort[sample.x._int][sample.y._int] = -DBL_MAX;
     }
 
     // test print
     for (int k = 0; k < coord->size; ++k) {
         node_t node  = arraylist_get(coord, k);
-        pair_t *pair = node._ptr;
-        printf("[%d,%d]", pair->x._int, pair->y._int);
+        printf("[%d,%d]", node._intPair[0], node._intPair[1]);
     }
 
     arraylist_free(coord);
