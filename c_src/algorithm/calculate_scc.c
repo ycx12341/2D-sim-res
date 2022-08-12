@@ -6,6 +6,7 @@
 #include <float.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <assert.h>
 
 /* Space discretization */
 #define H               (1.0 / 59.0)
@@ -32,8 +33,8 @@ void generate_pattern(sse_pars_t *pars, const int idx) {
     /* Space discretization: Create a 60*35 domain. */
     int    x_len = (int) SPACE_LENGTH_X, y_len = (int) SPACE_LENGTH_Y;
     double x[x_len], y[y_len];
-    if (seq(x, 0.0, H * (SPACE_LENGTH_X - 1), x_len) <= 0) { return; }
-    if (seq(y, 0.0, 1, y_len) <= 0) { return; }
+    assert(seq(x, 0.0, H * (SPACE_LENGTH_X - 1), x_len) > 0);
+    assert(seq(y, 0.0, 1, y_len) > 0);
 
     /*
      * Initial condition
@@ -71,9 +72,10 @@ void generate_pattern(sse_pars_t *pars, const int idx) {
     double      n_cells = round(SPACE_LENGTH_Y * pars->init_cells_cols[idx]);
     arraylist_t *coord  = new_arraylist(true);
     while (coord->size < n_cells) {
+        int    sample_idx = 0;
         pair_t res        = matrix_max(y_len, x_len, n0_sort);
         pair_t *sample    = malloc(sizeof(pair_t));
-        int    sample_idx = 0;
+        assert(sample);
 
         if (res.y._int > 1) {
             sample_idx = unif_index(res.y._int);
@@ -86,11 +88,13 @@ void generate_pattern(sse_pars_t *pars, const int idx) {
         n0_sort[sample->x._int][sample->y._int] = -DBL_MAX;
     }
 
+    // test print
     for (int k = 0; k < coord->size; ++k) {
         node_t node  = arraylist_get(coord, k);
         pair_t *pair = node._ptr;
         printf("[%d,%d]", pair->x._int, pair->y._int);
     }
+
     arraylist_free(coord);
 }
 
