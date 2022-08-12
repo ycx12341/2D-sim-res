@@ -32,8 +32,8 @@ struct pair {
 #define ARRAYLIST_INITIAL_CAPACITY 4
 
 typedef struct {
-    unsigned int size;          // Count of items currently in list
-    unsigned int capacity;      // Allocated memory size, in items
+    int size;                   // Count of items currently in list
+    int capacity;               // Allocated memory size, in items
     node_t       *body;         // Pointer to allocated memory for items (of size capacity * sizeof(void*))
     int          need_free;     // Set to 1 if the element is dynamically allocated
 
@@ -45,6 +45,6 @@ void arraylist_free(arraylist_t *l);
 
 void arraylist_append(arraylist_t *l, node_t item);
 
-node_t arraylist_get(arraylist_t *l, unsigned int index);
+node_t arraylist_get(arraylist_t *l, int index);
 
 #endif //C_SRC_COLLECTION_H

@@ -23,10 +23,10 @@ void arraylist_free(arraylist_t *l) {
     free(l);
 }
 
-void arraylist_allocate(arraylist_t *l, unsigned int size) {
+void arraylist_allocate(arraylist_t *l, int size) {
     assert(size > 0);
     if (size > l->capacity) {
-        unsigned int new_capacity = l->capacity;
+        int new_capacity = l->capacity;
         while (new_capacity < size) {
             new_capacity *= 2;
         }
@@ -41,7 +41,7 @@ void arraylist_append(arraylist_t *l, node_t item) {
     l->body[l->size++] = item;
 }
 
-node_t arraylist_get(arraylist_t *l, unsigned int index) {
+node_t arraylist_get(arraylist_t *l, int index) {
     assert(index < l->size);
     return l->body[index];
 }

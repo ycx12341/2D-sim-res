@@ -28,8 +28,8 @@ pair_t matrix_max(const int r, const int c, const double matrix[r][c]) {
 
 pair_t matrix_find(const int r, const int c, const double matrix[r][c], const double value, int n) {
     pair_t res;
-    res.x._int = NAN;
-    res.y._int = NAN;
+    res.x._int = (int) NAN;
+    res.y._int = (int) NAN;
     for (int j = 0; j < c; ++j) {
         for (int i = 0; i < r; ++i) {
             if (matrix[i][j] == value) { n--; }
