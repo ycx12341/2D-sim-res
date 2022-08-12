@@ -6,13 +6,23 @@
 
 /**
  * Generate regular sequences.
- * @param buf   A buffer to store the generated sequence.
- * @param from  Lower bound of the sequence.
- * @param to    Upper bound of the sequence.
- * @param num   Length of sequence.
+ * @param buf        A buffer to store the generated sequence.
+ * @param from       Lower bound of the sequence.
+ * @param to         Upper bound of the sequence.
+ * @param length_out Desired length of the sequence.
  * @return The number of sequence.
  */
-int seq(double *buf, double from, double to, int num);
+int seq_length_out(double *buf, double from, double to, int length_out);
+
+/**
+ * Generate regular sequences.
+ * @param buf        A buffer to store the generated sequence.
+ * @param from       Lower bound of the sequence.
+ * @param to         Upper bound of the sequence.
+ * @param by         Increment of the sequence.
+ * @return The number of sequence.
+ */
+int seq_by(double *buf, double from, double to, double by);
 
 typedef struct pair pair_t;
 typedef struct node node_t;
@@ -32,10 +42,10 @@ struct pair {
 #define ARRAYLIST_INITIAL_CAPACITY 4
 
 typedef struct {
-    int size;                   // Count of items currently in list
-    int capacity;               // Allocated memory size, in items
-    node_t       *body;         // Pointer to allocated memory for items (of size capacity * sizeof(void*))
-    int          need_free;     // Set to 1 if the element is dynamically allocated
+    int    size;                // Count of items currently in list
+    int    capacity;            // Allocated memory size, in items
+    node_t *body;               // Pointer to allocated memory for items (of size capacity * sizeof(void*))
+    int    need_free;           // Set to 1 if the element is dynamically allocated
 
 } arraylist_t;
 

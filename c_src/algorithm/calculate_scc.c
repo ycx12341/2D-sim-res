@@ -31,8 +31,8 @@ void generate_pattern(sse_pars_t *pars, const int idx) {
     /* Space discretization: Create a 60*35 domain. */
     int    x_len = (int) SPACE_LENGTH_X, y_len = (int) SPACE_LENGTH_Y;
     double x[x_len], y[y_len];
-    assert(seq(x, 0.0, H * (SPACE_LENGTH_X - 1), x_len) == x_len);
-    assert(seq(y, 0.0, 1, y_len) == y_len);
+    assert(seq_length_out(x, 0.0, H * (SPACE_LENGTH_X - 1), x_len) == x_len);
+    assert(seq_length_out(y, 0.0, 1, y_len) == y_len);
 
     /*
      * Initial condition
@@ -41,7 +41,7 @@ void generate_pattern(sse_pars_t *pars, const int idx) {
     // double f0[y_len][x_len], f[y_len][x_len];
     // double m0[y_len][x_len], m[y_len][x_len];
 
-    double n0[y_len][x_len], n0_sort[y_len][x_len];
+    double n0[y_len][x_len], n0_sort[y_len][x_len], n[y_len][x_len];
     double f0[y_len][x_len];
     double m0[y_len][x_len];
 
@@ -58,7 +58,7 @@ void generate_pattern(sse_pars_t *pars, const int idx) {
     // MATRIX_MAP(n0, m0, y_len, x_len, n0_to_m0)
     // MATRIX_MAP(n0, f0, y_len, x_len, n0_to_f0)
 
-    // MATRIX_COPY(n0, n, y_len, x_len)
+    MATRIX_COPY(n0, n, y_len, x_len)
     // MATRIX_COPY(f0, f, y_len, x_len)
     // MATRIX_COPY(m0, m, y_len, x_len)
 
@@ -84,33 +84,41 @@ void generate_pattern(sse_pars_t *pars, const int idx) {
         n0_sort[sample.x._int][sample.y._int] = -DBL_MAX;
     }
 
-    double ind_position[y_len][x_len];
+    double   ind_position[y_len][x_len];
     for (int i = 0; i < coord->size; ++i) {
-        node_t pos  = arraylist_get(coord, i);
+        node_t pos = arraylist_get(coord, i);
         ind_position[pos._intPair[0]][pos._intPair[1]] = 1;
     }
-    // TODO: need test
 
     double ind_position_init[y_len][x_len];
     MATRIX_COPY(ind_position, ind_position_init, y_len, x_len)
 
-
     /* Set the cut points for the domain (to be used later for density matching & discrepancy calculation.) */
-    int mat_size = SPACE_LENGTH_Y / 12;
-    double x_cut[mat_size], y_cut[mat_size];
-    assert(seq(y_cut, 1, SPACE_LENGTH_Y, mat_size) == mat_size);
-    assert(seq(x_cut, 1, SPACE_LENGTH_X, mat_size) == mat_size);
-    //  todo Test seq
+    int    mat_size  = SPACE_LENGTH_Y / 12;
+    int    y_cut_len = ceil((SPACE_LENGTH_Y - 1.0) / mat_size);
+    int    x_cut_len = ceil((SPACE_LENGTH_X - 1.0) / mat_size);
+    double x_cut[x_cut_len], y_cut[y_cut_len];
+    assert(seq_by(y_cut, 1, SPACE_LENGTH_Y, mat_size) == y_cut_len);
+    assert(seq_by(x_cut, 1, SPACE_LENGTH_X, mat_size) == x_cut_len);
 
     /* Numerical scheme which solves the PDE system */
     for (int i = 0; i < TIME_STEPS; i++) {
 
-        /* At the end of everyday, some of the current cells in the domain will undergo extinction or mitosis. */
+        /* At the end of every day, some current cells in the domain will undergo extinction or mitosis. */
         if (i % DAY_TIME_STEPS == 0) {
-            double cell_den[coord->size];
+            /* Extract the density values at the positions of current cells */
+            double   cell_den[coord->size];
             for (int j = 0; j < coord->size; j++) {
-                /* code */
+                node_t pos = arraylist_get(coord, j);
+                cell_den[j] = n[pos._intPair[0]][pos._intPair[1]];
             }
+
+            /* Cell extinction: some of the current cells at the locations with the
+             * lowest cell densities will undergo extinction. */
+            int    dead_cells_num = round((double) coord->size * pars->prob_death[idx]);
+            double dead_cells[dead_cells_num];
+
+
         }
 
         /* Solving the PDE model numerically */
@@ -122,14 +130,11 @@ void generate_pattern(sse_pars_t *pars, const int idx) {
 
 
     }
-    
-
-
     // test print
-    for (int k = 0; k < coord->size; ++k) {
-        node_t node  = arraylist_get(coord, k);
-        printf("[%d,%d]", node._intPair[0], node._intPair[1]);
-    }
+//    for (int k = 0; k < coord->size; ++k) {
+//        node_t node  = arraylist_get(coord, k);
+//        printf("[%d,%d]", node._intPair[0], node._intPair[1]);
+//    }
 
     arraylist_free(coord);
 }
