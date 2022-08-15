@@ -1,6 +1,7 @@
 #include "collection.h"
 
 #include <assert.h>
+#include <string.h>
 
 arraylist_t *new_arraylist(bool need_free) {
     arraylist_t *new = malloc(sizeof(arraylist_t));
@@ -44,4 +45,13 @@ void arraylist_append(arraylist_t *l, node_t item) {
 node_t arraylist_get(arraylist_t *l, int index) {
     assert(index < l->size);
     return l->body[index];
+}
+
+#define arraylist_memshift(s, offset, length) memmove((s) + (offset), s, (length) * sizeof(node_t));
+
+node_t arraylist_remove(arraylist_t *l, const int index) {
+    node_t value = l->body[index];
+    arraylist_memshift(l->body + index + 1, -1, l->size - index)
+    l->size--;
+    return value;
 }

@@ -2,6 +2,7 @@
 
 #include "util/math/math_ext.h"
 #include "algorithm/scc.h"
+#include "util/collection/collection.h"
 
 int main() {
     set_seed(SEED);

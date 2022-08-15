@@ -57,6 +57,8 @@ void arraylist_append(arraylist_t *l, node_t item);
 
 node_t arraylist_get(arraylist_t *l, int index);
 
+node_t arraylist_remove(arraylist_t *l, int index);
+
 /**
  * Find the minimum value in the array and the count of them.
  * @return Pair(min_value, count_of_min_values)
