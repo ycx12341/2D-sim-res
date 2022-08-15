@@ -29,8 +29,8 @@
  */
 double generate_pattern(sse_pars_t *pars, const int idx) {
     /* Space discretization: Create a 60*35 domain. */
-    int    x_len = (int) SPACE_LENGTH_X, y_len = (int) SPACE_LENGTH_Y;
-    double x[x_len], y[y_len];
+    const int x_len = (int) SPACE_LENGTH_X, y_len = (int) SPACE_LENGTH_Y;
+    double    x[x_len], y[y_len];
     assert(seq_length_out(x, 0.0, H * (SPACE_LENGTH_X - 1), x_len) == x_len);
     assert(seq_length_out(y, 0.0, 1, y_len) == y_len);
 
@@ -160,6 +160,15 @@ double generate_pattern(sse_pars_t *pars, const int idx) {
                 prof_cells[uu]   = sample;
                 cell_den[sample] = -DBL_MAX;
             }
+
+            /* Record the current positions of the remaining cells. */
+            MATRIX_INIT(ind_position, y_len, x_len, 0)
+            for (int j  = 0; j < coord->size; ++j) {
+                node_t pos = arraylist_get(coord, j);
+                ind_position[pos._intPair[0]][pos._intPair[1]] = 1;
+            }
+
+            /* Proliferation mechanism */
         }
 
         /* Solving the PDE model numerically */
