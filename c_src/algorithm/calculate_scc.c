@@ -124,7 +124,7 @@ double generate_pattern(sse_pars_t *pars, const int idx) {
             for (int uu = 0; uu < dead_cells_num; ++uu) {
                 /* Find the cells at locations with the lowest densities. */
                 int    sample_idx = 0;
-                pair_t ind_dead   = array_min(coord->size, cell_den);
+                pair_t ind_dead   = array_min(cell_den_len, cell_den);
                 if (ind_dead.y._int > 1) {
                     sample_idx = unif_index(ind_dead.y._int);
                 }
@@ -135,12 +135,30 @@ double generate_pattern(sse_pars_t *pars, const int idx) {
             }
 
             /* Update the cell coordinates and the density vector. */
-            coord = arraylist_remove_many(coord, dead_cells_num, dead_cells);
+            coord        = arraylist_remove_many(coord, dead_cells_num, dead_cells);
             cell_den_len = double_array_delete_many(cell_den_len, cell_den, dead_cells_num, dead_cells);
 
             /* If all cells are dead, terminate the algorithm. */
             if (cell_den_len == 0) {
                 return NAN;
+            }
+
+            /* Cell mitosis: some current cells at the locations
+             * with the highest densities will undergo mitosis. */
+            int    prof_cells_num = (int) round(coord->size * pars->prob_prof[idx]);
+            double prof_cells[prof_cells_num];
+
+            for (int uu = 0; uu < prof_cells_num; ++uu) {
+                /* Find the cells at the locations with the highest densities. */
+                int    sample_idx = 0;
+                pair_t ind_prof   = array_max(cell_den_len, cell_den);
+                if (ind_prof.y._int > 1) {
+                    sample_idx = unif_index(ind_prof.y._int);
+                }
+                int sample = array_find(cell_den_len, cell_den, ind_prof.x._double, sample_idx + 1);
+                assert(sample >= 0);
+                prof_cells[uu]   = sample;
+                cell_den[sample] = -DBL_MAX;
             }
         }
 

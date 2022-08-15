@@ -68,6 +68,12 @@ arraylist_t *arraylist_remove_many(arraylist_t *l, int num, const int indices[nu
 pair_t array_min(int len, const double arr[len]);
 
 /**
+ * Find the maximum value in the array and the count of them.
+ * @return Pair(max_value, count_of_max_values)
+ */
+pair_t array_max(int len, const double arr[len]);
+
+/**
  * Find the n_th element in the array with `element == value`
  * @return the index of found element
  */

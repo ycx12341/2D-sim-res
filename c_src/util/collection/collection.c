@@ -61,6 +61,28 @@ pair_t array_min(const int len, const double arr[len]) {
     return res;
 }
 
+pair_t array_max(const int len, const double arr[len]) {
+    double   max   = -DBL_MAX;
+    int      count = 0;
+    for (int i     = 0; i < len; ++i) {
+        double v = arr[i];
+        if (v < max) { continue; }
+        if (v == max) { count++; }
+        else {
+            count = 1;
+            max   = v;
+        }
+    }
+
+    node_t _max, _count;
+    _max._double = max;
+    _count._int  = count;
+    pair_t res;
+    res.x = _max;
+    res.y = _count;
+    return res;
+}
+
 int array_find(const int len, const double arr[len], const double val, int n) {
     for (int i = 0; i < len; ++i) {
         if (arr[i] == val) { n--; }
