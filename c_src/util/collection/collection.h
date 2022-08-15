@@ -25,9 +25,9 @@ int seq_length_out(double *buf, double from, double to, int length_out);
 int seq_by(double *buf, double from, double to, double by);
 
 typedef struct pair pair_t;
-typedef struct node node_t;
+typedef union node  node_t;
 
-struct node {
+union node {
     double _double;
     int    _int;
     int    _intPair[2];
@@ -59,6 +59,8 @@ node_t arraylist_get(arraylist_t *l, int index);
 
 node_t arraylist_remove(arraylist_t *l, int index);
 
+arraylist_t *arraylist_remove_many(arraylist_t *l, int num, const int indices[num]);
+
 /**
  * Find the minimum value in the array and the count of them.
  * @return Pair(min_value, count_of_min_values)
@@ -70,5 +72,9 @@ pair_t array_min(int len, const double arr[len]);
  * @return the index of found element
  */
 int array_find(int len, const double arr[len], double val, int n);
+
+bool int_array_contain(int len, const int arr[len], int value);
+
+int double_array_delete_many(int len, double arr[len], int idx_len, const int indices[idx_len]);
 
 #endif //C_SRC_COLLECTION_H

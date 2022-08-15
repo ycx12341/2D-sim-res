@@ -27,7 +27,7 @@
  * O(n^2)
  * @param pars Parameters
  */
-void generate_pattern(sse_pars_t *pars, const int idx) {
+double generate_pattern(sse_pars_t *pars, const int idx) {
     /* Space discretization: Create a 60*35 domain. */
     int    x_len = (int) SPACE_LENGTH_X, y_len = (int) SPACE_LENGTH_Y;
     double x[x_len], y[y_len];
@@ -108,17 +108,18 @@ void generate_pattern(sse_pars_t *pars, const int idx) {
         /* At the end of every day, some current cells in the domain will undergo extinction or mitosis. */
         if ((i + 1) % DAY_TIME_STEPS == 0) {
             /* Extract the density values at the positions of current cells */
-            double   cell_den[coord->size];
+            int    cell_den_len = coord->size;
+            double cell_den[cell_den_len];
+
             for (int j = 0; j < coord->size; j++) {
                 node_t pos = arraylist_get(coord, j);
                 cell_den[j] = n[pos._intPair[0]][pos._intPair[1]];
             }
-            // TODO test
 
             /* Cell extinction: some the current cells at the locations with the
              * lowest cell densities will undergo extinction. */
-            int    dead_cells_num = (int) round((double) coord->size * pars->prob_death[idx]);
-            double dead_cells[dead_cells_num];
+            int dead_cells_num = (int) round((double) coord->size * pars->prob_death[idx]);
+            int dead_cells[dead_cells_num];
 
             for (int uu = 0; uu < dead_cells_num; ++uu) {
                 /* Find the cells at locations with the lowest densities. */
@@ -127,15 +128,20 @@ void generate_pattern(sse_pars_t *pars, const int idx) {
                 if (ind_dead.y._int > 1) {
                     sample_idx = unif_index(ind_dead.y._int);
                 }
-                int sample = array_find(coord->size, cell_den, ind_dead.x._double, sample_idx);
+                int sample = array_find(cell_den_len, cell_den, ind_dead.x._double, sample_idx + 1);
                 assert(sample >= 0);
                 dead_cells[uu]   = sample;
-                cell_den[sample] = -DBL_MAX;
+                cell_den[sample] = DBL_MAX;
             }
-            // todo Test
 
             /* Update the cell coordinates and the density vector. */
+            coord = arraylist_remove_many(coord, dead_cells_num, dead_cells);
+            cell_den_len = double_array_delete_many(cell_den_len, cell_den, dead_cells_num, dead_cells);
 
+            /* If all cells are dead, terminate the algorithm. */
+            if (cell_den_len == 0) {
+                return NAN;
+            }
         }
 
         /* Solving the PDE model numerically */

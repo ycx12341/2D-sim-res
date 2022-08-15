@@ -70,3 +70,28 @@ int array_find(const int len, const double arr[len], const double val, int n) {
     }
     return (int) NAN;
 }
+
+bool int_array_contain(const int len, const int arr[len], int value) {
+    for (int i = 0; i < len; ++i) {
+        if (value == arr[i]) { return true; }
+    }
+    return false;
+}
+
+int double_array_delete_many(const int len, double arr[len], int idx_len, const int indices[idx_len]) {
+    for (int i = 0; i < idx_len; ++i) {
+        arr[indices[i]] = NAN;
+    }
+
+    int next_pos = 0, deleted = 0;
+
+    for (int i = 0; i < len; i++) {
+        if (!isnan(arr[i])) {
+            arr[next_pos] = arr[i];
+            if (i != next_pos) { arr[i] = NAN; }
+            ++next_pos;
+        } else { ++deleted; }
+    }
+
+    return len - deleted;
+}

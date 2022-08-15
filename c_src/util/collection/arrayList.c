@@ -55,3 +55,15 @@ node_t arraylist_remove(arraylist_t *l, const int index) {
     l->size--;
     return value;
 }
+
+arraylist_t *arraylist_remove_many(arraylist_t *l, const int num, const int indices[num]) {
+    arraylist_t *new = new_arraylist(l->need_free);
+
+    for (int i = 0, len = l->size; i < len; ++i) {
+        if (!int_array_contain(num, indices, i)) {
+            arraylist_append(new, l->body[i]);
+        }
+    }
+    free(l);
+    return new;
+}
