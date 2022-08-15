@@ -1,6 +1,7 @@
 #include "collection.h"
 
 #include <float.h>
+#include <math.h>
 
 int seq_length_out(double *buf, double from, double to, const int length_out) {
     if (length_out <= 0) { return 0; }
@@ -36,4 +37,36 @@ int seq_by(double *buf, double from, double to, double by) {
         value += by;
     }
     return i;
+}
+
+pair_t array_min(const int len, const double arr[len]) {
+    double   min   = DBL_MAX;
+    int      count = 0;
+    for (int i     = 0; i < len; ++i) {
+        double v = arr[i];
+        if (v > min) { continue; }
+        if (v == min) { count++; }
+        else {
+            count = 1;
+            min   = v;
+        }
+    }
+
+    node_t _min, _count;
+    _min._double = min;
+    _count._int  = count;
+    pair_t res;
+    res.x = _min;
+    res.y = _count;
+    return res;
+}
+
+int array_find(const int len, const double arr[len], const double val, int n) {
+    for (int i = 0; i < len; ++i) {
+        if (arr[i] == val) { n--; }
+        if (n == 0) {
+            return i;
+        }
+    }
+    return (int) NAN;
 }

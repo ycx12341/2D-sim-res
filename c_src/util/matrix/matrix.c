@@ -26,6 +26,30 @@ pair_t matrix_max(const int r, const int c, const double matrix[r][c]) {
     return res;
 }
 
+pair_t matrix_min(const int r, const int c, const double matrix[r][c]) {
+    double   min   = DBL_MAX, v;
+    int      count = 0;
+    for (int i     = 0; i < r; ++i) {
+        for (int j = 0; j < c; ++j) {
+            v = matrix[i][j];
+            if (v > min) { continue; }
+            if (v == min) { count++; }
+            else {
+                count = 1;
+                min   = v;
+            }
+        }
+    }
+
+    node_t _min, _count;
+    _min._double = min;
+    _count._int  = count;
+    pair_t res;
+    res.x = _min;
+    res.y = _count;
+    return res;
+}
+
 pair_t matrix_find(const int r, const int c, const double matrix[r][c], const double value, int n) {
     pair_t res;
     res.x._int = (int) NAN;

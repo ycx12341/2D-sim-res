@@ -57,4 +57,16 @@ void arraylist_append(arraylist_t *l, node_t item);
 
 node_t arraylist_get(arraylist_t *l, int index);
 
+/**
+ * Find the minimum value in the array and the count of them.
+ * @return Pair(min_value, count_of_min_values)
+ */
+pair_t array_min(int len, const double arr[len]);
+
+/**
+ * Find the n_th element in the array with `element == value`
+ * @return the index of found element
+ */
+int array_find(int len, const double arr[len], double val, int n);
+
 #endif //C_SRC_COLLECTION_H

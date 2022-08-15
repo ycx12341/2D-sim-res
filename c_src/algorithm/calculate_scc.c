@@ -76,6 +76,7 @@ void generate_pattern(sse_pars_t *pars, const int idx) {
             sample_idx = unif_index(res.y._int);
         }
         pair_t sample = matrix_find(y_len, x_len, n0_sort, res.x._double, sample_idx + 1);
+        assert(sample.x._int >= 0 && sample.y._int >= 0);
 
         node_t node;
         node._intPair[0] = sample.x._int;
@@ -105,19 +106,35 @@ void generate_pattern(sse_pars_t *pars, const int idx) {
     for (int i = 0; i < TIME_STEPS; i++) {
 
         /* At the end of every day, some current cells in the domain will undergo extinction or mitosis. */
-        if (i % DAY_TIME_STEPS == 0) {
+        if ((i + 1) % DAY_TIME_STEPS == 0) {
             /* Extract the density values at the positions of current cells */
             double   cell_den[coord->size];
             for (int j = 0; j < coord->size; j++) {
                 node_t pos = arraylist_get(coord, j);
                 cell_den[j] = n[pos._intPair[0]][pos._intPair[1]];
             }
+            // TODO test
 
-            /* Cell extinction: some of the current cells at the locations with the
+            /* Cell extinction: some the current cells at the locations with the
              * lowest cell densities will undergo extinction. */
-            int    dead_cells_num = round((double) coord->size * pars->prob_death[idx]);
+            int    dead_cells_num = (int) round((double) coord->size * pars->prob_death[idx]);
             double dead_cells[dead_cells_num];
 
+            for (int uu = 0; uu < dead_cells_num; ++uu) {
+                /* Find the cells at locations with the lowest densities. */
+                int    sample_idx = 0;
+                pair_t ind_dead   = array_min(coord->size, cell_den);
+                if (ind_dead.y._int > 1) {
+                    sample_idx = unif_index(ind_dead.y._int);
+                }
+                int sample = array_find(coord->size, cell_den, ind_dead.x._double, sample_idx);
+                assert(sample >= 0);
+                dead_cells[uu]   = sample;
+                cell_den[sample] = -DBL_MAX;
+            }
+            // todo Test
+
+            /* Update the cell coordinates and the density vector. */
 
         }
 

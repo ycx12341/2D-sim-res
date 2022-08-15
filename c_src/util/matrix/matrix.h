@@ -41,6 +41,14 @@
 pair_t matrix_max(int r, int c, const double matrix[r][c]);
 
 /**
+ * Find the minimum value in the matrix and the count of them.
+ * @param r number of rows
+ * @param c number of columns
+ * @return Pair(min_value, count_of_min_values)
+ */
+pair_t matrix_min(int r, int c, const double matrix[r][c]);
+
+/**
  * Find the n_th element in the matrix with `element == value`
  * @param r number of rows
  * @param c number of columns

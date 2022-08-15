@@ -8,7 +8,9 @@ int main() {
 
     sse_pars_t pars;
     init_pars(&pars);
-    calculate_scc(&pars, 0);
+    for (int i = 0; i < 2; ++i) {
+        calculate_scc(&pars, i);
+    }
 
     return 0;
 }
