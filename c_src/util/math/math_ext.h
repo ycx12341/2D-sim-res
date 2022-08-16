@@ -25,4 +25,10 @@ double unif_rand();
 
 int unif_index(int dn);
 
+typedef struct {
+    int arr[2];
+} int_arr_2_t;
+
+int_arr_2_t unif_index2(int dn);
+
 #endif //C_SRC_MATH_EXT_H

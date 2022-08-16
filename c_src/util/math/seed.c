@@ -138,3 +138,19 @@ int unif_index(int dn) {
     do { dv = rbits(bits); } while (dn <= dv);
     return (int) dv;
 }
+
+int_arr_2_t unif_index2(int dn) {
+    int_arr_2_t ry;
+    ry.arr[0] = -1;
+    ry.arr[1] = -1;
+    if (dn < 2) { return ry; }
+
+    int x[dn], n = dn;
+    for (int i = 0; i < dn; i++) { x[i] = i; }
+    for (int i = 0; i < 2; i++) {
+        int j = unif_index(n);
+        ry.arr[i] = x[j] + 1;
+        x[j] = x[--n];
+    }
+    return ry;
+}
