@@ -169,6 +169,92 @@ double generate_pattern(sse_pars_t *pars, const int idx) {
             }
 
             /* Proliferation mechanism */
+            for (int q = 0; q < prof_cells_num; q++) {
+                node_t cell_pos = arraylist_get(coord, prof_cells[q]);
+                int cell_position[2] = {cell_pos._intPair[0], cell_pos._intPair[1] + 1};
+                // TODO Test
+
+                /* Possible locations for daughter cells (8 surrounding points.) */
+                int right_position[2]      = {cell_position[0], cell_position[1] + 1};
+                int right_down_position[2] = {cell_position[0] + 1, cell_position[1] + 1};
+                int down_position[2]       = {cell_position[0] + 1, cell_position[1]};
+                int up_right_position[2]   = {cell_position[0] - 1, cell_position[1] + 1};
+                int up_position[2]         = {cell_position[0] - 1, cell_position[1]};
+                int up_left_position[2]    = {cell_position[0] - 1, cell_position[1] - 1};
+                int left_position[2]       = {cell_position[0], cell_position[1] - 1};
+                int left_down_position[2]  = {cell_position[0] + 1, cell_position[1] - 1};
+                
+                if (cell_position[0] == 0) {
+                    /* Special case: top left corner */
+                    if (cell_position[1] == 0) {
+
+                        /* Possible directions to move, check if these points are occupied. */
+                        int right      = ind_position[right_position[0]][right_position[1]];
+                        int right_down = ind_position[right_down_position[0]][right_down_position[1]];
+                        int down       = ind_position[down_position[0]][down_position[1]];
+                        // TODO Test
+
+                        /* Neighbouring status*/
+                        int neighbouring_temp[3] = {right, right_down, down};
+                        int neighbouring_coord[3][2] = { right_position, right_down_position, down_position};
+
+                        /* If the cell has more than two neighbouring positions which are 
+                           not occupied, it will proliferate. The original cell will vanish 
+                           and split into two daughter cells, which will be randomly 
+                           distributed into two unoccupied neighbouring locations. */
+                        int zeros = 0, sample_idx = 0;
+                        for (int j = 0; j < 3; j++) {
+                            if (neighbouring_temp[j] == 0) { zeros++; }
+                        }
+                        if (zeros >= 2) {
+                            sample_idx = unif_index(zeros);
+                            // TODO: not completed
+                        }
+
+                    /* Special case: top right corner (same reasoning is followed...) */
+                    } else if (cell_position[1] == x_len - 1) {
+                        
+                        int left      = ind_position[left_position[0]][left_position[1]];
+                        int left_down = ind_position[left_down_position[0]][left_down_position[1]];
+                        int down      = ind_position[down_position[0]][down_position[1]];
+
+                        int neighbouring_temp[3] = {left, left_down, down};
+                        int neighbouring_coord[3][2] = { left_position, left_down_position, down_position};
+
+                        // TODO: not completed
+
+                    } else {
+
+                        int left       = ind_position[left_position[0]][left_position[1]];
+                        int right      = ind_position[right_position[0]][right_position[1]];
+                        int down       = ind_position[down_position[0]][down_position[1]];
+                        int left_down  = ind_position[left_down_position[0]][left_down_position[1]];
+                        int right_down = ind_position[right_down_position[0]][right_down_position[1]];
+
+                        int neighbouring_temp[5] = {left, right, down, left_down, right_down};
+                        int neighbouring_coord[5][2] = { left_position, right_position, down_position, left_down_position, right_down_position};
+
+                        // TODO: not completed
+                    }
+                /* Lower boundary */
+                } else if (cell_position[0] == y_len - 1) {
+                    /* Special case: bottom left corner */
+                    if (cell_position[1] == 0) {
+                    
+                    } else if (cell_position[1] == x_len - 1) {
+
+                    } else {
+
+                    }
+                } else if (cell_position[1] == 0) {
+
+                } else if (cell_position[1] == x_len - 1) {
+
+                } else {
+                    
+                }
+            }
+            
         }
 
         /* Solving the PDE model numerically */
