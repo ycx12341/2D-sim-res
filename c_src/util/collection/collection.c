@@ -84,11 +84,11 @@ pair_t array_max(const int len, const double arr[len]) {
 }
 
 int int_array_count(const int len, const int arr[len], const int value) {
-    int      matches = 0;
-    for (int i       = 0; i < len; i++) {
-        if (arr[i] == value) { matches++; }
+    int      count = 0;
+    for (int i     = 0; i < len; i++) {
+        if (arr[i] == value) { count++; }
     }
-    return matches;
+    return count;
 }
 
 int double_array_find(const int len, const double arr[len], const double val, int n) {

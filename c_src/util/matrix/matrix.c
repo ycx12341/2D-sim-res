@@ -66,3 +66,14 @@ pair_t matrix_find(const int r, const int c, const double matrix[r][c], const do
     }
     return res;
 }
+
+int matrix_count(const int r, const int c, const double matrix[r][c], const double value) {
+    int count = 0;
+    double v;
+    for (int i     = 0; i < r; ++i) {
+        for (int j = 0; j < c; ++j) {
+            if (matrix[i][j] == value) { count++; }
+        }
+    }
+    return count;
+}

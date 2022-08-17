@@ -63,4 +63,6 @@ pair_t matrix_min(int r, int c, const double matrix[r][c]);
  */
 pair_t matrix_find(int r, int c, const double matrix[r][c], double value, int n);
 
+int matrix_count(int r, int c, const double matrix[r][c], double value);
+
 #endif //C_SRC_MATRIX_H

@@ -1,6 +1,7 @@
 #include <stdio.h>
 
 #include "util/math/math_ext.h"
+#include "util/matrix/matrix.h"
 #include "algorithm/scc.h"
 #include "util/collection/collection.h"
 
