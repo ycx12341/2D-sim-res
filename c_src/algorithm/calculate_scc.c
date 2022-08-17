@@ -49,7 +49,6 @@ void cell_proliferate(int nbr_num, int nbr_temp[nbr_num], int nbr_coord[nbr_num]
 
 /**
  * Purpose: Generate a SCC invasion pattern with the given parameters.
- * O(n^2)
  * @param pars Parameters
  */
 double generate_pattern(sse_pars_t *pars, const int idx) {
@@ -214,12 +213,11 @@ double generate_pattern(sse_pars_t *pars, const int idx) {
                         /* Special case: top left corner */
 
                         /* Possible directions to move, check if these points are occupied. */
-                        int right      = (int) ind_position[right_position[0]][right_position[1]];
-                        int right_down = (int) ind_position[right_down_position[0]][right_down_position[1]];
-                        int down       = (int) ind_position[down_position[0]][down_position[1]];
-
-                        /* Neighbouring status*/
-                        int neighbouring_temp[3]     = {right, right_down, down};
+                        int neighbouring_temp[3]     = {
+                                (int) ind_position[right_position[0]][right_position[1]],
+                                (int) ind_position[right_down_position[0]][right_down_position[1]],
+                                (int) ind_position[down_position[0]][down_position[1]]
+                        };
                         int neighbouring_coord[3][2] = {
                                 {right_position[0],      right_position[1]},
                                 {right_down_position[0], right_down_position[1]},
@@ -231,11 +229,11 @@ double generate_pattern(sse_pars_t *pars, const int idx) {
                     } else if (cell_position[1] == x_len - 1) {
                         /* Special case: top right corner (same reasoning is followed...) */
 
-                        int left      = (int) ind_position[left_position[0]][left_position[1]];
-                        int left_down = (int) ind_position[left_down_position[0]][left_down_position[1]];
-                        int down      = (int) ind_position[down_position[0]][down_position[1]];
-
-                        int neighbouring_temp[3]     = {left, left_down, down};
+                        int neighbouring_temp[3]     = {
+                                (int) ind_position[left_position[0]][left_position[1]], 
+                                (int) ind_position[left_down_position[0]][left_down_position[1]], 
+                                (int) ind_position[down_position[0]][down_position[1]]
+                        };
                         int neighbouring_coord[3][2] = {
                                 {left_position[0],      left_position[1]},
                                 {left_down_position[0], left_down_position[1]},
@@ -246,13 +244,13 @@ double generate_pattern(sse_pars_t *pars, const int idx) {
 
                     } else {
 
-                        int left       = (int) ind_position[left_position[0]][left_position[1]];
-                        int right      = (int) ind_position[right_position[0]][right_position[1]];
-                        int down       = (int) ind_position[down_position[0]][down_position[1]];
-                        int left_down  = (int) ind_position[left_down_position[0]][left_down_position[1]];
-                        int right_down = (int) ind_position[right_down_position[0]][right_down_position[1]];
-
-                        int neighbouring_temp[5]     = {left, right, down, left_down, right_down};
+                        int neighbouring_temp[5]     = {
+                                (int) ind_position[left_position[0]][left_position[1]], 
+                                (int) ind_position[right_position[0]][right_position[1]], 
+                                (int) ind_position[down_position[0]][down_position[1]], 
+                                (int) ind_position[left_down_position[0]][left_down_position[1]], 
+                                (int) ind_position[right_down_position[0]][right_down_position[1]]
+                        };
                         int neighbouring_coord[5][2] = {
                                 {left_position[0],       left_position[1]},
                                 {right_position[0],      right_position[1]},
