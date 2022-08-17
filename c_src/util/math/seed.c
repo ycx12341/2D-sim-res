@@ -146,11 +146,12 @@ int_arr_2_t unif_index2(int dn) {
     if (dn < 2) { return ry; }
 
     int x[dn], n = dn;
+
     for (int i = 0; i < dn; i++) { x[i] = i; }
     for (int i = 0; i < 2; i++) {
-        int j = unif_index(n);
+        int j     = unif_index(n);
         ry.arr[i] = x[j] + 1;
-        x[j] = x[--n];
+        x[j]      = x[--n];
     }
     return ry;
 }

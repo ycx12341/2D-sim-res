@@ -83,7 +83,25 @@ pair_t array_max(const int len, const double arr[len]) {
     return res;
 }
 
-int array_find(const int len, const double arr[len], const double val, int n) {
+int int_array_count(const int len, const int arr[len], const int value) {
+    int      matches = 0;
+    for (int i       = 0; i < len; i++) {
+        if (arr[i] == value) { matches++; }
+    }
+    return matches;
+}
+
+int double_array_find(const int len, const double arr[len], const double val, int n) {
+    for (int i = 0; i < len; ++i) {
+        if (arr[i] == val) { n--; }
+        if (n == 0) {
+            return i;
+        }
+    }
+    return (int) NAN;
+}
+
+int int_array_find(const int len, const int arr[len], const int val, int n) {
     for (int i = 0; i < len; ++i) {
         if (arr[i] == val) { n--; }
         if (n == 0) {

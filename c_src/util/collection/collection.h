@@ -73,11 +73,15 @@ pair_t array_min(int len, const double arr[len]);
  */
 pair_t array_max(int len, const double arr[len]);
 
+int int_array_count(int len, const int arr[len], int value);
+
 /**
  * Find the n_th element in the array with `element == value`
  * @return the index of found element
  */
-int array_find(int len, const double arr[len], double val, int n);
+int double_array_find(int len, const double arr[len], double val, int n);
+
+int int_array_find(int len, const int arr[len], int val, int n);
 
 bool int_array_contain(int len, const int arr[len], int value);
 

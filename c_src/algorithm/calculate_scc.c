@@ -23,6 +23,31 @@
 #define BETA            0
 
 /**
+ * If the cell has more than two neighbouring positions which are
+ * not occupied, it will proliferate. The original cell will vanish
+ * and split into two daughter cells, which will be randomly
+ * distributed into two unoccupied neighbouring locations.
+ * @param nbr_num number of neighbouring positions
+ */
+void cell_proliferate(int nbr_num, int nbr_temp[nbr_num], int nbr_coord[nbr_num][2],
+                      double ind_position[(int) SPACE_LENGTH_Y][(int) SPACE_LENGTH_X],
+                      const int cell_position[2]) {
+    int zeros = int_array_count(nbr_num, nbr_temp, 0);
+    if (zeros >= 2) {
+        int_arr_2_t sample_idx = unif_index2(zeros);
+
+        int *sample_a = nbr_coord[int_array_find(nbr_num, nbr_temp, 0, sample_idx.arr[0])];
+        int *sample_b = nbr_coord[int_array_find(nbr_num, nbr_temp, 0, sample_idx.arr[1])];
+
+        ind_position[cell_position[0]][cell_position[1]] = 0;   // Original cell vanishes.
+        ind_position[sample_a[0]][sample_a[1]]           = 1;   // Daughter cells being allocated.
+        ind_position[sample_b[0]][sample_b[1]]           = 1;
+
+        printf("a: [%d,%d] b: [%d,%d]\n", sample_a[0], sample_a[1], sample_b[0], sample_b[1]);
+    }
+}
+
+/**
  * Purpose: Generate a SCC invasion pattern with the given parameters.
  * O(n^2)
  * @param pars Parameters
@@ -128,7 +153,7 @@ double generate_pattern(sse_pars_t *pars, const int idx) {
                 if (ind_dead.y._int > 1) {
                     sample_idx = unif_index(ind_dead.y._int);
                 }
-                int sample = array_find(cell_den_len, cell_den, ind_dead.x._double, sample_idx + 1);
+                int sample = double_array_find(cell_den_len, cell_den, ind_dead.x._double, sample_idx + 1);
                 assert(sample >= 0);
                 dead_cells[uu]   = sample;
                 cell_den[sample] = DBL_MAX;
@@ -155,7 +180,7 @@ double generate_pattern(sse_pars_t *pars, const int idx) {
                 if (ind_prof.y._int > 1) {
                     sample_idx = unif_index(ind_prof.y._int);
                 }
-                int sample = array_find(cell_den_len, cell_den, ind_prof.x._double, sample_idx + 1);
+                int sample = double_array_find(cell_den_len, cell_den, ind_prof.x._double, sample_idx + 1);
                 assert(sample >= 0);
                 prof_cells[uu]   = sample;
                 cell_den[sample] = -DBL_MAX;
@@ -170,9 +195,8 @@ double generate_pattern(sse_pars_t *pars, const int idx) {
 
             /* Proliferation mechanism */
             for (int q = 0; q < prof_cells_num; q++) {
-                node_t cell_pos = arraylist_get(coord, prof_cells[q]);
-                int cell_position[2] = {cell_pos._intPair[0], cell_pos._intPair[1] + 1};
-                // TODO Test
+                node_t cell_pos         = arraylist_get(coord, (int) prof_cells[q]);
+                int    cell_position[2] = {cell_pos._intPair[0], cell_pos._intPair[1]};
 
                 /* Possible locations for daughter cells (8 surrounding points.) */
                 int right_position[2]      = {cell_position[0], cell_position[1] + 1};
@@ -183,64 +207,68 @@ double generate_pattern(sse_pars_t *pars, const int idx) {
                 int up_left_position[2]    = {cell_position[0] - 1, cell_position[1] - 1};
                 int left_position[2]       = {cell_position[0], cell_position[1] - 1};
                 int left_down_position[2]  = {cell_position[0] + 1, cell_position[1] - 1};
-                
+
                 if (cell_position[0] == 0) {
-                    /* Special case: top left corner */
+
                     if (cell_position[1] == 0) {
+                        /* Special case: top left corner */
 
                         /* Possible directions to move, check if these points are occupied. */
-                        int right      = ind_position[right_position[0]][right_position[1]];
-                        int right_down = ind_position[right_down_position[0]][right_down_position[1]];
-                        int down       = ind_position[down_position[0]][down_position[1]];
-                        // TODO Test
+                        int right      = (int) ind_position[right_position[0]][right_position[1]];
+                        int right_down = (int) ind_position[right_down_position[0]][right_down_position[1]];
+                        int down       = (int) ind_position[down_position[0]][down_position[1]];
 
                         /* Neighbouring status*/
-                        int neighbouring_temp[3] = {right, right_down, down};
-                        int neighbouring_coord[3][2] = { right_position, right_down_position, down_position};
+                        int neighbouring_temp[3]     = {right, right_down, down};
+                        int neighbouring_coord[3][2] = {
+                                {right_position[0],      right_position[1]},
+                                {right_down_position[0], right_down_position[1]},
+                                {down_position[0],       down_position[1]}
+                        };
 
-                        /* If the cell has more than two neighbouring positions which are 
-                           not occupied, it will proliferate. The original cell will vanish 
-                           and split into two daughter cells, which will be randomly 
-                           distributed into two unoccupied neighbouring locations. */
-                        int zeros = 0, sample_idx = 0;
-                        for (int j = 0; j < 3; j++) {
-                            if (neighbouring_temp[j] == 0) { zeros++; }
-                        }
-                        if (zeros >= 2) {
-                            sample_idx = unif_index(zeros);
-                            // TODO: not completed
-                        }
+                        cell_proliferate(3, neighbouring_temp, neighbouring_coord, ind_position, cell_position);
 
-                    /* Special case: top right corner (same reasoning is followed...) */
                     } else if (cell_position[1] == x_len - 1) {
-                        
-                        int left      = ind_position[left_position[0]][left_position[1]];
-                        int left_down = ind_position[left_down_position[0]][left_down_position[1]];
-                        int down      = ind_position[down_position[0]][down_position[1]];
+                        /* Special case: top right corner (same reasoning is followed...) */
 
-                        int neighbouring_temp[3] = {left, left_down, down};
-                        int neighbouring_coord[3][2] = { left_position, left_down_position, down_position};
+                        int left      = (int) ind_position[left_position[0]][left_position[1]];
+                        int left_down = (int) ind_position[left_down_position[0]][left_down_position[1]];
+                        int down      = (int) ind_position[down_position[0]][down_position[1]];
 
-                        // TODO: not completed
+                        int neighbouring_temp[3]     = {left, left_down, down};
+                        int neighbouring_coord[3][2] = {
+                                {left_position[0],      left_position[1]},
+                                {left_down_position[0], left_down_position[1]},
+                                {down_position[0],      down_position[1]}
+                        };
+
+                        cell_proliferate(3, neighbouring_temp, neighbouring_coord, ind_position, cell_position);
 
                     } else {
 
-                        int left       = ind_position[left_position[0]][left_position[1]];
-                        int right      = ind_position[right_position[0]][right_position[1]];
-                        int down       = ind_position[down_position[0]][down_position[1]];
-                        int left_down  = ind_position[left_down_position[0]][left_down_position[1]];
-                        int right_down = ind_position[right_down_position[0]][right_down_position[1]];
+                        int left       = (int) ind_position[left_position[0]][left_position[1]];
+                        int right      = (int) ind_position[right_position[0]][right_position[1]];
+                        int down       = (int) ind_position[down_position[0]][down_position[1]];
+                        int left_down  = (int) ind_position[left_down_position[0]][left_down_position[1]];
+                        int right_down = (int) ind_position[right_down_position[0]][right_down_position[1]];
 
-                        int neighbouring_temp[5] = {left, right, down, left_down, right_down};
-                        int neighbouring_coord[5][2] = { left_position, right_position, down_position, left_down_position, right_down_position};
+                        int neighbouring_temp[5]     = {left, right, down, left_down, right_down};
+                        int neighbouring_coord[5][2] = {
+                                {left_position[0],       left_position[1]},
+                                {right_position[0],      right_position[1]},
+                                {down_position[0],       down_position[1]},
+                                {left_down_position[0],  left_down_position[1]},
+                                {right_down_position[0], right_down_position[1]}
+                        };
 
-                        // TODO: not completed
+                        cell_proliferate(5, neighbouring_temp, neighbouring_coord, ind_position, cell_position);
+
                     }
-                /* Lower boundary */
+                    /* Lower boundary */
                 } else if (cell_position[0] == y_len - 1) {
                     /* Special case: bottom left corner */
                     if (cell_position[1] == 0) {
-                    
+
                     } else if (cell_position[1] == x_len - 1) {
 
                     } else {
@@ -251,10 +279,10 @@ double generate_pattern(sse_pars_t *pars, const int idx) {
                 } else if (cell_position[1] == x_len - 1) {
 
                 } else {
-                    
+
                 }
             }
-            
+
         }
 
         /* Solving the PDE model numerically */
@@ -266,7 +294,8 @@ double generate_pattern(sse_pars_t *pars, const int idx) {
 
 
     }
-    // test print
+
+// test print
 //    for (int k = 0; k < coord->size; ++k) {
 //        node_t node  = arraylist_get(coord, k);
 //        printf("[%d,%d]", node._intPair[0], node._intPair[1]);
