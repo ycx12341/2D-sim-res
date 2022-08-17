@@ -1,6 +1,7 @@
 #include "matrix.h"
 #include <float.h>
 #include <math.h>
+#include <assert.h>
 
 pair_t matrix_max(const int r, const int c, const double matrix[r][c]) {
     double   max   = -DBL_MAX, v;
@@ -51,6 +52,7 @@ pair_t matrix_min(const int r, const int c, const double matrix[r][c]) {
 }
 
 pair_t matrix_find(const int r, const int c, const double matrix[r][c], const double value, int n) {
+    assert(n > 0);
     pair_t res;
     res.x._int = (int) NAN;
     res.y._int = (int) NAN;

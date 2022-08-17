@@ -2,6 +2,7 @@
 
 #include <float.h>
 #include <math.h>
+#include <assert.h>
 
 int seq_length_out(double *buf, double from, double to, const int length_out) {
     if (length_out <= 0) { return 0; }
@@ -92,6 +93,7 @@ int int_array_count(const int len, const int arr[len], const int value) {
 }
 
 int double_array_find(const int len, const double arr[len], const double val, int n) {
+    assert(n > 0);
     for (int i = 0; i < len; ++i) {
         if (arr[i] == val) { n--; }
         if (n == 0) {
@@ -102,6 +104,7 @@ int double_array_find(const int len, const double arr[len], const double val, in
 }
 
 int int_array_find(const int len, const int arr[len], const int val, int n) {
+    assert(n > 0);
     for (int i = 0; i < len; ++i) {
         if (arr[i] == val) { n--; }
         if (n == 0) {
