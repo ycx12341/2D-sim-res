@@ -150,7 +150,7 @@ int_arr_2_t unif_index2(int dn) {
     for (int i = 0; i < dn; i++) { x[i] = i; }
     for (int i = 0; i < 2; i++) {
         int j     = unif_index(n);
-        ry.arr[i] = x[j] + 1;
+        ry.arr[i] = x[j];
         x[j]      = x[--n];
     }
     return ry;
