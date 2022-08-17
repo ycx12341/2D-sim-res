@@ -279,9 +279,20 @@ double generate_pattern(sse_pars_t *pars, const int idx) {
                 }
             } // todo Test
 
-            /* Update the cell coordinates. */
-
-
+            /* Update the cell coordinates and positions.*/
+            arraylist_free(coord);
+            coord = new_arraylist(false);
+            MATRIX_ITR(y_len, x_len, {
+                if (ind_position[_i_][_j_] == 1) {
+                    node_t pos;
+                    pos._intPair[0] = _i_;
+                    pos._intPair[1] = _j_;
+                    arraylist_append(coord, pos);
+                } else {
+                    ind_position[_i_][_j_] = 0;
+                }
+            })
+            // TODo test
         }
 
         /* Solving the PDE model numerically */
