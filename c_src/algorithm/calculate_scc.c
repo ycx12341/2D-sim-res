@@ -198,88 +198,94 @@ double generate_pattern(sse_pars_t *pars, const int idx) {
                 int    cell_position[2] = {cell_pos._intPair[0], cell_pos._intPair[1]};
 
                 /* Possible locations for daughter cells (8 surrounding points.) */
-                int right_position[2]      = {cell_position[0], cell_position[1] + 1};
-                int right_down_position[2] = {cell_position[0] + 1, cell_position[1] + 1};
-                int down_position[2]       = {cell_position[0] + 1, cell_position[1]};
-                int up_right_position[2]   = {cell_position[0] - 1, cell_position[1] + 1};
-                int up_position[2]         = {cell_position[0] - 1, cell_position[1]};
-                int up_left_position[2]    = {cell_position[0] - 1, cell_position[1] - 1};
-                int left_position[2]       = {cell_position[0], cell_position[1] - 1};
-                int left_down_position[2]  = {cell_position[0] + 1, cell_position[1] - 1};
+                const int right_position[2]      = {cell_position[0], cell_position[1] + 1};
+                const int right_down_position[2] = {cell_position[0] + 1, cell_position[1] + 1};
+                const int down_position[2]       = {cell_position[0] + 1, cell_position[1]};
+                const int up_right_position[2]   = {cell_position[0] - 1, cell_position[1] + 1};
+                const int up_position[2]         = {cell_position[0] - 1, cell_position[1]};
+                const int up_left_position[2]    = {cell_position[0] - 1, cell_position[1] - 1};
+                const int left_position[2]       = {cell_position[0], cell_position[1] - 1};
+                const int left_down_position[2]  = {cell_position[0] + 1, cell_position[1] - 1};
+
+                const int right      = (int) ind_position[right_position[0]][right_position[1]];
+                const int right_down = (int) ind_position[right_down_position[0]][right_down_position[1]];
+                const int down       = (int) ind_position[down_position[0]][down_position[1]];
+                const int up_right   = (int) ind_position[up_right_position[0]][up_right_position[1]];
+                const int up         = (int) ind_position[up_position[0]][up_position[1]];
+                const int up_left    = (int) ind_position[up_left_position[0]][up_left_position[1]];
+                const int left       = (int) ind_position[left_position[0]][left_position[1]];
+                const int left_down  = (int) ind_position[left_down_position[0]][left_down_position[1]];
 
                 if (cell_position[0] == 0) {
 
-                    if (cell_position[1] == 0) {
-                        /* Special case: top left corner */
-
+                    if (cell_position[1] == 0) { /* Special case: top left corner */
                         /* Possible directions to move, check if these points are occupied. */
-                        int neighbouring_temp[3]     = {
-                                (int) ind_position[right_position[0]][right_position[1]],
-                                (int) ind_position[right_down_position[0]][right_down_position[1]],
-                                (int) ind_position[down_position[0]][down_position[1]]
-                        };
-                        int neighbouring_coord[3][2] = {
-                                {right_position[0],      right_position[1]},
-                                {right_down_position[0], right_down_position[1]},
-                                {down_position[0],       down_position[1]}
-                        };
+                        int neighbouring_temp[3]   = {right, right_down, down};
+                        int *neighbouring_coord[2] = {right_position, right_down_position, down_position};
 
                         cell_proliferate(3, neighbouring_temp, neighbouring_coord, ind_position, cell_position);
-
-                    } else if (cell_position[1] == x_len - 1) {
-                        /* Special case: top right corner (same reasoning is followed...) */
-
-                        int neighbouring_temp[3]     = {
-                                (int) ind_position[left_position[0]][left_position[1]], 
-                                (int) ind_position[left_down_position[0]][left_down_position[1]], 
-                                (int) ind_position[down_position[0]][down_position[1]]
-                        };
-                        int neighbouring_coord[3][2] = {
-                                {left_position[0],      left_position[1]},
-                                {left_down_position[0], left_down_position[1]},
-                                {down_position[0],      down_position[1]}
-                        };
+                    } else if (cell_position[1] == x_len - 1) { /* Special case: top right corner */
+                        int neighbouring_temp[3]   = {left, left_down, down};
+                        int *neighbouring_coord[2] = {left_position, left_down_position, down_position};
 
                         cell_proliferate(3, neighbouring_temp, neighbouring_coord, ind_position, cell_position);
-
                     } else {
-
-                        int neighbouring_temp[5]     = {
-                                (int) ind_position[left_position[0]][left_position[1]], 
-                                (int) ind_position[right_position[0]][right_position[1]], 
-                                (int) ind_position[down_position[0]][down_position[1]], 
-                                (int) ind_position[left_down_position[0]][left_down_position[1]], 
-                                (int) ind_position[right_down_position[0]][right_down_position[1]]
-                        };
-                        int neighbouring_coord[5][2] = {
-                                {left_position[0],       left_position[1]},
-                                {right_position[0],      right_position[1]},
-                                {down_position[0],       down_position[1]},
-                                {left_down_position[0],  left_down_position[1]},
-                                {right_down_position[0], right_down_position[1]}
-                        };
+                        int neighbouring_temp[5]   = {left, right, down, left_down, right_down};
+                        int *neighbouring_coord[2] = {left_position, right_position, down_position, left_down_position, right_down_position};
 
                         cell_proliferate(5, neighbouring_temp, neighbouring_coord, ind_position, cell_position);
-
                     }
-                    /* Lower boundary */
-                } else if (cell_position[0] == y_len - 1) {
-                    /* Special case: bottom left corner */
-                    if (cell_position[1] == 0) {
+                    
+                } else if (cell_position[0] == y_len - 1) {  /* Lower boundary */
 
-                    } else if (cell_position[1] == x_len - 1) {
+                    if (cell_position[1] == 0) {             /* Special case: bottom left corner */
 
+                        int neighbouring_temp[3]   = {up, up_right, right};
+                        int *neighbouring_coord[2] = {up_position, up_right_position, right_position};
+                        cell_proliferate(3, neighbouring_temp, neighbouring_coord, ind_position, cell_position);
+
+                    } else if (cell_position[1] == x_len - 1) { /* Special case: bottom right corner */
+                        int neighbouring_temp[3]   = {left, up, up_left};
+                        int *neighbouring_coord[2] = {left_position, up_position, up_left_position};
+                        cell_proliferate(3, neighbouring_temp, neighbouring_coord, ind_position, cell_position);
                     } else {
-
+                        int neighbouring_temp[5]   = {left, right, up, up_left, up_right};
+                        int *neighbouring_coord[2] = {left_position, right_position, up_position, up_left_position, up_right_position};
+                        cell_proliferate(5, neighbouring_temp, neighbouring_coord, ind_position, cell_position);
                     }
-                } else if (cell_position[1] == 0) {
 
-                } else if (cell_position[1] == x_len - 1) {
+                } else if (cell_position[1] == 0) { /* Left boundary */
+                    
+                    if (cell_position[0] == 0) {                    // do nothing so far
+                    } else if (cell_position[0] == y_len - 1) {     // do nothing so far
+                    } else {
+                        int neighbouring_temp[5]   = {up, up_right, right, right_down, down};
+                        int *neighbouring_coord[2] = {up_position, up_right_position, right_position, right_down_position, down_position};
+                        cell_proliferate(5, neighbouring_temp, neighbouring_coord, ind_position, cell_position);
+                    }
 
-                } else {
+                } else if (cell_position[1] == x_len - 1) { /* Right boundary */
 
+                    if (cell_position[0] == 0) {
+                    } else if (cell_position[0] == y_len - 1) {
+                    } else {
+                        int neighbouring_temp[5]   = {up, up_left, left, left_down, down};
+                        int *neighbouring_coord[2] = {up_position, up_left_position, left_position, left_down, down_position};
+                        cell_proliferate(5, neighbouring_temp, neighbouring_coord, ind_position, cell_position);
+                    }
+
+                } else {  /* Other cells that are not at the boundary */
+                    int neighbouring_temp[8]   = {left, right, up, down, up_left, up_right, left_down, right_down};
+                    int *neighbouring_coord[2] = {
+                        left_position, right_position, up_position, down_position,
+                        up_left_position, up_right_position, left_down_position, right_down_position
+                    };
+                    cell_proliferate(8, neighbouring_temp, neighbouring_coord, ind_position, cell_position);
                 }
-            }
+            } // todo Test
+
+            /* Update the cell coordinates. */
+
 
         }
 
