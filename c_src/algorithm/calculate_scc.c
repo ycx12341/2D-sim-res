@@ -130,11 +130,12 @@ double generate_pattern(sse_pars_t *pars, const int idx) {
 
         /* At the end of every day, some current cells in the domain will undergo extinction or mitosis. */
         if ((i + 1) % DAY_TIME_STEPS == 0) {
+
             /* Extract the density values at the positions of current cells */
             int    cell_den_len = coord->size;
             double cell_den[cell_den_len];
 
-            for (int j = 0; j < coord->size; j++) {
+            for (int j = 0; j < cell_den_len; j++) {
                 node_t pos = arraylist_get(coord, j);
                 cell_den[j] = n[pos._intPair[0]][pos._intPair[1]];
             }
@@ -168,7 +169,7 @@ double generate_pattern(sse_pars_t *pars, const int idx) {
 
             /* Cell mitosis: some current cells at the locations
              * with the highest densities will undergo mitosis. */
-            int    prof_cells_num = (int) round(coord->size * pars->prob_prof[idx]);
+            int    prof_cells_num = (int) round((double) coord->size * pars->prob_prof[idx]);
             double prof_cells[prof_cells_num];
 
             for (int uu = 0; uu < prof_cells_num; ++uu) {
@@ -243,10 +244,10 @@ double generate_pattern(sse_pars_t *pars, const int idx) {
                         const int neighbouring_temp[3]   = {left, up, up_left};
                         const int *neighbouring_coord[3] = {left_position, up_position, up_left_position};
                         cell_proliferate(3, neighbouring_temp, neighbouring_coord, ind_position, cell_position);
-                    } else {
-                        const int neighbouring_temp[5]   = {left, right, up, up_left, up_right};
-                        const int *neighbouring_coord[5] = {left_position, right_position, up_position,
-                                                            up_left_position, up_right_position};
+                    } else {                                        // FIXME BE CAREFUL the order
+                        const int neighbouring_temp[5]   = {left, up_left, up, up_right, right};
+                        const int *neighbouring_coord[5] = {left_position, up_left_position, up_position,
+                                                            up_right_position, right_position};
                         cell_proliferate(5, neighbouring_temp, neighbouring_coord, ind_position, cell_position);
                     }
 
@@ -284,9 +285,8 @@ double generate_pattern(sse_pars_t *pars, const int idx) {
             }
 
             /* Update the cell coordinates and positions.*/
-            arraylist_free(coord);
-            coord = new_arraylist(false);
-            MATRIX_ITR(y_len, x_len, {
+            coord->size = 0;
+            MATRIX_ITR2(y_len, x_len, {
                 if (ind_position[_i_][_j_] == 1) {
                     node_t pos;
                     pos._intPair[0] = _i_;
@@ -296,7 +296,6 @@ double generate_pattern(sse_pars_t *pars, const int idx) {
                     ind_position[_i_][_j_] = 0;
                 }
             })
-            // TODo test
         }
 
         /* Solving the PDE model numerically */

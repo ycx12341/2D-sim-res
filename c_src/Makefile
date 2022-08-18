@@ -1,5 +1,6 @@
 CC            := cc
 RM_UNIX       := rm -rf
+RM_WIN        := del
 
 DFLAG         := -g
 OFLAG         := -o
@@ -18,7 +19,7 @@ EXE           := main
 
 .PHONY: all algorithm util clean_unix main
 
-all: clean_unix algorithm util main
+all: algorithm util main
 
 algorithm:
 	cd $(ALGO_DIR) && make
@@ -39,3 +40,8 @@ clean_unix:
 	$(RM_UNIX) $(EXE)
 	cd $(ALGO_DIR) && make clean_unix
 	cd $(UTIL_DIR) && make clean_unix
+
+clean_win:
+	$(RM_WIN) $(EXE)
+	cd $(ALGO_DIR) && make clean_win
+	cd $(UTIL_DIR) && make clean_win

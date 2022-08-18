@@ -1,5 +1,6 @@
 CC            := cc
 RM_UNIX       := rm -rf
+RM_WIN        := del
 
 DFLAG         := -g
 OFLAG         := -o
@@ -41,3 +42,8 @@ clean_unix:
 	$(RM_UNIX) $(COLL_DIR)/*.o
 	$(RM_UNIX) $(MATH_DIR)/*.o
 	$(RM_UNIX) $(MTRX_DIR)/*.o
+
+clean_win:
+	$(RM_WIN) $(COLL_DIR)\*.o
+	$(RM_WIN) $(MATH_DIR)\*.o
+	$(RM_WIN) $(MTRX_DIR)\*.o

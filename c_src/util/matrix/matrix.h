@@ -10,6 +10,13 @@
         }                                       \
     }
 
+#define MATRIX_ITR2(r, c, body)                  \
+    for (int _j_ = 0; _j_ < c; ++_j_) {         \
+        for (int _i_ = 0; _i_ < r; ++_i_) {     \
+            body                                \
+        }                                       \
+    }
+
 #define MATRIX_MAP(src, dst, r, c, f)           \
     for (int _i_ = 0; _i_ < r; ++_i_) {         \
         for (int _j_ = 0; _j_ < c; ++_j_) {     \
