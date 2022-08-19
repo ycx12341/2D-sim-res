@@ -24,10 +24,10 @@
         }                                       \
     }
 
-#define MATRIX_INIT(src, r, c, val)           \
+#define MATRIX_INIT(src, r, c, val)             \
     for (int _i_ = 0; _i_ < r; ++_i_) {         \
         for (int _j_ = 0; _j_ < c; ++_j_) {     \
-            src[_i_][_j_] = val;   \
+            src[_i_][_j_] = val;                \
         }                                       \
     }
 

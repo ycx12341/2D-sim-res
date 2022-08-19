@@ -60,13 +60,9 @@ double generate_pattern(sse_pars_t *pars, const int idx) {
     /*
      * Initial condition
      */
-    // double n0[y_len][x_len], n[y_len][x_len], n0_sort[y_len][x_len];
-    // double f0[y_len][x_len], f[y_len][x_len];
-    // double m0[y_len][x_len], m[y_len][x_len];
-
     double n0[y_len][x_len], n0_sort[y_len][x_len], n[y_len][x_len];
-    double f0[y_len][x_len];
-    double m0[y_len][x_len];
+    double f0[y_len][x_len], f[y_len][x_len];
+    double m0[y_len][x_len], m[y_len][x_len];
 
     for (int j = 0; j < x_len; ++j) {
         n0[0][j] = x[j] <= 0.1 ? cos(M_PI * x[j] * 5) : 0;
@@ -78,16 +74,12 @@ double generate_pattern(sse_pars_t *pars, const int idx) {
         f0[_i_][_j_] = 1 - m0[_i_][_j_];
     })
 
-    // MATRIX_MAP(n0, m0, y_len, x_len, n0_to_m0)
-    // MATRIX_MAP(n0, f0, y_len, x_len, n0_to_f0)
-
     MATRIX_COPY(n0, n, y_len, x_len)
-    // MATRIX_COPY(f0, f, y_len, x_len)
-    // MATRIX_COPY(m0, m, y_len, x_len)
+    MATRIX_COPY(f0, f, y_len, x_len)
+    MATRIX_COPY(m0, m, y_len, x_len)
 
     /* Sort the initial cells */
     MATRIX_COPY(n0, n0_sort, y_len, x_len)
-//    MATRIX_PRINT(n0_sort, i, y_len, j, x_len, "[%.7f]")
 
     /* Initial glioma cells will be allocated to the locations with the highest densities in the domain (left boundary). */
     double      n_cells = round(SPACE_LENGTH_Y * pars->init_cells_cols[idx]);
@@ -257,8 +249,9 @@ double generate_pattern(sse_pars_t *pars, const int idx) {
                     } else if (cell_position[0] == y_len - 1) {     // do nothing so far
                     } else {
                         const int neighbouring_temp[5]   = {up, up_right, right, right_down, down};
-                        const int *neighbouring_coord[5] = {up_position, up_right_position, right_position,
-                                                            right_down_position, down_position};
+                        const int *neighbouring_coord[5] = {
+                                up_position, up_right_position, right_position, right_down_position, down_position
+                        };
                         cell_proliferate(5, neighbouring_temp, neighbouring_coord, ind_position, cell_position);
                     }
 
@@ -268,8 +261,10 @@ double generate_pattern(sse_pars_t *pars, const int idx) {
                     } else if (cell_position[0] == y_len - 1) {
                     } else {
                         const int neighbouring_temp[5]   = {up, up_left, left, left_down, down};
-                        const int *neighbouring_coord[5] = {up_position, up_left_position, left_position, left_down,
-                                                            down_position};
+                        const int *neighbouring_coord[5] = {
+                                up_position, up_left_position, left_position, left_down_position,
+                                down_position
+                        };
                         cell_proliferate(5, neighbouring_temp, neighbouring_coord, ind_position, cell_position);
                     }
 
@@ -300,6 +295,17 @@ double generate_pattern(sse_pars_t *pars, const int idx) {
 
         /* Solving the PDE model numerically */
         if (i > round(DAY_TIME_STEPS * (95.0 / 96.0))) {
+            /* Diffusion starts having an impact after a certain amount of time in day 1. */
+            const double factor = DT * pars->eta[idx];
+
+            for (int f_i = 1; f_i < y_len - 1; ++f_i) {
+                for (int f_j = 1; f_j < x_len - 1; ++f_j) {
+                    f[f_i][f_j] = f[f_i][f_j] * (1 - factor * m[f_i][f_j]);
+                }
+            }
+
+//            MATRIX_PRINT(f, y_len, x_len, " %.3f ")
+//            return NAN;
 
         } else {
 
