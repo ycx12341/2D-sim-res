@@ -285,7 +285,7 @@ double generate_pattern(sse_pars_t *pars, const int idx) {
             }
 
             /* Update the cell coordinates and positions.*/
-            coord->size = 0;
+            arraylist_clear(coord);
             MATRIX_ITR2(y_len, x_len, {
                 if (ind_position[_i_][_j_] == 1) {
                     node_t pos;

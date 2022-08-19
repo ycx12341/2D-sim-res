@@ -53,6 +53,8 @@ arraylist_t *new_arraylist(bool need_free);
 
 void arraylist_free(arraylist_t *l);
 
+void arraylist_clear(arraylist_t *l);
+
 void arraylist_append(arraylist_t *l, node_t item);
 
 node_t arraylist_get(arraylist_t *l, int index);

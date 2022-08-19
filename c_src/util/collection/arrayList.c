@@ -24,6 +24,10 @@ void arraylist_free(arraylist_t *l) {
     free(l);
 }
 
+void arraylist_clear(arraylist_t *l) {
+    l->size = 0;
+}
+
 void arraylist_allocate(arraylist_t *l, int size) {
     assert(size > 0);
     if (size > l->capacity) {
