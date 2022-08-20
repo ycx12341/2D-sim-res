@@ -56,21 +56,28 @@ void solve_PDE(const int idx, const int t, const sse_pars_t *pars,
                double n[(int) SPACE_LENGTH_Y][(int) SPACE_LENGTH_X],
                double f[(int) SPACE_LENGTH_Y][(int) SPACE_LENGTH_X],
                double m[(int) SPACE_LENGTH_Y][(int) SPACE_LENGTH_X]) {
+    /*
+     * f[i][j] = f[i][j] * ( 1 - (F_F) * m[i][j] )
+     *      in range [1:Y_LEN-1, 1:X_LEN-1]
+     *
+     * F_F = DT * eta
+     */
+    const double F_F1 = DT * pars->eta[idx];
+    for (int     i    = 1, is = Y_LEN - 1, js = X_LEN - 1; i < is; ++i) {
+        for (int j = 1; j < js; ++j) {
+            f[i][j] = f[i][j] * (1 - F_F1 * m[i][j]);
+        }
+    }
+
+    /*
+     * G_F1    = r * dt
+     * G_F2    = dt * alpha
+     */
+    const double G_F1 = pars->rn[idx] * DT;
+    const double G_F2 = DT * pars->alpha[idx];
+
     if ((t + 1) > PDE_THRESHOLD) {
         /* Diffusion starts having an impact after a certain amount of time in day 1. */
-
-        /*
-         * f[i][j] = f[i][j] * ( 1 - (F_F) * m[i][j] )
-         *      in range [1:Y_LEN-1, 1:X_LEN-1]
-         *
-         * F_F = DT * eta
-         */
-        const double F_F = DT * pars->eta[idx];
-        for (int     i   = 1, is = Y_LEN - 1, js = X_LEN - 1; i < is; ++i) {
-            for (int j = 1; j < js; ++j) {
-                f[i][j] = f[i][j] * (1 - F_F * m[i][j]);
-            }
-        }
 
         /*
          * n[i][j] = n[i][j] * (A) + n[i][j+1] * (B) + n[i][j-1] * (C) + n[i-1][j] * (D) + n[i+1][j] * (E)
@@ -80,9 +87,8 @@ void solve_PDE(const int idx, const int t, const sse_pars_t *pars,
          * N_F2    = dn * (N_F1)
          * N_F3    = gamma * (N_F1)
          *
-         * A       = (A_F1) - ( (N_F3) * (A2) ) + (A_F3) * (A3)
+         * A       = (A_F1) - ( (N_F3) * (A2) ) + (G_F1) * (A3)
          * A_F1    = 1 - ( 4 * (N_F2) )
-         * A_F3    = r * dt
          * A2      = f[i][j+1] + f[i][j-1] + 4 * f[i][j] + f[i-1][j] + f[i+1][j]
          * A3      = 1 - n[i][j] - f[i][j]
          *
@@ -95,7 +101,6 @@ void solve_PDE(const int idx, const int t, const sse_pars_t *pars,
         const double N_F2 = pars->dn[idx] * N_F1;
         const double N_F3 = pars->gamma[idx] * N_F1;
         const double A_F1 = 1.0 - 4.0 * N_F2;
-        const double A_F3 = pars->rn[idx] * DT;
 
         double n_cpy[Y_LEN][X_LEN];
         MATRIX_COPY(n, n_cpy, Y_LEN, X_LEN)
@@ -105,7 +110,7 @@ void solve_PDE(const int idx, const int t, const sse_pars_t *pars,
             for (int j = 1; j < js; ++j) {
                 A2 = f[i][j + 1] + f[i][j - 1] + f[i - 1][j] + f[i + 1][j] - 4.0 * f[i][j];
                 A3 = 1 - n[i][j] - f[i][j];
-                A  = A_F1 - N_F3 * A2 + A_F3 * A3;
+                A  = A_F1 - N_F3 * A2 + G_F1 * A3;
                 B  = N_F2 - N_F3 / 4.0 * (f[i][j + 1] - f[i][j - 1]);
                 C  = N_F2 + N_F3 / 4.0 * (f[i][j + 1] - f[i][j - 1]);
                 D  = N_F2 - N_F3 / 4.0 * (f[i - 1][j] - f[i + 1][j]);
@@ -118,16 +123,15 @@ void solve_PDE(const int idx, const int t, const sse_pars_t *pars,
         }
 
         /*
-         * m[i][j] = m[i][j] * (M_F2) + (M_F3) * n[i][j] + (M_F1) * (F)
+         * m[i][j] = m[i][j] * (M_F2) + (G_F2) * n[i][j] + (M_F1) * (F)
+         *      in range [1:Y_LEN-1, 1:X_LEN-1]
          *
          * M_F1    = (N_F1) * dm
          * M_F2    = 1 - 4 * M_F1
-         * M_F3    = dt * alpha
          * F       = m[i][j+1] + m[i][j-1] + m[i-1][j] + m[i+1][j]
          */
         const double M_F1 = N_F1 * pars->dm[idx];
         const double M_F2 = 1.0 - 4.0 * M_F1;
-        const double M_F3 = DT * pars->alpha[idx];
 
         double m_cpy[Y_LEN][X_LEN];
         MATRIX_COPY(m, m_cpy, Y_LEN, X_LEN)
@@ -136,11 +140,20 @@ void solve_PDE(const int idx, const int t, const sse_pars_t *pars,
         for (int i = 1, is = Y_LEN - 1, js = X_LEN - 1; i < is; ++i) {
             for (int j = 1; j < js; ++j) {
                 F = m_cpy[i][j + 1] + m_cpy[i][j - 1] + m_cpy[i - 1][j] + m_cpy[i + 1][j];
-                m[i][j] = m[i][j] * M_F2 + M_F3 * n[i][j] + M_F1 * F;
+                m[i][j] = m[i][j] * M_F2 + G_F2 * n[i][j] + M_F1 * F;
             }
         }
     } else {
-
+        /*
+         * n[i][j] = n[i][j] * (1 + G_F1 * (1 - n[i][j] - f[i][j]))
+         * m[i][j] = m[i][j] + G_F2 * n[i][j]
+         */
+        for (int i = 1, is = Y_LEN - 1, js = X_LEN - 1; i < is; ++i) {
+            for (int j = 1; j < js; ++j) {
+                n[i][j] = n[i][j] * (1 + G_F1 * (1 - n[i][j] - f[i][j]));
+                m[i][j] = m[i][j] + G_F2 * n[i][j];
+            }
+        }
     }
 }
 
@@ -403,6 +416,7 @@ double generate_pattern(sse_pars_t *pars, const int idx) {
 
         // Testing
         if ((t + 1) > PDE_THRESHOLD) {
+        } else {
             MATRIX_PRINT(m, Y_LEN, X_LEN, " %.7f ");
             return NAN;
         }
