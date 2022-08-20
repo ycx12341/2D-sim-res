@@ -38,7 +38,8 @@ void cell_proliferate(
         const int nbr_temp[nbr_num],
         const int *nbr_coord[2],
         double ind_position[Y_LEN][X_LEN],
-        const int cell_position[2]
+        const int x_coord,
+        const int y_coord
 ) {
     const int zeros = int_array_count(nbr_num, nbr_temp, 0);
     if (zeros >= 2) {
@@ -47,9 +48,9 @@ void cell_proliferate(
         const int *sample_a = nbr_coord[int_array_find(nbr_num, nbr_temp, 0, sample_idx.arr[0] + 1)];
         const int *sample_b = nbr_coord[int_array_find(nbr_num, nbr_temp, 0, sample_idx.arr[1] + 1)];
 
-        ind_position[cell_position[0]][cell_position[1]] = 0;   // Original cell vanishes.
-        ind_position[sample_a[0]][sample_a[1]]           = 1;   // Daughter cells being allocated.
-        ind_position[sample_b[0]][sample_b[1]]           = 1;
+        ind_position[x_coord][y_coord]         = 0;     // Original cell vanishes.
+        ind_position[sample_a[0]][sample_a[1]] = 1;     // Daughter cells being allocated.
+        ind_position[sample_b[0]][sample_b[1]] = 1;
     }
 }
 
@@ -201,18 +202,19 @@ void proliferation(
         double ind_position[Y_LEN][X_LEN]
 ) {
     for (int q = 0; q < prof_cells_num; q++) {
-        node_t cell_pos         = arraylist_get(coord, (int) prof_cells[q]);
-        int    cell_position[2] = {cell_pos._intPair[0], cell_pos._intPair[1]};
+        node_t    cell_pos = arraylist_get(coord, (int) prof_cells[q]);
+        const int x_coord  = cell_pos._intPair[0];
+        const int y_coord  = cell_pos._intPair[1];
 
         /* Possible locations for daughter cells (8 surrounding points.) */
-        const int right_position[2]      = {cell_position[0], cell_position[1] + 1};
-        const int right_down_position[2] = {cell_position[0] + 1, cell_position[1] + 1};
-        const int down_position[2]       = {cell_position[0] + 1, cell_position[1]};
-        const int up_right_position[2]   = {cell_position[0] - 1, cell_position[1] + 1};
-        const int up_position[2]         = {cell_position[0] - 1, cell_position[1]};
-        const int up_left_position[2]    = {cell_position[0] - 1, cell_position[1] - 1};
-        const int left_position[2]       = {cell_position[0], cell_position[1] - 1};
-        const int left_down_position[2]  = {cell_position[0] + 1, cell_position[1] - 1};
+        const int right_position[2]      = {x_coord, y_coord + 1};
+        const int right_down_position[2] = {x_coord + 1, y_coord + 1};
+        const int down_position[2]       = {x_coord + 1, y_coord};
+        const int up_right_position[2]   = {x_coord - 1, y_coord + 1};
+        const int up_position[2]         = {x_coord - 1, y_coord};
+        const int up_left_position[2]    = {x_coord - 1, y_coord - 1};
+        const int left_position[2]       = {x_coord, y_coord - 1};
+        const int left_down_position[2]  = {x_coord + 1, y_coord - 1};
 
         const int right      = (int) ind_position[right_position[0]][right_position[1]];
         const int right_down = (int) ind_position[right_down_position[0]][right_down_position[1]];
@@ -223,74 +225,59 @@ void proliferation(
         const int left       = (int) ind_position[left_position[0]][left_position[1]];
         const int left_down  = (int) ind_position[left_down_position[0]][left_down_position[1]];
 
-        if (cell_position[0] == 0) {
-
-            if (cell_position[1] == 0) {                    /* Special case: top left corner */
+        if (x_coord == 0) {
+            if (y_coord == 0) {                    /* Special case: top left corner */
                 /* Possible directions to move, check if these points are occupied. */
                 const int neighbouring_temp[3]   = {right, right_down, down};
                 const int *neighbouring_coord[3] = {right_position, right_down_position, down_position};
-                cell_proliferate(3, neighbouring_temp, neighbouring_coord, ind_position, cell_position);
-            } else if (cell_position[1] == X_LEN - 1) {     /* Special case: top right corner */
+                cell_proliferate(3, neighbouring_temp, neighbouring_coord, ind_position, x_coord, y_coord);
+            } else if (y_coord == X_LEN - 1) {     /* Special case: top right corner */
                 const int neighbouring_temp[3]   = {left, left_down, down};
                 const int *neighbouring_coord[3] = {left_position, left_down_position, down_position};
-                cell_proliferate(3, neighbouring_temp, neighbouring_coord, ind_position, cell_position);
+                cell_proliferate(3, neighbouring_temp, neighbouring_coord, ind_position, x_coord, y_coord);
             } else {
                 const int neighbouring_temp[5]   = {left, right, down, left_down, right_down};
                 const int *neighbouring_coord[5] = {left_position, right_position, down_position,
                                                     left_down_position, right_down_position};
-                cell_proliferate(5, neighbouring_temp, neighbouring_coord, ind_position, cell_position);
+                cell_proliferate(5, neighbouring_temp, neighbouring_coord, ind_position, x_coord, y_coord);
             }
-
-        } else if (cell_position[0] == Y_LEN - 1) {         /* Lower boundary */
-
-            if (cell_position[1] == 0) {                    /* Special case: bottom left corner */
+        } else if (x_coord == Y_LEN - 1) {         /* Lower boundary */
+            if (y_coord == 0) {                    /* Special case: bottom left corner */
                 const int neighbouring_temp[3]   = {up, up_right, right};
                 const int *neighbouring_coord[3] = {up_position, up_right_position, right_position};
-                cell_proliferate(3, neighbouring_temp, neighbouring_coord, ind_position, cell_position);
-            } else if (cell_position[1] == X_LEN - 1) {     /* Special case: bottom right corner */
+                cell_proliferate(3, neighbouring_temp, neighbouring_coord, ind_position, x_coord, y_coord);
+            } else if (y_coord == X_LEN - 1) {     /* Special case: bottom right corner */
                 const int neighbouring_temp[3]   = {left, up, up_left};
                 const int *neighbouring_coord[3] = {left_position, up_position, up_left_position};
-                cell_proliferate(3, neighbouring_temp, neighbouring_coord, ind_position, cell_position);
+                cell_proliferate(3, neighbouring_temp, neighbouring_coord, ind_position, x_coord, y_coord);
             } else {                                        // WARNING: BE CAREFUL with the order (keep for consistency)
                 const int neighbouring_temp[5]   = {left, up_left, up, up_right, right};
                 const int *neighbouring_coord[5] = {left_position, up_left_position, up_position,
                                                     up_right_position, right_position};
-                cell_proliferate(5, neighbouring_temp, neighbouring_coord, ind_position, cell_position);
+                cell_proliferate(5, neighbouring_temp, neighbouring_coord, ind_position, x_coord, y_coord);
             }
-
-        } else if (cell_position[1] == 0) {                 /* Left boundary */
-
-            if (cell_position[0] == 0) {                    // do nothing so far
-            } else if (cell_position[0] == Y_LEN - 1) {     // do nothing so far
-            } else {
-                const int neighbouring_temp[5]   = {up, up_right, right, right_down, down};
-                const int *neighbouring_coord[5] = {
-                        up_position, up_right_position, right_position, right_down_position, down_position
-                };
-                cell_proliferate(5, neighbouring_temp, neighbouring_coord, ind_position, cell_position);
-            }
-
-        } else if (cell_position[1] == X_LEN - 1) {         /* Right boundary */
-
-            if (cell_position[0] == 0) {
-            } else if (cell_position[0] == Y_LEN - 1) {
-            } else {
-                const int neighbouring_temp[5]   = {up, up_left, left, left_down, down};
-                const int *neighbouring_coord[5] = {
-                        up_position, up_left_position, left_position, left_down_position,
-                        down_position
-                };
-                cell_proliferate(5, neighbouring_temp, neighbouring_coord, ind_position, cell_position);
-            }
-
-        } else {                                            /* Other cells that are not at the boundary */
-            const int neighbouring_temp[8]   = {left, right, up, down, up_left, up_right, left_down,
-                                                right_down};
+        } else if (y_coord == 0 && x_coord != Y_LEN - 1) {              /* Left boundary */
+            const int neighbouring_temp[5]   = {up, up_right, right, right_down, down};
+            const int *neighbouring_coord[5] = {
+                    up_position, up_right_position, right_position, right_down_position, down_position
+            };
+            cell_proliferate(5, neighbouring_temp, neighbouring_coord, ind_position, x_coord, y_coord);
+        } else if (y_coord == X_LEN - 1 && x_coord != Y_LEN - 1) {      /* Right boundary */
+            const int neighbouring_temp[5]   = {up, up_left, left, left_down, down};
+            const int *neighbouring_coord[5] = {
+                    up_position, up_left_position, left_position, left_down_position,
+                    down_position
+            };
+            cell_proliferate(5, neighbouring_temp, neighbouring_coord, ind_position, x_coord, y_coord);
+        } else {                                                        /* Other cells that are not at the boundary */
+            const int neighbouring_temp[8]   = {
+                    left, right, up, down, up_left, up_right, left_down, right_down
+            };
             const int *neighbouring_coord[8] = {
                     left_position, right_position, up_position, down_position,
                     up_left_position, up_right_position, left_down_position, right_down_position
             };
-            cell_proliferate(8, neighbouring_temp, neighbouring_coord, ind_position, cell_position);
+            cell_proliferate(8, neighbouring_temp, neighbouring_coord, ind_position, x_coord, y_coord);
         }
     }
 }
@@ -471,9 +458,32 @@ double generate_pattern(sse_pars_t *pars, const int idx) {
             if (n_itr < 0 || isnan(n_itr) ||
                 f_itr < 0 || isnan(f_itr) ||
                 m_itr < 0 || isnan(m_itr)) {
+                printf("%d", t);
                 return NAN;
             }
         })
+
+        // Movement
+        if ((t + 1) > PDE_THRESHOLD) {
+            /* Movements only occur after diffusion starts having an impact on cells. */
+            for (int i = 0, len = coord->size; i < len; ++i) {
+                node_t    cell_pos = arraylist_get(coord, i);
+                const int x_coord  = cell_pos._intPair[0];
+                const int y_coord  = cell_pos._intPair[1];
+
+                if (y_coord == 1) {
+
+                } else if (y_coord == X_LEN - 1) {
+
+                } else if (x_coord == 0) {
+
+                } else if (x_coord == Y_LEN - 1) {
+
+                } else {
+
+                }
+            }
+        }
     }
 
     arraylist_free(coord);
