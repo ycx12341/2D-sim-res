@@ -165,7 +165,7 @@ void boundary_condition(
         double n[(int) SPACE_LENGTH_Y][(int) SPACE_LENGTH_X],
         double f[(int) SPACE_LENGTH_Y][(int) SPACE_LENGTH_X],
         double m[(int) SPACE_LENGTH_Y][(int) SPACE_LENGTH_X]) {
-    for (int j = 0, x_1 = X_LEN - 1, x_2 = x_1 - 1; j < X_LEN; ++j) {
+    for (int j = 0, x_1 = Y_LEN - 1, x_2 = x_1 - 1; j < X_LEN; ++j) {
         n[0][j]   = n[1][j];        // n[1, ] <- n[2, ]
         f[0][j]   = f[1][j];        // f[1, ] <- f[2, ]
         m[0][j]   = m[1][j];        // m[1, ] <- m[2, ]
@@ -173,7 +173,7 @@ void boundary_condition(
         f[x_1][j] = f[x_2][j];      // f[length(y), ] <- f[(length(y) - 1), ]
         m[x_1][j] = m[x_2][j];      // m[length(y), ] <- m[(length(y) - 1), ]
     }
-    for (int i = 0, y_1 = Y_LEN - 1, y_2 = y_1 - 1; i < Y_LEN; ++i) {
+    for (int i = 0, y_1 = X_LEN - 1, y_2 = y_1 - 1; i < Y_LEN; ++i) {
         n[i][0]   = n[i][1];        // n[, 1] <- n[, 2]
         f[i][0]   = f[i][1];        // f[, 1] <- f[, 2]
         m[i][0]   = m[i][1];        // m[, 1] <- m[, 2]
@@ -440,6 +440,18 @@ double generate_pattern(sse_pars_t *pars, const int idx) {
         solve_PDE(idx, t, pars, n, f, m);   // Solving the PDE model numerically
         boundary_condition(n, f, m);        // Boundary condition
 
+        /* If singularity occurs while solving the PDE model, terminate the simulation. */
+        double n_itr, f_itr, m_itr;
+        MATRIX_ITR(Y_LEN, X_LEN, {
+            n_itr = n[_i_][_j_];
+            f_itr = f[_i_][_j_];
+            m_itr = m[_i_][_j_];
+            if (n_itr < 0 || isnan(n_itr) ||
+                f_itr < 0 || isnan(f_itr) ||
+                m_itr < 0 || isnan(m_itr)) {
+                return NAN;
+            }
+        })
     }
 
     arraylist_free(coord);
