@@ -55,7 +55,7 @@ void cell_proliferate(const int nbr_num, const int nbr_temp[nbr_num], const int 
 void solve_PDE(const int idx, const int t, const sse_pars_t *pars,
                double n[(int) SPACE_LENGTH_Y][(int) SPACE_LENGTH_X],
                double f[(int) SPACE_LENGTH_Y][(int) SPACE_LENGTH_X],
-               const double m[(int) SPACE_LENGTH_Y][(int) SPACE_LENGTH_X]) {
+               double m[(int) SPACE_LENGTH_Y][(int) SPACE_LENGTH_X]) {
     if ((t + 1) > PDE_THRESHOLD) {
         /* Diffusion starts having an impact after a certain amount of time in day 1. */
 
@@ -114,6 +114,29 @@ void solve_PDE(const int idx, const int t, const sse_pars_t *pars,
                 n[i][j] = n_cpy[i][j] * A +
                           n_cpy[i][j + 1] * B + n_cpy[i][j - 1] * C +
                           n_cpy[i - 1][j] * D + n_cpy[i + 1][j] * E;
+            }
+        }
+
+        /*
+         * m[i][j] = m[i][j] * (M_F2) + (M_F3) * n[i][j] + (M_F1) * (F)
+         *
+         * M_F1    = (N_F1) * dm
+         * M_F2    = 1 - 4 * M_F1
+         * M_F3    = dt * alpha
+         * F       = m[i][j+1] + m[i][j-1] + m[i-1][j] + m[i+1][j]
+         */
+        const double M_F1 = N_F1 * pars->dm[idx];
+        const double M_F2 = 1.0 - 4.0 * M_F1;
+        const double M_F3 = DT * pars->alpha[idx];
+
+        double m_cpy[Y_LEN][X_LEN];
+        MATRIX_COPY(m, m_cpy, Y_LEN, X_LEN)
+
+        double   F;
+        for (int i = 1, is = Y_LEN - 1, js = X_LEN - 1; i < is; ++i) {
+            for (int j = 1; j < js; ++j) {
+                F = m_cpy[i][j + 1] + m_cpy[i][j - 1] + m_cpy[i - 1][j] + m_cpy[i + 1][j];
+                m[i][j] = m[i][j] * M_F2 + M_F3 * n[i][j] + M_F1 * F;
             }
         }
     } else {
@@ -380,7 +403,7 @@ double generate_pattern(sse_pars_t *pars, const int idx) {
 
         // Testing
         if ((t + 1) > PDE_THRESHOLD) {
-            MATRIX_PRINT(n, Y_LEN, X_LEN, " %.7f ");
+            MATRIX_PRINT(m, Y_LEN, X_LEN, " %.7f ");
             return NAN;
         }
 
