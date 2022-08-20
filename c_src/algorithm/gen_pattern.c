@@ -52,10 +52,11 @@ void cell_proliferate(const int nbr_num, const int nbr_temp[nbr_num], const int 
 /**
  * Solving the PDE model numerically.
  */
-void solve_PDE(const int idx, const int t, const sse_pars_t *pars,
-               double n[(int) SPACE_LENGTH_Y][(int) SPACE_LENGTH_X],
-               double f[(int) SPACE_LENGTH_Y][(int) SPACE_LENGTH_X],
-               double m[(int) SPACE_LENGTH_Y][(int) SPACE_LENGTH_X]) {
+void solve_PDE(
+        const int idx, const int t, const sse_pars_t *pars,
+        double n[(int) SPACE_LENGTH_Y][(int) SPACE_LENGTH_X],
+        double f[(int) SPACE_LENGTH_Y][(int) SPACE_LENGTH_X],
+        double m[(int) SPACE_LENGTH_Y][(int) SPACE_LENGTH_X]) {
     /*
      * f[i][j] = f[i][j] * ( 1 - (F_F) * m[i][j] )
      *      in range [1:Y_LEN-1, 1:X_LEN-1]
@@ -154,6 +155,31 @@ void solve_PDE(const int idx, const int t, const sse_pars_t *pars,
                 m[i][j] = m[i][j] + G_F2 * n[i][j];
             }
         }
+    }
+}
+
+/**
+ * Boundary condition
+ */
+void boundary_condition(
+        double n[(int) SPACE_LENGTH_Y][(int) SPACE_LENGTH_X],
+        double f[(int) SPACE_LENGTH_Y][(int) SPACE_LENGTH_X],
+        double m[(int) SPACE_LENGTH_Y][(int) SPACE_LENGTH_X]) {
+    for (int j = 0, x_1 = X_LEN - 1, x_2 = x_1 - 1; j < X_LEN; ++j) {
+        n[0][j]   = n[1][j];        // n[1, ] <- n[2, ]
+        f[0][j]   = f[1][j];        // f[1, ] <- f[2, ]
+        m[0][j]   = m[1][j];        // m[1, ] <- m[2, ]
+        n[x_1][j] = n[x_2][j];      // n[length(y), ] <- n[(length(y) - 1), ]
+        f[x_1][j] = f[x_2][j];      // f[length(y), ] <- f[(length(y) - 1), ]
+        m[x_1][j] = m[x_2][j];      // m[length(y), ] <- m[(length(y) - 1), ]
+    }
+    for (int i = 0, y_1 = Y_LEN - 1, y_2 = y_1 - 1; i < Y_LEN; ++i) {
+        n[i][0]   = n[i][1];        // n[, 1] <- n[, 2]
+        f[i][0]   = f[i][1];        // f[, 1] <- f[, 2]
+        m[i][0]   = m[i][1];        // m[, 1] <- m[, 2]
+        n[i][y_1] = n[i][y_2];      // n[, length(x)] <- n[, (length(x) - 1)]
+        f[i][y_1] = f[i][y_2];      // f[, length(x)] <- f[, (length(x) - 1)]
+        m[i][y_1] = m[i][y_2];      // m[, length(x)] <- m[, (length(x) - 1)]
     }
 }
 
@@ -411,15 +437,8 @@ double generate_pattern(sse_pars_t *pars, const int idx) {
             })
         }
 
-        /* Solving the PDE model numerically */
-        solve_PDE(idx, t, pars, n, f, m);
-
-        // Testing
-        if ((t + 1) > PDE_THRESHOLD) {
-        } else {
-            MATRIX_PRINT(m, Y_LEN, X_LEN, " %.7f ");
-            return NAN;
-        }
+        solve_PDE(idx, t, pars, n, f, m);   // Solving the PDE model numerically
+        boundary_condition(n, f, m);        // Boundary condition
 
     }
 
