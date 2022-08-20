@@ -33,10 +33,14 @@
  * distributed into two unoccupied neighbouring locations.
  * @param nbr_num number of neighbouring positions
  */
-void cell_proliferate(const int nbr_num, const int nbr_temp[nbr_num], const int *nbr_coord[2],
-                      double ind_position[(int) SPACE_LENGTH_Y][(int) SPACE_LENGTH_X],
-                      const int cell_position[2]) {
-    int zeros = int_array_count(nbr_num, nbr_temp, 0);
+void cell_proliferate(
+        const int nbr_num,
+        const int nbr_temp[nbr_num],
+        const int *nbr_coord[2],
+        double ind_position[Y_LEN][X_LEN],
+        const int cell_position[2]
+) {
+    const int zeros = int_array_count(nbr_num, nbr_temp, 0);
     if (zeros >= 2) {
         int_arr_2_t sample_idx = unif_index2(zeros);
 
@@ -53,10 +57,13 @@ void cell_proliferate(const int nbr_num, const int nbr_temp[nbr_num], const int 
  * Solving the PDE model numerically.
  */
 void solve_PDE(
-        const int idx, const int t, const sse_pars_t *pars,
-        double n[(int) SPACE_LENGTH_Y][(int) SPACE_LENGTH_X],
-        double f[(int) SPACE_LENGTH_Y][(int) SPACE_LENGTH_X],
-        double m[(int) SPACE_LENGTH_Y][(int) SPACE_LENGTH_X]) {
+        const int idx,
+        const int t,
+        const sse_pars_t *pars,
+        double n[Y_LEN][X_LEN],
+        double f[Y_LEN][X_LEN],
+        double m[Y_LEN][X_LEN]
+) {
     /*
      * f[i][j] = f[i][j] * ( 1 - (F_F) * m[i][j] )
      *      in range [1:Y_LEN-1, 1:X_LEN-1]
@@ -162,9 +169,10 @@ void solve_PDE(
  * Boundary condition
  */
 void boundary_condition(
-        double n[(int) SPACE_LENGTH_Y][(int) SPACE_LENGTH_X],
-        double f[(int) SPACE_LENGTH_Y][(int) SPACE_LENGTH_X],
-        double m[(int) SPACE_LENGTH_Y][(int) SPACE_LENGTH_X]) {
+        double n[Y_LEN][X_LEN],
+        double f[Y_LEN][X_LEN],
+        double m[Y_LEN][X_LEN]
+) {
     for (int j = 0, x_1 = Y_LEN - 1, x_2 = x_1 - 1; j < X_LEN; ++j) {
         n[0][j]   = n[1][j];        // n[1, ] <- n[2, ]
         f[0][j]   = f[1][j];        // f[1, ] <- f[2, ]
@@ -186,8 +194,12 @@ void boundary_condition(
 /**
  * Proliferation mechanism
  */
-void proliferation(const int prof_cells_num, double prof_cells[prof_cells_num], arraylist_t *coord,
-                   double ind_position[Y_LEN][X_LEN]) {
+void proliferation(
+        const int prof_cells_num,
+        double prof_cells[prof_cells_num],
+        arraylist_t *coord,
+        double ind_position[Y_LEN][X_LEN]
+) {
     for (int q = 0; q < prof_cells_num; q++) {
         node_t cell_pos         = arraylist_get(coord, (int) prof_cells[q]);
         int    cell_position[2] = {cell_pos._intPair[0], cell_pos._intPair[1]};
@@ -283,6 +295,91 @@ void proliferation(const int prof_cells_num, double prof_cells[prof_cells_num], 
     }
 }
 
+bool cell_density(
+        sse_pars_t *pars,
+        const int idx,
+        arraylist_t *coord,
+        double n[Y_LEN][X_LEN],
+        double ind_position[Y_LEN][X_LEN]
+) {
+    /* Extract the density values at the positions of current cells */
+    int    cell_den_len = coord->size;
+    double cell_den[cell_den_len];
+
+    for (int i = 0; i < cell_den_len; i++) {
+        node_t pos = arraylist_get(coord, i);
+        cell_den[i] = n[pos._intPair[0]][pos._intPair[1]];
+    }
+
+    /* Cell extinction: some the current cells at the locations with the
+     * lowest cell densities will undergo extinction. */
+    int dead_cells_num = (int) round((double) coord->size * pars->prob_death[idx]);
+    int dead_cells[dead_cells_num];
+
+    for (int uu = 0; uu < dead_cells_num; ++uu) {
+        /* Find the cells at locations with the lowest densities. */
+        int    sample_idx = 0;
+        pair_t ind_dead   = array_min(cell_den_len, cell_den);
+        if (ind_dead.y._int > 1) {
+            sample_idx = unif_index(ind_dead.y._int);
+        }
+        int sample = double_array_find(cell_den_len, cell_den, ind_dead.x._double, sample_idx + 1);
+        assert(sample >= 0);
+        dead_cells[uu]   = sample;
+        cell_den[sample] = DBL_MAX;
+    }
+
+    /* Update the cell coordinates and the density vector. */
+    coord        = arraylist_remove_many(coord, dead_cells_num, dead_cells);
+    cell_den_len = double_array_delete_many(cell_den_len, cell_den, dead_cells_num, dead_cells);
+
+    /* If all cells are dead, terminate the algorithm. */
+    if (cell_den_len == 0) { return false; }
+
+    /* Cell mitosis: some current cells at the locations
+             * with the highest densities will undergo mitosis. */
+    const int prof_cells_num = (int) round((double) coord->size * pars->prob_prof[idx]);
+    double    prof_cells[prof_cells_num];
+
+    for (int uu = 0; uu < prof_cells_num; ++uu) {
+        /* Find the cells at the locations with the highest densities. */
+        int    sample_idx = 0;
+        pair_t ind_prof   = array_max(cell_den_len, cell_den);
+        if (ind_prof.y._int > 1) {
+            sample_idx = unif_index(ind_prof.y._int);
+        }
+        const int sample = double_array_find(cell_den_len, cell_den, ind_prof.x._double, sample_idx + 1);
+        assert(sample >= 0);
+        prof_cells[uu]   = sample;
+        cell_den[sample] = -DBL_MAX;
+    }
+
+    /* Record the current positions of the remaining cells. */
+    MATRIX_INIT(ind_position, Y_LEN, X_LEN, 0)
+    for (int i  = 0; i < coord->size; ++i) {
+        node_t pos = arraylist_get(coord, i);
+        ind_position[pos._intPair[0]][pos._intPair[1]] = 1;
+    }
+
+    /* Proliferation mechanism */
+    proliferation(prof_cells_num, prof_cells, coord, ind_position);
+
+    /* Update the cell coordinates and positions.*/
+    arraylist_clear(coord);
+    MATRIX_ITR2(Y_LEN, X_LEN, {
+        if (ind_position[_i_][_j_] == 1) {
+            node_t pos;
+            pos._intPair[0] = _i_;
+            pos._intPair[1] = _j_;
+            arraylist_append(coord, pos);
+        } else {
+            ind_position[_i_][_j_] = 0;
+        }
+    })
+
+    return true;
+}
+
 /**
  * Purpose: Generate a SCC invasion pattern with the given parameters.
  * @param pars Parameters
@@ -357,84 +454,9 @@ double generate_pattern(sse_pars_t *pars, const int idx) {
     for (int t = 0; t < TIME_STEPS; t++) {
 
         /* At the end of every day, some current cells in the domain will undergo extinction or mitosis. */
-        if ((t + 1) % DAY_TIME_STEPS == 0) {
-
-            /* Extract the density values at the positions of current cells */
-            int    cell_den_len = coord->size;
-            double cell_den[cell_den_len];
-
-            for (int i = 0; i < cell_den_len; i++) {
-                node_t pos = arraylist_get(coord, i);
-                cell_den[i] = n[pos._intPair[0]][pos._intPair[1]];
-            }
-
-            /* Cell extinction: some the current cells at the locations with the
-             * lowest cell densities will undergo extinction. */
-            int dead_cells_num = (int) round((double) coord->size * pars->prob_death[idx]);
-            int dead_cells[dead_cells_num];
-
-            for (int uu = 0; uu < dead_cells_num; ++uu) {
-                /* Find the cells at locations with the lowest densities. */
-                int    sample_idx = 0;
-                pair_t ind_dead   = array_min(cell_den_len, cell_den);
-                if (ind_dead.y._int > 1) {
-                    sample_idx = unif_index(ind_dead.y._int);
-                }
-                int sample = double_array_find(cell_den_len, cell_den, ind_dead.x._double, sample_idx + 1);
-                assert(sample >= 0);
-                dead_cells[uu]   = sample;
-                cell_den[sample] = DBL_MAX;
-            }
-
-            /* Update the cell coordinates and the density vector. */
-            coord        = arraylist_remove_many(coord, dead_cells_num, dead_cells);
-            cell_den_len = double_array_delete_many(cell_den_len, cell_den, dead_cells_num, dead_cells);
-
-            /* If all cells are dead, terminate the algorithm. */
-            if (cell_den_len == 0) {
-                return NAN;
-            }
-
-            /* Cell mitosis: some current cells at the locations
-             * with the highest densities will undergo mitosis. */
-            int    prof_cells_num = (int) round((double) coord->size * pars->prob_prof[idx]);
-            double prof_cells[prof_cells_num];
-
-            for (int uu = 0; uu < prof_cells_num; ++uu) {
-                /* Find the cells at the locations with the highest densities. */
-                int    sample_idx = 0;
-                pair_t ind_prof   = array_max(cell_den_len, cell_den);
-                if (ind_prof.y._int > 1) {
-                    sample_idx = unif_index(ind_prof.y._int);
-                }
-                int sample = double_array_find(cell_den_len, cell_den, ind_prof.x._double, sample_idx + 1);
-                assert(sample >= 0);
-                prof_cells[uu]   = sample;
-                cell_den[sample] = -DBL_MAX;
-            }
-
-            /* Record the current positions of the remaining cells. */
-            MATRIX_INIT(ind_position, Y_LEN, X_LEN, 0)
-            for (int i  = 0; i < coord->size; ++i) {
-                node_t pos = arraylist_get(coord, i);
-                ind_position[pos._intPair[0]][pos._intPair[1]] = 1;
-            }
-
-            /* Proliferation mechanism */
-            proliferation(prof_cells_num, prof_cells, coord, ind_position);
-
-            /* Update the cell coordinates and positions.*/
-            arraylist_clear(coord);
-            MATRIX_ITR2(Y_LEN, X_LEN, {
-                if (ind_position[_i_][_j_] == 1) {
-                    node_t pos;
-                    pos._intPair[0] = _i_;
-                    pos._intPair[1] = _j_;
-                    arraylist_append(coord, pos);
-                } else {
-                    ind_position[_i_][_j_] = 0;
-                }
-            })
+        if ((t + 1) % DAY_TIME_STEPS == 0 &&
+            !cell_density(pars, idx, coord, n, ind_position)) {
+            return NAN;
         }
 
         solve_PDE(idx, t, pars, n, f, m);   // Solving the PDE model numerically
