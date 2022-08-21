@@ -21,6 +21,7 @@
 #define TIME_STEPS      (T / DT)    // Total dimensionless timesteps and the dimensionless timesteps for one single day.
 #define INT_TIME_STEPS  (1 / DT)
 #define DAY_TIME_STEPS  600
+#define N_F1            DT / pow(H, 2.0)
 
 #define BETA            0
 
@@ -95,6 +96,7 @@ void solve_PDE(
          * N_F1    = dt / (h^2)
          * N_F2    = dn * (N_F1)
          * N_F3    = gamma * (N_F1)
+         * N_F4    = N_F3 / 4.0;
          *
          * A       = (A_F1) - ( (N_F3) * (A2) ) + (G_F1) * (A3)
          * A_F1    = 1 - ( 4 * (N_F2) )
@@ -106,9 +108,9 @@ void solve_PDE(
          * D       = (N_F2) - (N_F3 / 4) * ( f[i-1][j] - f[i+1][j] )
          * E       = (N_F2) + (N_F3 / 4) * ( f[i-1][j] - f[i+1][j] )
          */
-        const double N_F1 = DT / pow(H, 2.0);
         const double N_F2 = pars->dn[idx] * N_F1;
         const double N_F3 = pars->gamma[idx] * N_F1;
+        const double N_F4 = N_F3 / 4.0;
         const double A_F1 = 1.0 - 4.0 * N_F2;
 
         double n_cpy[Y_LEN][X_LEN];
@@ -120,10 +122,10 @@ void solve_PDE(
                 A2 = f[i][j + 1] + f[i][j - 1] + f[i - 1][j] + f[i + 1][j] - 4.0 * f[i][j];
                 A3 = 1 - n[i][j] - f[i][j];
                 A  = A_F1 - N_F3 * A2 + G_F1 * A3;
-                B  = N_F2 - N_F3 / 4.0 * (f[i][j + 1] - f[i][j - 1]);
-                C  = N_F2 + N_F3 / 4.0 * (f[i][j + 1] - f[i][j - 1]);
-                D  = N_F2 - N_F3 / 4.0 * (f[i - 1][j] - f[i + 1][j]);
-                E  = N_F2 + N_F3 / 4.0 * (f[i - 1][j] - f[i + 1][j]);
+                B  = N_F2 - N_F4 * (f[i][j + 1] - f[i][j - 1]);
+                C  = N_F2 + N_F4 * (f[i][j + 1] - f[i][j - 1]);
+                D  = N_F2 - N_F4 * (f[i - 1][j] - f[i + 1][j]);
+                E  = N_F2 + N_F4 * (f[i - 1][j] - f[i + 1][j]);
 
                 n[i][j] = n_cpy[i][j] * A +
                           n_cpy[i][j + 1] * B + n_cpy[i][j - 1] * C +
@@ -463,6 +465,9 @@ double generate_pattern(sse_pars_t *pars, const int idx) {
             }
         })
 
+#define MOVEMENT_F_SUM(f_ip1j, f_im1j, f_ijp1, f_ijm1, f_xy) \
+    ((f_ip1j) + (f_im1j) + (f_ijp1) + (f_ijm1) - 4.0 * (f_xy))
+
         // Movement
         if ((t + 1) > PDE_THRESHOLD) {
             /* Movements only occur after diffusion starts having an impact on cells. */
@@ -471,8 +476,42 @@ double generate_pattern(sse_pars_t *pars, const int idx) {
                 const int x_coord  = cell_pos._intPair[0];
                 const int y_coord  = cell_pos._intPair[1];
 
-                if (y_coord == 1) {
+                const double G_F1 = pars->rn[idx] * DT;
+                const double N_F2 = pars->dn[idx] * N_F1;
+                const double N_F3 = pars->gamma[idx] * N_F1;
+                const double N_F4 = N_F3 / 4.0;
+                const double A_F1 = 1.0 - 4.0 * N_F2;
 
+                double f_ip1j, f_im1j, f_ijp1, f_ijm1, F;
+                double p0, p1 = NAN, p2 = NAN, p3 = NAN, p4 = NAN;
+
+                if (y_coord == 0) {
+                    const double A = 1 - n[x_coord][y_coord] - f[x_coord][y_coord];
+                    f_ip1j = f[x_coord][y_coord + 1];
+                    f_im1j = 0;
+                    f_ijp1 = f[x_coord - 1][y_coord];
+                    f_ijm1 = f[x_coord + 1][y_coord];
+
+                    if (x_coord == 0) {
+                        f_ijp1 = 0;
+                        p1     = 0;
+                        p4     = 0;
+                    } else if (x_coord == Y_LEN - 1) {
+                        f_ijm1 = 0;
+                        p1     = 0;
+                        p3     = 0;
+                    } else {
+                        p1     = 0;
+                    }
+
+                    F  = MOVEMENT_F_SUM(f_ip1j, f_im1j, f_ijp1, f_ijm1, f[x_coord][y_coord]);
+                    p0 = A_F1 - N_F3 * F + G_F1 * A;
+                    p1 = 0;
+                    p2 = isnan(p2) ? N_F2 + N_F4 * (f_ip1j - f_im1j) : 0;
+                    p3 = isnan(p3) ? N_F2 - N_F4 * (f_ijp1 - f_ijm1) : 0;
+                    p4 = isnan(p4) ? N_F2 + N_F4 * (f_ijp1 - f_ijm1) : 0;
+
+                    printf("t[%d] %.8f %.8f %.8f %.8f %.8f\n", t, p0, p1, p2, p3, p4);
                 } else if (y_coord == X_LEN - 1) {
 
                 } else if (x_coord == 0) {
