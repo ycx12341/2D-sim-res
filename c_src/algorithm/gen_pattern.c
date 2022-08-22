@@ -285,7 +285,7 @@ void proliferation(
 }
 
 bool cell_density(
-        sse_pars_t *pars,
+        const sse_pars_t *pars,
         const int idx,
         arraylist_t *coord,
         double n[Y_LEN][X_LEN],
@@ -369,11 +369,93 @@ bool cell_density(
     return true;
 }
 
+
+#define MOVEMENT_F_SUM(f_ip1j, f_im1j, f_ijp1, f_ijm1, f_xy) \
+    ((f_ip1j) + (f_im1j) + (f_ijp1) + (f_ijm1) - 4.0 * (f_xy))
+
+void movement(
+        const int t,
+        const int idx,
+        const sse_pars_t *pars,
+        arraylist_t *coord,
+        double n[Y_LEN][X_LEN],
+        double f[Y_LEN][X_LEN]
+) {
+    if ((t + 1) <= PDE_THRESHOLD) { return; }
+
+    /* Movements only occur after diffusion starts having an impact on cells. */
+    const double G_F1 = pars->rn[idx] * DT;
+    const double N_F2 = pars->dn[idx] * N_F1;
+    const double N_F3 = pars->gamma[idx] * N_F1;
+    const double N_F4 = N_F3 / 4.0;
+    const double A_F1 = 1.0 - 4.0 * N_F2;
+
+    for (int i = 0, len = coord->size; i < len; ++i) {
+        node_t    cell_pos = arraylist_get(coord, i);
+        const int x_coord  = cell_pos._intPair[0];
+        const int y_coord  = cell_pos._intPair[1];
+
+        const double A = 1 - n[x_coord][y_coord] - f[x_coord][y_coord];
+
+        double p0, p1 = NAN, p2 = NAN, p3 = NAN, p4 = NAN;
+        double F;
+        double f_ip1j = f[x_coord][y_coord + 1];
+        double f_im1j = f[x_coord][y_coord - 1];
+        double f_ijp1 = f[x_coord - 1][y_coord];
+        double f_ijm1 = f[x_coord + 1][y_coord];
+
+        if (y_coord == 0) {
+            f_im1j = 0;
+            p1     = 0;
+            if (x_coord == 0) {
+                f_ijp1 = 0;
+                p4     = 0;
+            } else if (x_coord == Y_LEN - 1) {
+                f_ijm1 = 0;
+                p3     = 0;
+            }
+        } else if (y_coord == X_LEN - 1) {
+            f_ip1j = 0;
+            p2     = 0;
+            if (x_coord == 0) {
+                f_ijp1 = 0;
+                p4     = 0;
+            } else if (x_coord == Y_LEN - 1) {
+                f_ijm1 = 0;
+                p3     = 0;
+            }
+        } else if (x_coord == 0) {
+            f_ijp1 = 0;
+            p4     = 0;
+            if (y_coord == X_LEN - 1) {
+                f_ip1j = 0;
+                p2     = 4;
+            }
+        } else if (x_coord == Y_LEN - 1) {
+            f_ijm1 = 0;
+            p3     = 0;
+            if (y_coord == X_LEN - 1) {
+                f_ip1j = 0;
+                p2     = 0;
+            }
+        }
+
+        F  = MOVEMENT_F_SUM(f_ip1j, f_im1j, f_ijp1, f_ijm1, f[x_coord][y_coord]);
+        p0 = A_F1 - N_F3 * F + G_F1 * A;
+        p1 = isnan(p1) ? N_F2 - N_F4 * (f_ip1j - f_im1j) : 0;
+        p2 = isnan(p2) ? N_F2 + N_F4 * (f_ip1j - f_im1j) : 0;
+        p3 = isnan(p3) ? N_F2 - N_F4 * (f_ijp1 - f_ijm1) : 0;
+        p4 = isnan(p4) ? N_F2 + N_F4 * (f_ijp1 - f_ijm1) : 0;
+    }
+}
+
+#undef MOVEMENT_F_SUM
+
 /**
  * Purpose: Generate a SCC invasion pattern with the given parameters.
  * @param pars Parameters
  */
-double generate_pattern(sse_pars_t *pars, const int idx) {
+double generate_pattern(const sse_pars_t *pars, const int idx) {
     /* Space discretization: Create a 60*35 domain. */
     double x[X_LEN], y[Y_LEN];
     assert(seq_length_out(x, 0.0, H * (X_LEN - 1), X_LEN) == X_LEN);
@@ -465,64 +547,8 @@ double generate_pattern(sse_pars_t *pars, const int idx) {
             }
         })
 
-#define MOVEMENT_F_SUM(f_ip1j, f_im1j, f_ijp1, f_ijm1, f_xy) \
-    ((f_ip1j) + (f_im1j) + (f_ijp1) + (f_ijm1) - 4.0 * (f_xy))
+        movement(t, idx, pars, coord, n, f);
 
-        // Movement
-        if ((t + 1) > PDE_THRESHOLD) {
-            /* Movements only occur after diffusion starts having an impact on cells. */
-            for (int i = 0, len = coord->size; i < len; ++i) {
-                node_t    cell_pos = arraylist_get(coord, i);
-                const int x_coord  = cell_pos._intPair[0];
-                const int y_coord  = cell_pos._intPair[1];
-
-                const double G_F1 = pars->rn[idx] * DT;
-                const double N_F2 = pars->dn[idx] * N_F1;
-                const double N_F3 = pars->gamma[idx] * N_F1;
-                const double N_F4 = N_F3 / 4.0;
-                const double A_F1 = 1.0 - 4.0 * N_F2;
-
-                double f_ip1j, f_im1j, f_ijp1, f_ijm1, F;
-                double p0, p1 = NAN, p2 = NAN, p3 = NAN, p4 = NAN;
-
-                if (y_coord == 0) {
-                    const double A = 1 - n[x_coord][y_coord] - f[x_coord][y_coord];
-                    f_ip1j = f[x_coord][y_coord + 1];
-                    f_im1j = 0;
-                    f_ijp1 = f[x_coord - 1][y_coord];
-                    f_ijm1 = f[x_coord + 1][y_coord];
-
-                    if (x_coord == 0) {
-                        f_ijp1 = 0;
-                        p1     = 0;
-                        p4     = 0;
-                    } else if (x_coord == Y_LEN - 1) {
-                        f_ijm1 = 0;
-                        p1     = 0;
-                        p3     = 0;
-                    } else {
-                        p1     = 0;
-                    }
-
-                    F  = MOVEMENT_F_SUM(f_ip1j, f_im1j, f_ijp1, f_ijm1, f[x_coord][y_coord]);
-                    p0 = A_F1 - N_F3 * F + G_F1 * A;
-                    p1 = 0;
-                    p2 = isnan(p2) ? N_F2 + N_F4 * (f_ip1j - f_im1j) : 0;
-                    p3 = isnan(p3) ? N_F2 - N_F4 * (f_ijp1 - f_ijm1) : 0;
-                    p4 = isnan(p4) ? N_F2 + N_F4 * (f_ijp1 - f_ijm1) : 0;
-
-                    printf("t[%d] %.8f %.8f %.8f %.8f %.8f\n", t, p0, p1, p2, p3, p4);
-                } else if (y_coord == X_LEN - 1) {
-
-                } else if (x_coord == 0) {
-
-                } else if (x_coord == Y_LEN - 1) {
-
-                } else {
-
-                }
-            }
-        }
     }
 
     arraylist_free(coord);
