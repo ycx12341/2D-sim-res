@@ -10,7 +10,8 @@ CFLAGS        := $(DFLAG) $(GFLAGS) -c
 LFLAGS        := $(DFLAG) $(GFLAGS)
 
 TARGET        := calculate_scc \
-                 pars
+                 pars \
+				 gen_pattern
 
 .PHONY: all clean_unix
 

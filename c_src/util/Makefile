@@ -15,8 +15,8 @@ MTRX_DIR      := matrix
 
 COLL_TARGET    = arrayList \
                  collection
-MATH_TARGET    = runif \
-                 seed
+MATH_TARGET    = seed \
+				 sample
 MTRX_TARGET    = matrix
 
 .PHONY: all coll math mtrx clean_unix

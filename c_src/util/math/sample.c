@@ -64,25 +64,77 @@ int_arr_2_t unif_index2(const int dn) {
     return ry;
 }
 
+void revsort(double *a, int *ib, int n) {
+/* Sort a[] into descending order by "heapsort";
+ * sort ib[] alongside;
+ * if initially, ib[] = 1...n, it will contain the permutation finally
+ */
+
+    int l, j, ir, i;
+    double ra;
+    int ii;
+
+    if (n <= 1) {return;}
+
+    a--; ib--;
+
+    l = (n >> 1) + 1;
+    ir = n;
+
+    for (;;) {
+        if (l > 1) {
+            l = l - 1;
+            ra = a[l];
+            ii = ib[l];
+        }
+        else {
+            ra = a[ir];
+            ii = ib[ir];
+            a[ir] = a[1];
+            ib[ir] = ib[1];
+            if (--ir == 1) {
+                a[1] = ra;
+                ib[1] = ii;
+                return;
+            }
+        }
+        i = l;
+        j = l << 1;
+        while (j <= ir) {
+            if (j < ir && a[j] > a[j + 1]) { ++j;}
+            if (ra > a[j]) {
+                a[i] = a[j];
+                ib[i] = ib[j];
+                j += (i = j);
+            }
+            else {
+                j = ir + 1;
+            }
+        }
+        a[i] = ra;
+        ib[i] = ii;
+    }
+}
+
 int sample_prob1(const int dn, const double prob[dn]) {
-    int    x[dn];
-    double prob_sort[dn];
-    double rT, mass, totalmass;
-
-//    for (int i = 0; i < dn; ++i) { x[i] = i + 1; }
-    for (int i = 0; i < dn; ++i) { prob_sort[i] = prob[i]; }
-    quickSort(dn, prob_sort, false);
-
-
-    totalmass = 1;
-    rT        = totalmass * unif_rand();
-    mass      = 0;
-
+    int perm[dn];
+    double prob_cpy[dn];
+    
+    for (int i = 0; i < dn; i++) {
+        prob_cpy[i] = prob[i];
+        perm[i] = i + 1; 
+    }
+    
+    revsort(prob_cpy, perm, dn);
+    
+    for (int i = 1 ; i < dn; i++) { 
+        prob_cpy[i] += prob_cpy[i - 1]; 
+    }
+    
+    double rU = unif_rand();
     int i;
     for (i = 0; i < dn - 1; i++) {
-        mass += prob_sort[i];
-        if (rT <= mass)
-            break;
+        if (rU <= prob_cpy[i]) { break; }
     }
-    return dn - i;
+    return perm[i];
 }
