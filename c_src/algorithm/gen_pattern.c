@@ -372,6 +372,7 @@ bool cell_density(
 
 #define MOVEMENT_F_SUM(f_ip1j, f_im1j, f_ijp1, f_ijm1, f_xy) \
     ((f_ip1j) + (f_im1j) + (f_ijp1) + (f_ijm1) - 4.0 * (f_xy))
+#define MAX_MOVEMENT 5
 
 void movement(
         const int t,
@@ -446,6 +447,20 @@ void movement(
         p2 = isnan(p2) ? N_F2 + N_F4 * (f_ip1j - f_im1j) : 0;
         p3 = isnan(p3) ? N_F2 - N_F4 * (f_ijp1 - f_ijm1) : 0;
         p4 = isnan(p4) ? N_F2 + N_F4 * (f_ijp1 - f_ijm1) : 0;
+
+        double p[MAX_MOVEMENT] = {p0, p1, p2, p3, p4};
+        int    zeros           = 0;
+
+        for (int j = 0; j < MAX_MOVEMENT; ++j) {
+            if (p[j] < 0) {
+                p[j] = 0;
+            } else if (p[j] > 1) {
+                p[j] = 1;
+            }
+            if (p[j] == 0) { zeros++; }
+        }
+
+        int mvment = zeros < MAX_MOVEMENT ? mvment = sample_prob1(MAX_MOVEMENT, p) : 0;
     }
 }
 
