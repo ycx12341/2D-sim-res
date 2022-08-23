@@ -446,6 +446,23 @@ void movement(
         p2 = isnan(p2) ? N_F2 + N_F4 * (f_ip1j - f_im1j) : 0;
         p3 = isnan(p3) ? N_F2 - N_F4 * (f_ijp1 - f_ijm1) : 0;
         p4 = isnan(p4) ? N_F2 + N_F4 * (f_ijp1 - f_ijm1) : 0;
+
+        double p[5]  = {p0, p1, p2, p3, p4};
+        int    zeros = 0;
+
+        for (int j = 0; j < 5; ++j) {
+            p[j] = p[j] < 0 ? 0 : p[j];
+            p[j] = p[j] > 1 ? 1 : p[j];
+            if (p[j] == 0) { zeros++; }
+        }
+
+//        double mvment = zeros == 5 ? 0 :;
+        double mvment;
+        if (zeros == 5) {
+            mvment = 0;
+        } else {
+
+        }
     }
 }
 

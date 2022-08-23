@@ -6,6 +6,8 @@
 #ifndef C_SRC_MATH_EXT_H
 #define C_SRC_MATH_EXT_H
 
+#include <stdbool.h>
+
 /**
  * Set the initial seed for variate generators.
  */
@@ -30,5 +32,9 @@ typedef struct {
 } int_arr_2_t;
 
 int_arr_2_t unif_index2(int dn);
+
+void quickSort(int len, double array[], bool ascending);
+
+int sample_prob1(int dn, const double prob[dn]);
 
 #endif //C_SRC_MATH_EXT_H

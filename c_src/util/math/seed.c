@@ -5,9 +5,6 @@
 
 #include "math_ext.h"
 
-#include <stdint.h>
-#include <math.h>
-
 static unsigned int i_seed[628];                        /* allow for optimizing compilers to read over bound */
 
 #define I1                      (i_seed[0])
@@ -117,41 +114,4 @@ double unif_rand() {
 
 void set_seed(const unsigned int seed) {
     seed_init(seed);
-}
-
-static double rbits(int bits) {
-    uint64_t v = 0;
-
-    for (int n = 0; n <= bits; n += 16) {
-        int v1 = (int) floor(unif_rand() * 65536);
-        v = 65536 * v + v1;
-    }
-
-    const int_least64_t one64 = 1L;
-    return (double) (v & ((one64 << bits) - 1));
-}
-
-int unif_index(int dn) {
-    if (dn <= 0) { return 0; }
-    int    bits = (int) ceil(log2(dn));
-    double dv;
-    do { dv = rbits(bits); } while (dn <= dv);
-    return (int) dv;
-}
-
-int_arr_2_t unif_index2(int dn) {
-    int_arr_2_t ry;
-    ry.arr[0] = -1;
-    ry.arr[1] = -1;
-    if (dn < 2) { return ry; }
-
-    int x[dn], n = dn;
-
-    for (int i = 0; i < dn; i++) { x[i] = i; }
-    for (int i = 0; i < 2; i++) {
-        int j     = unif_index(n);
-        ry.arr[i] = x[j];
-        x[j]      = x[--n];
-    }
-    return ry;
 }
