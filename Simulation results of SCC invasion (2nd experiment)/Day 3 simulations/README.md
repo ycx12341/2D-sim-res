@@ -14,4 +14,8 @@ Folder **Day 6 simulations**, **Day 9 simulations**, **Day 12 simulations** and 
 
 See the README.md file for each folder for more details. 
 
-All simulation results were generated using R 4.0.3 "Bunny-Wunnies Freak out".  
+### Note
+
+All simulation results were generated using R **4.0.3** "Bunny-Wunnies Freak out". 
+
+For R version **greater than 4.0.3**, the if statement in line 883 returns an error message instead of a warning message. We recommend users to change it to `if(length(temp.den.table) == 1)` so valid results can be obtained.
