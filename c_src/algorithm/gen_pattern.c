@@ -319,7 +319,7 @@ bool cell_density(
     }
 
     /* Update the cell coordinates and the density vector. */
-    coord        = arraylist_remove_many(coord, dead_cells_num, dead_cells);
+    arraylist_remove_many(coord, dead_cells_num, dead_cells);
     cell_den_len = double_array_delete_many(cell_den_len, cell_den, dead_cells_num, dead_cells);
 
     /* If all cells are dead, terminate the algorithm. */
@@ -380,7 +380,8 @@ void movement(
         const sse_pars_t *pars,
         arraylist_t *coord,
         double n[Y_LEN][X_LEN],
-        double f[Y_LEN][X_LEN]
+        double f[Y_LEN][X_LEN],
+        double ind_position[Y_LEN][X_LEN]
 ) {
     if ((t + 1) <= PDE_THRESHOLD) { return; }
 
@@ -460,7 +461,56 @@ void movement(
             if (p[j] == 0) { zeros++; }
         }
 
-        int mvment = zeros < MAX_MOVEMENT ? mvment = sample_prob1(MAX_MOVEMENT, p) : 0;
+        int    mvment = zeros < MAX_MOVEMENT ? sample_prob1(MAX_MOVEMENT, p) : 0;
+        node_t crd    = arraylist_get(coord, i);
+        int    x_crd  = crd._intPair[0], y_crd = crd._intPair[1];
+
+        switch (mvment) {
+            case 1: {
+                ind_position[x_crd][y_crd] = 1;
+                break;
+            }
+            case 2: {
+                if (ind_position[x_crd][y_crd - 1] == 0) {
+                    node_t val;
+                    val._intPair[0] = x_crd;
+                    val._intPair[1] = y_crd - 1;
+                    arraylist_set(coord, i, val);
+                }
+                ind_position[x_crd][y_crd] = 1;
+                break;
+            }
+            case 3: {
+                if (ind_position[x_crd][y_crd + 1] == 0) {
+                    node_t val;
+                    val._intPair[0] = x_crd;
+                    val._intPair[1] = y_crd + 1;
+                    arraylist_set(coord, i, val);
+                }
+                ind_position[x_crd][y_crd] = 1;
+                break;
+            }
+            case 4: {
+                if (ind_position[x_crd + 1][y_crd] == 0) {
+                    node_t val;
+                    val._intPair[0] = x_crd + 1;
+                    val._intPair[1] = y_crd;
+                    arraylist_set(coord, i, val);
+                }
+                ind_position[x_crd][y_crd] = 1;
+                break;
+            }
+            case 5: {
+                if (ind_position[x_crd - 1][y_crd] == 0) {
+                    node_t val;
+                    val._intPair[0] = x_crd - 1;
+                    val._intPair[1] = y_crd;
+                    arraylist_set(coord, i, val);
+                }
+                ind_position[x_crd][y_crd] = 1;
+                break;
+            }
+        }
     }
 }
 
@@ -502,7 +552,7 @@ double generate_pattern(const sse_pars_t *pars, const int idx) {
 
     /* Initial glioma cells will be allocated to the locations with the highest densities in the domain (left boundary). */
     double      n_cells = round(SPACE_LENGTH_Y * pars->init_cells_cols[idx]);
-    arraylist_t *coord  = new_arraylist(false);
+    arraylist_t *coord  = new_arraylist();
     while (coord->size < n_cells) {
         int    sample_idx = 0;
         pair_t res        = matrix_max(Y_LEN, X_LEN, n0_sort);
@@ -540,8 +590,9 @@ double generate_pattern(const sse_pars_t *pars, const int idx) {
     for (int t = 0; t < TIME_STEPS; t++) {
 
         /* At the end of every day, some current cells in the domain will undergo extinction or mitosis. */
-        if ((t + 1) % DAY_TIME_STEPS == 0 &&
-            !cell_density(pars, idx, coord, n, ind_position)) {
+        if ((t + 1) % DAY_TIME_STEPS == 0
+            && !cell_density(pars, idx, coord, n, ind_position)) {
+            arraylist_free(coord);
             return NAN;
         }
 
@@ -557,14 +608,24 @@ double generate_pattern(const sse_pars_t *pars, const int idx) {
             if (n_itr < 0 || isnan(n_itr) ||
                 f_itr < 0 || isnan(f_itr) ||
                 m_itr < 0 || isnan(m_itr)) {
-                printf("%d", t);
+                arraylist_free(coord);
                 return NAN;
             }
         })
 
-        movement(t, idx, pars, coord, n, f);
+        movement(t, idx, pars, coord, n, f, ind_position);
 
+        if ((t + 1) == (DAY_TIME_STEPS * 3)) {
+//            double   density_mat_d3[y_cut_len][x_cut_len];
+//            for (int i = 0; i < y_cut_len; ++i) {
+//                for (int j = 0; j < x_cut_len; ++j) {
+//
+//                }
+//            }
+            return 999;
+        }
     }
 
     arraylist_free(coord);
+    return NAN;
 }

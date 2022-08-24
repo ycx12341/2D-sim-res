@@ -2,26 +2,25 @@
 
 #include <assert.h>
 #include <string.h>
+#include <stdio.h>
 
-arraylist_t *new_arraylist(bool need_free) {
+arraylist_t *new_arraylist() {
     arraylist_t *new = malloc(sizeof(arraylist_t));
     assert(new);
-    new->size      = 0;
-    new->body      = malloc(sizeof(node_t) * ARRAYLIST_INITIAL_CAPACITY);
-    new->capacity  = ARRAYLIST_INITIAL_CAPACITY;
-    new->need_free = need_free;
+    new->size     = 0;
+    new->body     = malloc(sizeof(node_t) * ARRAYLIST_INITIAL_CAPACITY);
+    new->capacity = ARRAYLIST_INITIAL_CAPACITY;
     assert(new->body);
     return new;
 }
 
 void arraylist_free(arraylist_t *l) {
-    if (l->need_free) {
-        for (int i = 0; i < l->size; ++i) {
-            free(l->body[i]._ptr);
-        }
+    if (l->body) {
+        free(l->body);
+        l->body = NULL;
     }
-    free(l->body);
     free(l);
+    l = NULL;
 }
 
 void arraylist_clear(arraylist_t *l) {
@@ -60,14 +59,18 @@ node_t arraylist_remove(arraylist_t *l, const int index) {
     return value;
 }
 
-arraylist_t *arraylist_remove_many(arraylist_t *l, const int num, const int indices[num]) {
-    arraylist_t *new = new_arraylist(l->need_free);
-
+void arraylist_remove_many(arraylist_t *l, const int num, const int indices[num]) {
+    node_t *new = malloc(sizeof(node_t) * l->capacity);
     for (int i = 0, len = l->size; i < len; ++i) {
         if (!int_array_contain(num, indices, i)) {
-            arraylist_append(new, l->body[i]);
+            new[i] = arraylist_get(l, i);
         }
     }
-    free(l);
-    return new;
+    free(l->body);
+    l->body = new;
+}
+
+void arraylist_set(arraylist_t *l, const unsigned int index, const node_t value) {
+    assert(index < l->size);
+    l->body[index] = value;
 }

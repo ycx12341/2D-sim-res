@@ -49,7 +49,7 @@ typedef struct {
 
 } arraylist_t;
 
-arraylist_t *new_arraylist(bool need_free);
+arraylist_t *new_arraylist();
 
 void arraylist_free(arraylist_t *l);
 
@@ -61,7 +61,9 @@ node_t arraylist_get(arraylist_t *l, int index);
 
 node_t arraylist_remove(arraylist_t *l, int index);
 
-arraylist_t *arraylist_remove_many(arraylist_t *l, int num, const int indices[num]);
+void arraylist_remove_many(arraylist_t *l, int num, const int indices[num]);
+
+void arraylist_set(arraylist_t *l, unsigned int index, node_t value);
 
 /**
  * Find the minimum value in the array and the count of them.
