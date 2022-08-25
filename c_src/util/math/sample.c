@@ -73,7 +73,7 @@ void fixupProb(double *p, int n, int require_k) {
     for (int i = 0; i < n; i++, npos++) {
         pi = p[i];
         assert(0 <= pi && pi < DBL_MAX);
-        sum += p[i];
+        sum += pi;
     }
 
     assert(npos != 0 && require_k <= npos);
@@ -143,14 +143,11 @@ int sample_prob1(const int dn, const double prob[dn]) {
     fixupProb(prob_cpy, dn, false);
     revsort(prob_cpy, perm, dn);
 
-    for (int i = 1; i < dn; i++) {
-        prob_cpy[i] += prob_cpy[i - 1];
-    }
-
-    double rU = unif_rand();
+    double rT = unif_rand(), mass = 0;
     int    i;
     for (i = 0; i < dn - 1; i++) {
-        if (rU <= prob_cpy[i]) { break; }
+        mass += prob_cpy[i];
+        if (rT <= mass) { break; }
     }
     return perm[i];
 }

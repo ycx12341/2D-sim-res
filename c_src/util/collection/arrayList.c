@@ -46,7 +46,7 @@ void arraylist_append(arraylist_t *l, node_t item) {
 }
 
 node_t arraylist_get(arraylist_t *l, int index) {
-    assert(index < l->size);
+    assert(0 <= index && index < l->size);
     return l->body[index];
 }
 
@@ -60,14 +60,20 @@ node_t arraylist_remove(arraylist_t *l, const int index) {
 }
 
 void arraylist_remove_many(arraylist_t *l, const int num, const int indices[num]) {
-    node_t *new = malloc(sizeof(node_t) * l->capacity);
-    for (int i = 0, len = l->size; i < len; ++i) {
+    node_t *new     = malloc(sizeof(node_t) * l->capacity);
+    int    new_size = 0;
+
+    for (int i = 0, j = 0, len = l->size; i < len; ++i) {
         if (!int_array_contain(num, indices, i)) {
-            new[i] = arraylist_get(l, i);
+            new[j] = arraylist_get(l, i);
+            new_size++;
+            j++;
         }
     }
+
     free(l->body);
     l->body = new;
+    l->size = new_size;
 }
 
 void arraylist_set(arraylist_t *l, const unsigned int index, const node_t value) {

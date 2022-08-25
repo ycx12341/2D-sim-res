@@ -14,6 +14,9 @@
 #define SPACE_LENGTH_X  round(SPACE_LENGTH_Y * (280.0 / 480.0))
 #define Y_LEN           (int) SPACE_LENGTH_Y
 #define X_LEN           (int) SPACE_LENGTH_X
+#define MAT_SIZE        (int) (SPACE_LENGTH_Y / 12)
+#define Y_CUT_LEN       (int) ceil((SPACE_LENGTH_Y - 1.0) / MAT_SIZE)
+#define X_CUT_LEN       (int) ceil((SPACE_LENGTH_X - 1.0) / MAT_SIZE)
 
 /* Time discretization */
 #define T               4.52
@@ -121,15 +124,50 @@ void solve_PDE(
             for (int j = 1; j < js; ++j) {
                 A2 = f[i][j + 1] + f[i][j - 1] + f[i - 1][j] + f[i + 1][j] - 4.0 * f[i][j];
                 A3 = 1 - n[i][j] - f[i][j];
-                A  = A_F1 - N_F3 * A2 + G_F1 * A3;
+//                A  = A_F1 - N_F3 * A2 + G_F1 * A3;
                 B  = N_F2 - N_F4 * (f[i][j + 1] - f[i][j - 1]);
                 C  = N_F2 + N_F4 * (f[i][j + 1] - f[i][j - 1]);
                 D  = N_F2 - N_F4 * (f[i - 1][j] - f[i + 1][j]);
                 E  = N_F2 + N_F4 * (f[i - 1][j] - f[i + 1][j]);
 
-                n[i][j] = n_cpy[i][j] * A +
-                          n_cpy[i][j + 1] * B + n_cpy[i][j - 1] * C +
-                          n_cpy[i - 1][j] * D + n_cpy[i + 1][j] * E;
+                n[i][j] = n_cpy[i][j] * (
+                        1 - (4 * DT * pars->dn[idx] / (H * H)) - (
+                                DT * pars->gamma[idx] / (H * H) * (
+                                        f[i][j + 1] + f[i][j - 1] -
+                                        4 * f[i][j] + f[i - 1][j] + f[i + 1][j]
+                                )
+                        ) +
+                        pars->rn[idx] * DT * (
+                                1 - n_cpy[i][j] - f[i][j]
+                        )
+                ) + n_cpy[i][j + 1] * (
+                        DT * pars->dn[idx] / (H * H) - (
+                                DT / (4 * (H * H)) * pars->gamma[idx] * (
+                                        f[i][j + 1] - f[i][j - 1]
+                                )
+                        )
+                ) + n_cpy[i][j - 1] * (
+                        DT * pars->dn[idx] / (H * H) + (
+                                DT * pars->gamma[idx] / (4 * (H * H)) * (
+                                        f[i][j + 1] - f[i][j - 1]
+                                )
+                        )
+                ) + n_cpy[i - 1][j] * (
+                        DT * pars->dn[idx] / (H * H) - (
+                                DT * pars->gamma[idx] / (4 * (H * H)) * (
+                                        f[i - 1][j] - f[i + 1][j]
+                                )
+                        )
+                ) + n_cpy[i + 1][j] * (
+                        DT * pars->dn[idx] / (H * H) + (
+                                DT * pars->gamma[idx] / (4 * (H * H)) * (
+                                        f[i - 1][j] - f[i + 1][j]
+                                )
+                        )
+                );
+//                n[i][j] = n_cpy[i][j] * A +
+//                          n_cpy[i][j + 1] * B + n_cpy[i][j - 1] * C +
+//                          n_cpy[i - 1][j] * D + n_cpy[i + 1][j] * E;
             }
         }
 
@@ -323,7 +361,7 @@ bool cell_density(
     cell_den_len = double_array_delete_many(cell_den_len, cell_den, dead_cells_num, dead_cells);
 
     /* If all cells are dead, terminate the algorithm. */
-    if (cell_den_len == 0) { return false; }
+    if (cell_den_len == 0 || coord->size == 0) { return false; }
 
     /* Cell mitosis: some current cells at the locations
              * with the highest densities will undergo mitosis. */
@@ -429,17 +467,17 @@ void movement(
         } else if (x_coord == 0) {
             f_ijp1 = 0;
             p4     = 0;
-            if (y_coord == X_LEN - 1) {
-                f_ip1j = 0;
-                p2     = 4;
-            }
+//            if (y_coord == X_LEN - 1) {
+//                f_ip1j = 0;
+//                p2     = 4;
+//            }
         } else if (x_coord == Y_LEN - 1) {
             f_ijm1 = 0;
             p3     = 0;
-            if (y_coord == X_LEN - 1) {
-                f_ip1j = 0;
-                p2     = 0;
-            }
+//            if (y_coord == X_LEN - 1) {
+//                f_ip1j = 0;
+//                p2     = 0;
+//            }
         }
 
         F  = MOVEMENT_F_SUM(f_ip1j, f_im1j, f_ijp1, f_ijm1, f[x_coord][y_coord]);
@@ -461,54 +499,54 @@ void movement(
             if (p[j] == 0) { zeros++; }
         }
 
-        int    mvment = zeros < MAX_MOVEMENT ? sample_prob1(MAX_MOVEMENT, p) : 0;
-        node_t crd    = arraylist_get(coord, i);
-        int    x_crd  = crd._intPair[0], y_crd = crd._intPair[1];
+        int mvment = zeros < MAX_MOVEMENT ? sample_prob1(MAX_MOVEMENT, p) : 0;
 
-        switch (mvment) {
-            case 1: {
-                ind_position[x_crd][y_crd] = 1;
-                break;
+        assert(0 <= mvment && mvment <= 5);
+        if (mvment == 1) {
+            ind_position[x_coord][y_coord] = 1;
+        } else if (mvment == 2) {
+            if (ind_position[x_coord][y_coord - 1] == 0) {
+                ind_position[x_coord][y_coord] = 0;
+                node_t val;
+                val._intPair[0] = x_coord;
+                val._intPair[1] = y_coord - 1;
+                arraylist_set(coord, i, val);
+                ind_position[x_coord][y_coord - 1] = 1;
+            } else {
+                ind_position[x_coord][y_coord] = 1;
             }
-            case 2: {
-                if (ind_position[x_crd][y_crd - 1] == 0) {
-                    node_t val;
-                    val._intPair[0] = x_crd;
-                    val._intPair[1] = y_crd - 1;
-                    arraylist_set(coord, i, val);
-                }
-                ind_position[x_crd][y_crd] = 1;
-                break;
+        } else if (mvment == 3) {
+            if (ind_position[x_coord][y_coord + 1] == 0) {
+                ind_position[x_coord][y_coord] = 0;
+                node_t val;
+                val._intPair[0] = x_coord;
+                val._intPair[1] = y_coord + 1;
+                arraylist_set(coord, i, val);
+                ind_position[x_coord][y_coord + 1] = 1;
+            } else {
+                ind_position[x_coord][y_coord] = 1;
             }
-            case 3: {
-                if (ind_position[x_crd][y_crd + 1] == 0) {
-                    node_t val;
-                    val._intPair[0] = x_crd;
-                    val._intPair[1] = y_crd + 1;
-                    arraylist_set(coord, i, val);
-                }
-                ind_position[x_crd][y_crd] = 1;
-                break;
+        } else if (mvment == 4) {
+            if (ind_position[x_coord + 1][y_coord] == 0) {
+                ind_position[x_coord][y_coord] = 0;
+                node_t val;
+                val._intPair[0] = x_coord + 1;
+                val._intPair[1] = y_coord;
+                arraylist_set(coord, i, val);
+                ind_position[x_coord + 1][y_coord] = 1;
+            } else {
+                ind_position[x_coord][y_coord] = 1;
             }
-            case 4: {
-                if (ind_position[x_crd + 1][y_crd] == 0) {
-                    node_t val;
-                    val._intPair[0] = x_crd + 1;
-                    val._intPair[1] = y_crd;
-                    arraylist_set(coord, i, val);
-                }
-                ind_position[x_crd][y_crd] = 1;
-                break;
-            }
-            case 5: {
-                if (ind_position[x_crd - 1][y_crd] == 0) {
-                    node_t val;
-                    val._intPair[0] = x_crd - 1;
-                    val._intPair[1] = y_crd;
-                    arraylist_set(coord, i, val);
-                }
-                ind_position[x_crd][y_crd] = 1;
-                break;
+        } else if (mvment == 5) {
+            if (ind_position[x_coord - 1][y_coord] == 0) {
+                ind_position[x_coord][y_coord] = 0;
+                node_t val;
+                val._intPair[0] = x_coord - 1;
+                val._intPair[1] = y_coord;
+                arraylist_set(coord, i, val);
+                ind_position[x_coord - 1][y_coord] = 1;
+            } else {
+                ind_position[x_coord][y_coord] = 1;
             }
         }
     }
@@ -569,7 +607,9 @@ double generate_pattern(const sse_pars_t *pars, const int idx) {
         n0_sort[sample.x._int][sample.y._int] = -DBL_MAX;
     }
 
-    double   ind_position[Y_LEN][X_LEN];
+    double ind_position[Y_LEN][X_LEN];
+    MATRIX_INIT(ind_position, Y_LEN, X_LEN, 0)
+
     for (int i = 0; i < coord->size; ++i) {
         node_t pos = arraylist_get(coord, i);
         ind_position[pos._intPair[0]][pos._intPair[1]] = 1;
@@ -579,15 +619,20 @@ double generate_pattern(const sse_pars_t *pars, const int idx) {
     MATRIX_COPY(ind_position, ind_position_init, Y_LEN, X_LEN)
 
     /* Set the cut points for the domain (to be used later for density matching & discrepancy calculation.) */
-    int    mat_size  = SPACE_LENGTH_Y / 12;
-    int    y_cut_len = ceil((SPACE_LENGTH_Y - 1.0) / mat_size);
-    int    x_cut_len = ceil((SPACE_LENGTH_X - 1.0) / mat_size);
-    double x_cut[x_cut_len], y_cut[y_cut_len];
-    assert(seq_by(y_cut, 1, SPACE_LENGTH_Y, mat_size) == y_cut_len);
-    assert(seq_by(x_cut, 1, SPACE_LENGTH_X, mat_size) == x_cut_len);
+    double x_cut[X_CUT_LEN], y_cut[Y_CUT_LEN];
+    assert(seq_by(y_cut, 1, SPACE_LENGTH_Y, MAT_SIZE) == Y_CUT_LEN);
+    assert(seq_by(x_cut, 1, SPACE_LENGTH_X, MAT_SIZE) == X_CUT_LEN);
 
     /* Numerical scheme which solves the PDE system */
     for (int t = 0; t < TIME_STEPS; t++) {
+
+        if ((t + 1) == 1800) {
+            printf("STAGE1 --------------------------------\n");
+            for (int i = 0; i < coord->size; ++i) {
+                node_t node = arraylist_get(coord, i);
+                printf("%d ( %d, %d )\n", i, node._intPair[0], node._intPair[1]);
+            }
+        }
 
         /* At the end of every day, some current cells in the domain will undergo extinction or mitosis. */
         if ((t + 1) % DAY_TIME_STEPS == 0
@@ -596,7 +641,16 @@ double generate_pattern(const sse_pars_t *pars, const int idx) {
             return NAN;
         }
 
+        if ((t + 1) == 1800) {
+            printf("STAGE2 --------------------------------------\n");
+            for (int i = 0; i < coord->size; ++i) {
+                node_t node = arraylist_get(coord, i);
+                printf("%d ( %d, %d )\n", i, node._intPair[0], node._intPair[1]);
+            }
+        }
+
         solve_PDE(idx, t, pars, n, f, m);   // Solving the PDE model numerically
+
         boundary_condition(n, f, m);        // Boundary condition
 
         /* If singularity occurs while solving the PDE model, terminate the simulation. */
@@ -615,14 +669,27 @@ double generate_pattern(const sse_pars_t *pars, const int idx) {
 
         movement(t, idx, pars, coord, n, f, ind_position);
 
-        if ((t + 1) == (DAY_TIME_STEPS * 3)) {
-//            double   density_mat_d3[y_cut_len][x_cut_len];
-//            for (int i = 0; i < y_cut_len; ++i) {
-//                for (int j = 0; j < x_cut_len; ++j) {
+        if ((t + 1) == (DAY_TIME_STEPS * 3)) {  // TODO replace 3
+//            MATRIX_PRINT(ind_position, Y_LEN, X_LEN, "%.0f ");
+//            double   density_mat[Y_CUT_LEN][X_CUT_LEN];
+//            for (int i = 0; i < Y_CUT_LEN; ++i) {
+//                for (int j = 0; j < X_CUT_LEN; ++j) {
 //
+//                    int ones = 0;
+//                    int yc   = (int) y_cut[i], xc = (int) x_cut[j];
+
+//                    for (int k = yc - 1; k < yc + MAT_SIZE - 1; ++k) {
+//                        for (int l = xc - 1; l < xc + MAT_SIZE - 1; ++l) {
+//                            if (ind_position[k][l] == 1) ones++;
+//                            printf("%f ", ind_position[k][l]);
+//                        }
+//                        printf("\n");
+//                    }
+//                    printf("ones: %d\n", ones);
+//                    printf("%d %d %d %d\n", yc, yc + MAT_SIZE - 1, xc, xc + MAT_SIZE - 1);
 //                }
 //            }
-            return 999;
+            return t;
         }
     }
 
