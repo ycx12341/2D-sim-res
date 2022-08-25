@@ -113,7 +113,7 @@ void solve_PDE(
          */
         const double N_F2 = pars->dn[idx] * N_F1;
         const double N_F3 = pars->gamma[idx] * N_F1;
-        const double N_F4 = N_F3 / 4.0;
+        const double N_F4 = DT / pow(H, 2.0) * pars->gamma[idx] / 4.0;
         const double A_F1 = 1.0 - 4.0 * N_F2;
 
         double n_cpy[Y_LEN][X_LEN];
@@ -122,52 +122,17 @@ void solve_PDE(
         double   A, A2, A3, B, C, D, E;
         for (int i = 1, is = Y_LEN - 1, js = X_LEN - 1; i < is; ++i) {
             for (int j = 1; j < js; ++j) {
-                A2 = f[i][j + 1] + f[i][j - 1] + f[i - 1][j] + f[i + 1][j] - 4.0 * f[i][j];
-                A3 = 1 - n[i][j] - f[i][j];
-//                A  = A_F1 - N_F3 * A2 + G_F1 * A3;
+                A2 = f[i][j + 1] + f[i][j - 1] - 4 * f[i][j] + f[i - 1][j] + f[i + 1][j];
+                A3 = 1 - n_cpy[i][j] - f[i][j];
+                A  = A_F1 - N_F3 * A2 + G_F1 * A3;
                 B  = N_F2 - N_F4 * (f[i][j + 1] - f[i][j - 1]);
                 C  = N_F2 + N_F4 * (f[i][j + 1] - f[i][j - 1]);
                 D  = N_F2 - N_F4 * (f[i - 1][j] - f[i + 1][j]);
                 E  = N_F2 + N_F4 * (f[i - 1][j] - f[i + 1][j]);
 
-                n[i][j] = n_cpy[i][j] * (
-                        1 - (4 * DT * pars->dn[idx] / (H * H)) - (
-                                DT * pars->gamma[idx] / (H * H) * (
-                                        f[i][j + 1] + f[i][j - 1] -
-                                        4 * f[i][j] + f[i - 1][j] + f[i + 1][j]
-                                )
-                        ) +
-                        pars->rn[idx] * DT * (
-                                1 - n_cpy[i][j] - f[i][j]
-                        )
-                ) + n_cpy[i][j + 1] * (
-                        DT * pars->dn[idx] / (H * H) - (
-                                DT / (4 * (H * H)) * pars->gamma[idx] * (
-                                        f[i][j + 1] - f[i][j - 1]
-                                )
-                        )
-                ) + n_cpy[i][j - 1] * (
-                        DT * pars->dn[idx] / (H * H) + (
-                                DT * pars->gamma[idx] / (4 * (H * H)) * (
-                                        f[i][j + 1] - f[i][j - 1]
-                                )
-                        )
-                ) + n_cpy[i - 1][j] * (
-                        DT * pars->dn[idx] / (H * H) - (
-                                DT * pars->gamma[idx] / (4 * (H * H)) * (
-                                        f[i - 1][j] - f[i + 1][j]
-                                )
-                        )
-                ) + n_cpy[i + 1][j] * (
-                        DT * pars->dn[idx] / (H * H) + (
-                                DT * pars->gamma[idx] / (4 * (H * H)) * (
-                                        f[i - 1][j] - f[i + 1][j]
-                                )
-                        )
-                );
-//                n[i][j] = n_cpy[i][j] * A +
-//                          n_cpy[i][j + 1] * B + n_cpy[i][j - 1] * C +
-//                          n_cpy[i - 1][j] * D + n_cpy[i + 1][j] * E;
+                n[i][j] = n_cpy[i][j] * A +
+                          n_cpy[i][j + 1] * B + n_cpy[i][j - 1] * C +
+                          n_cpy[i - 1][j] * D + n_cpy[i + 1][j] * E;
             }
         }
 
@@ -467,17 +432,9 @@ void movement(
         } else if (x_coord == 0) {
             f_ijp1 = 0;
             p4     = 0;
-//            if (y_coord == X_LEN - 1) {
-//                f_ip1j = 0;
-//                p2     = 4;
-//            }
         } else if (x_coord == Y_LEN - 1) {
             f_ijm1 = 0;
             p3     = 0;
-//            if (y_coord == X_LEN - 1) {
-//                f_ip1j = 0;
-//                p2     = 0;
-//            }
         }
 
         F  = MOVEMENT_F_SUM(f_ip1j, f_im1j, f_ijp1, f_ijm1, f[x_coord][y_coord]);
@@ -626,27 +583,11 @@ double generate_pattern(const sse_pars_t *pars, const int idx) {
     /* Numerical scheme which solves the PDE system */
     for (int t = 0; t < TIME_STEPS; t++) {
 
-        if ((t + 1) == 1800) {
-            printf("STAGE1 --------------------------------\n");
-            for (int i = 0; i < coord->size; ++i) {
-                node_t node = arraylist_get(coord, i);
-                printf("%d ( %d, %d )\n", i, node._intPair[0], node._intPair[1]);
-            }
-        }
-
         /* At the end of every day, some current cells in the domain will undergo extinction or mitosis. */
         if ((t + 1) % DAY_TIME_STEPS == 0
             && !cell_density(pars, idx, coord, n, ind_position)) {
             arraylist_free(coord);
             return NAN;
-        }
-
-        if ((t + 1) == 1800) {
-            printf("STAGE2 --------------------------------------\n");
-            for (int i = 0; i < coord->size; ++i) {
-                node_t node = arraylist_get(coord, i);
-                printf("%d ( %d, %d )\n", i, node._intPair[0], node._intPair[1]);
-            }
         }
 
         solve_PDE(idx, t, pars, n, f, m);   // Solving the PDE model numerically
@@ -670,7 +611,12 @@ double generate_pattern(const sse_pars_t *pars, const int idx) {
         movement(t, idx, pars, coord, n, f, ind_position);
 
         if ((t + 1) == (DAY_TIME_STEPS * 3)) {  // TODO replace 3
-//            MATRIX_PRINT(ind_position, Y_LEN, X_LEN, "%.0f ");
+
+            for (int i = 0; i < coord->size; ++i) {
+                node_t node = arraylist_get(coord, i);
+                printf("%d ( %d, %d )\n", i, node._intPair[0], node._intPair[1]);
+            }
+
 //            double   density_mat[Y_CUT_LEN][X_CUT_LEN];
 //            for (int i = 0; i < Y_CUT_LEN; ++i) {
 //                for (int j = 0; j < X_CUT_LEN; ++j) {
