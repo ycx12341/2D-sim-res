@@ -63,6 +63,27 @@ std::vector<int> vector_which_min(std::vector<T> vector) {
 }
 
 template<typename T>
+std::vector<int> vector_which_max(std::vector<T> vector) {
+    std::vector<int> maxes;
+
+    T max = -INFINITY;
+    T v;
+
+    if ((int) vector.size() <= 0) { return maxes; }
+
+    for (int i = 0, len = (int) vector.size(); i < len; ++i) {
+        v = vector.at(i);
+        if (v < max) { continue; }
+        if (v > max) {
+            maxes.clear();
+            max = v;
+        }
+        maxes.push_back(i);
+    }
+    return maxes;
+}
+
+template<typename T>
 bool array_contains(T val, const int len, T *arr) {
     for (int i = 0; i < len; ++i) {
         if (val == arr[i]) { return true; }

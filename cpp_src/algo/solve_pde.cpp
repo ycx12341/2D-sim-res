@@ -20,7 +20,7 @@ bool Sim_2D::end_of_day(const int t) {
 
             ind = mins.at(ind_idx);
             dead_cells[i] = ind;
-            cell_den.at(ind) = INFINITY;
+            cell_den.at(ind) = (LDBL) INFINITY;
         }
 
         if ((int) coord.size() == 0) {
@@ -32,6 +32,25 @@ bool Sim_2D::end_of_day(const int t) {
         assert(coord.size() == cell_den.size());
 
         if ((int) cell_den.size() == 0) { return false; }
+
+        const int        PROF_CELLS_NUM = (int) round((double) (coord.size() * pars->PROB_PROF[IDX]));
+        int              prof_cells[PROF_CELLS_NUM];
+        std::vector<int> maxes;
+
+        for (int i = 0, maxes_size, ind_idx, ind; i < PROF_CELLS_NUM; ++i) {
+            maxes      = vector_which_max<LDBL>(cell_den);
+            maxes_size = (int) maxes.size();
+            ind_idx    = maxes_size > 1 ? unif_index(maxes_size) : 0;
+
+            ind = maxes.at(ind_idx);
+            prof_cells[i] = ind;
+            cell_den.at(ind) = (LDBL) -INFINITY;
+        }
+
+        ind_pos = MATRIX_ZERO(LDBL, Y_LEN, X_LEN);
+        for (COORD_T &i: coord) {
+            ind_pos(i[0], i[1]) = 1;
+        }
     }
 
     return true;
