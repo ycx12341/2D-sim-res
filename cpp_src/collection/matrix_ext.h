@@ -34,4 +34,17 @@ std::vector<COORD_T > matrix_which_max(const MATRIX_T(T) *matrix) {
     return maxes;
 }
 
+template<typename T>
+std::vector<COORD_T > matrix_which_equals(const MATRIX_T(T) *matrix, const T val) {
+    std::vector<COORD_T > res;
+    if (matrix->size() <= 0) { return res; }
+
+    for (int j = 0, c = (int) matrix->cols(); j < c; ++j) {
+        for (int i = 0, r = (int) matrix->rows(); i < r; ++i) {
+            if ((*matrix)(i, j) == val) { res.push_back({i, j}); }
+        }
+    }
+    return res;
+}
+
 #endif //SIM_2D_CPP_MATRIX_EXT_H

@@ -102,4 +102,18 @@ std::vector<T> vector_remove_many_by_index(std::vector<T> vector, const int len,
     return res;
 }
 
+template<typename T, int Len>
+std::vector<int> std_array_which_equals(std::array<int, Len> arr, const T val) {
+    std::vector<int> res;
+
+    if (Len <= 0) { return res; }
+
+    for (int i = 0; i < Len; ++i) {
+        if (arr[i] == val) {
+            res.push_back(i);
+        }
+    }
+    return res;
+}
+
 #endif //SIM_2D_CPP_COLLECTION_H

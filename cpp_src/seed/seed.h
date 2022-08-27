@@ -3,6 +3,8 @@
 
 #include "../config.h"
 
+#include <array>
+
 long double unif_rand();
 
 void set_seed(unsigned int seed);
@@ -10,5 +12,7 @@ void set_seed(unsigned int seed);
 void runif_seq(long double *seq, int len, long double min, long double max);
 
 int unif_index(int dn);
+
+std::array<int, 2> unif_index2(int dn);
 
 #endif //SIM_2D_CPP_SEED_H
