@@ -1,3 +1,0 @@
-D:/SCI/2D-sim-res/c_src/cmake-build-debug/CMakeFiles/c_src.dir
-D:/SCI/2D-sim-res/c_src/cmake-build-debug/CMakeFiles/edit_cache.dir
-D:/SCI/2D-sim-res/c_src/cmake-build-debug/CMakeFiles/rebuild_cache.dir
