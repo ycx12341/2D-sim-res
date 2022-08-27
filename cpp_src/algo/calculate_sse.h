@@ -144,6 +144,15 @@ private:
     bool solve_pde();
 
     bool end_of_day(int t);
+
+    void proliferation(int PROF_CELLS_NUM, int *prof_cells);
+
+    template<int Nbr_Num>
+    void cell_proliferate(
+            std::array<int, Nbr_Num> nbr_temp,
+            std::array<COORD_T, Nbr_Num> nghr_cord,
+            COORD_T cell_pos
+    );
 };
 
 #endif //CPP_SRC_2D_SIM_ALGO_H

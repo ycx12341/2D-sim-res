@@ -2,6 +2,86 @@
 
 #include <iostream>
 
+template<int Nbr_Num>
+void Sim_2D::cell_proliferate(
+        std::array<int, Nbr_Num> nbr_temp,
+        std::array<COORD_T, Nbr_Num> nghr_cord,
+        COORD_T cell_pos
+) {
+    std::vector<int> zeros = std_array_which_equals<int, Nbr_Num>(nbr_temp, 0);
+    if ((int) zeros.size() >= 2) {
+        std::array<int, 2> sample = unif_index2((int) zeros.size());
+        assert(sample[0] != -1 && sample[1] != -1);
+
+        COORD_T            sample_a = nghr_cord[sample[0]];
+        COORD_T            sample_b = nghr_cord[sample[1]];
+
+        ind_pos(cell_pos[0], cell_pos[1]) = 0;
+        ind_pos(sample_a[0], sample_a[1]) = 1;
+        ind_pos(sample_b[0], sample_b[1]) = 1;
+    }
+}
+
+void Sim_2D::proliferation(const int PROF_CELLS_NUM, int *prof_cells) {
+    for (int i = 0; i < PROF_CELLS_NUM; ++i) {
+        COORD_T cell_pos = coord.at(prof_cells[i]);
+        const int x      = cell_pos[0];
+        const int y      = cell_pos[1];
+
+        COORD_T   _r_pos = {x, y + 1};
+        COORD_T   rd_pos = {x + 1, y + 1};
+        COORD_T   _d_pos = {x + 1, y};
+        COORD_T   ru_pos = {x - 1, y + 1};
+        COORD_T   _u_pos = {x - 1, y};
+        COORD_T   lu_pos = {x - 1, y - 1};
+        COORD_T   _l_pos = {x, y - 1};
+        COORD_T   ld_pos = {x + 1, y - 1};
+
+#define R_ (int) ind_pos(_r_pos[0], _r_pos[1])
+#define RD (int) ind_pos(rd_pos[0], rd_pos[1])
+#define D_ (int) ind_pos(_d_pos[0], _d_pos[1])
+#define RU (int) ind_pos(ru_pos[0], ru_pos[1])
+#define U_ (int) ind_pos(_u_pos[0], _u_pos[1])
+#define LU (int) ind_pos(lu_pos[0], lu_pos[1])
+#define L_ (int) ind_pos(_l_pos[0], _l_pos[1])
+#define LD (int) ind_pos(ld_pos[0], ld_pos[1])
+
+        if (x == 0) {
+            if (y == 0) {
+                cell_proliferate<3>({R_, RD, D_}, {_r_pos, rd_pos, _d_pos}, cell_pos);
+            } else if (y == X_LEN - 1) {
+                cell_proliferate<3>({L_, LD, D_}, {_l_pos, ld_pos, _d_pos}, cell_pos);
+            } else {
+                cell_proliferate<5>({L_, R_, D_, LD, RD}, {_l_pos, _r_pos, _d_pos, ld_pos, rd_pos}, cell_pos);
+            }
+        } else if (x == Y_LEN - 1) {
+            if (y == 0) {
+                cell_proliferate<3>({U_, RU, R_}, {_u_pos, ru_pos, _r_pos}, cell_pos);
+            } else if (y == X_LEN - 1) {
+                cell_proliferate<3>({L_, U_, LU}, {_l_pos, _u_pos, lu_pos}, cell_pos);
+            } else {
+                cell_proliferate<5>({L_, LU, U_, RU, R_}, {_l_pos, lu_pos, _u_pos, ru_pos, _r_pos}, cell_pos);
+            }
+        } else if (y == 0 && x != Y_LEN - 1) {
+            cell_proliferate<5>({U_, RU, R_, RD, D_}, {_u_pos, ru_pos, _r_pos, rd_pos, _d_pos}, cell_pos);
+        } else if (y == X_LEN - 1 && x != Y_LEN - 1) {
+            cell_proliferate<5>({U_, LU, L_, LD, D_}, {_u_pos, lu_pos, _l_pos, ld_pos, _d_pos}, cell_pos);
+        } else {
+            cell_proliferate<8>({L_, R_, U_, D_, LU, RU, LD, RD},
+                                {_l_pos, _r_pos, _u_pos, _d_pos, lu_pos, ru_pos, ld_pos, rd_pos}, cell_pos);
+        }
+
+#undef R_
+#undef RD
+#undef D_
+#undef RU
+#undef U_
+#undef LU
+#undef L_
+#undef LD
+    }
+}
+
 bool Sim_2D::end_of_day(const int t) {
     if ((t + 1) % DAY_TIME_STEPS == 0) {
         std::vector<LDBL> cell_den;
@@ -51,6 +131,18 @@ bool Sim_2D::end_of_day(const int t) {
         for (COORD_T &i: coord) {
             ind_pos(i[0], i[1]) = 1;
         }
+
+        proliferation(PROF_CELLS_NUM, prof_cells);
+
+        coord.clear();
+        for (COORD_T c: matrix_which_equals<LDBL>(&ind_pos, 1.0L)) {
+            coord.push_back(c);
+        }
+
+        ind_pos = MATRIX_ZERO(LDBL, Y_LEN, X_LEN);
+        for (COORD_T c: coord) {
+            ind_pos(c[0], c[1]) = 1;
+        }
     }
 
     return true;
@@ -59,6 +151,7 @@ bool Sim_2D::end_of_day(const int t) {
 bool Sim_2D::solve_pde() {
     for (int t = 0; t < TIME_STEPS; ++t) {
         if (!end_of_day(t)) { return false; }
+        // after some day
     }
     return true;
 }

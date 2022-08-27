@@ -1,7 +1,6 @@
 #include <cmath>
 #include <cstdint>
 #include <cassert>
-#include <cfloat>
 
 #include "seed.h"
 
@@ -42,22 +41,20 @@ int unif_index(const int dn) {
     return (int) dv;
 }
 
-//int_arr_2_t unif_index2(const int dn) {
-//    int_arr_2_t ry;
-//    ry.arr[0] = -1;
-//    ry.arr[1] = -1;
-//    if (dn < 2) { return ry; }
-//
-//    int x[dn], n = dn;
-//
-//    for (int i = 0; i < dn; i++) { x[i] = i; }
-//    for (int i = 0; i < 2; i++) {
-//        int j     = unif_index(n);
-//        ry.arr[i] = x[j];
-//        x[j]      = x[--n];
-//    }
-//    return ry;
-//}
+std::array<int, 2> unif_index2(const int dn) {
+    std::array<int, 2> ry = {-1, -1};
+    if (dn < 2) { return ry; }
+
+    int x[dn], n = dn;
+
+    for (int i = 0; i < dn; i++) { x[i] = i; }
+    for (int i = 0; i < 2; i++) {
+        int j = unif_index(n);
+        ry[i] = x[j];
+        x[j]  = x[--n];
+    }
+    return ry;
+}
 
 //void fixupProb(double *p, int n, int require_k) {
 //    double sum  = 0.0, pi;
