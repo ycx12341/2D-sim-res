@@ -88,6 +88,16 @@ public:
         }
     }
 
+    template<typename F>
+    bool any(F f) {
+        for (int i = 0; i < ROWS; ++i) {
+            for (int j = 0; j < COLS; ++j) {
+                if (f(MATRIX[i][j])) { return true; }
+            }
+        }
+        return false;
+    }
+
     long long size() {
         return ROWS * COLS;
     }

@@ -114,9 +114,11 @@ private:
 
     void *generate_pattern();
 
-    void solve_pde(int t);
-
     bool pde();
+
+    bool solve_pde(int t);
+
+    void movement(int t);
 
     bool end_of_day(int t);
 

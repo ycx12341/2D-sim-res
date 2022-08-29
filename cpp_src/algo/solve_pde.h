@@ -12,7 +12,7 @@ void Sim_2D<Y_LEN, X_LEN>::cell_proliferate(
     std::vector<int> zeros = std_array_which_equals<int, Nbr_Num>(nbr_temp, 0);
     if ((int) zeros.size() >= 2) {
         std::array<int, 2> sample = unif_index2((int) zeros.size());
-        assert(sample[0] != -1 && sample[1] != -1);
+        assert(sample[0] != -1 && sample[1] != -1 && sample[0] != sample[1]);
 
         COORD_T            sample_a = nghr_cord[sample[0]];
         COORD_T            sample_b = nghr_cord[sample[1]];
@@ -64,9 +64,9 @@ void Sim_2D<Y_LEN, X_LEN>::proliferation(const int PROF_CELLS_NUM, int *prof_cel
             } else {
                 cell_proliferate<5>({L_, LU, U_, RU, R_}, {_l_pos, lu_pos, _u_pos, ru_pos, _r_pos}, cell_pos);
             }
-        } else if (y == 0 && x != Y_LEN - 1) {
+        } else if (y == 0) {
             cell_proliferate<5>({U_, RU, R_, RD, D_}, {_u_pos, ru_pos, _r_pos, rd_pos, _d_pos}, cell_pos);
-        } else if (y == X_LEN - 1 && x != Y_LEN - 1) {
+        } else if (y == X_LEN - 1) {
             cell_proliferate<5>({U_, LU, L_, LD, D_}, {_u_pos, lu_pos, _l_pos, ld_pos, _d_pos}, cell_pos);
         } else {
             cell_proliferate<8>({L_, R_, U_, D_, LU, RU, LD, RD},
@@ -88,7 +88,7 @@ template<int Y_LEN, int X_LEN>
 bool Sim_2D<Y_LEN, X_LEN>::end_of_day(const int t) {
     if ((t + 1) % DAY_TIME_STEPS == 0) {
         std::vector<DBL_T> cell_den;
-        for (auto          c: coord) {
+        for (COORD_T       c: coord) {
             cell_den.push_back(n(c[0], c[1]));
         }
 
@@ -138,7 +138,7 @@ bool Sim_2D<Y_LEN, X_LEN>::end_of_day(const int t) {
         proliferation(PROF_CELLS_NUM, prof_cells);
 
         coord.clear();
-        for (COORD_T c: ind_pos.matrix_which_equals(1.0L)) {
+        for (COORD_T c: ind_pos.matrix_which_equals(1)) {
             coord.push_back(c);
         }
 
@@ -152,7 +152,7 @@ bool Sim_2D<Y_LEN, X_LEN>::end_of_day(const int t) {
 }
 
 template<int Y_LEN, int X_LEN>
-void Sim_2D<Y_LEN, X_LEN>::solve_pde(const int t) {
+bool Sim_2D<Y_LEN, X_LEN>::solve_pde(const int t) {
     if ((t + 1) > PDE_TIME_STEPS) {
         f.iter_range_index(1, 1, Y_LEN - 2, X_LEN - 2, [&](int i, int j) {
             f(i, j) = f(i, j) * (1.0L - DT * pars->ETA[IDX] * m(i, j));
@@ -244,15 +244,167 @@ void Sim_2D<Y_LEN, X_LEN>::solve_pde(const int t) {
         m(i, 0)         = m(i, 1);
         m(i, X_LEN - 1) = m(i, X_LEN - 2);
     });
+
+    DBL_T    nv, fv, mv;
+    for (int i = 0; i < Y_LEN; ++i) {
+        for (int j = 0; j < X_LEN; ++j) {
+            nv = n(i, j);
+            fv = f(i, j);
+            mv = m(i, j);
+            if (std::isnan(nv) || nv < 0 ||
+                std::isnan(fv) || fv < 0 ||
+                std::isnan(mv) || mv < 0) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+template<int Y_LEN, int X_LEN>
+void Sim_2D<Y_LEN, X_LEN>::movement(const int t) {
+    if ((t + 1) > round(DAY_TIME_STEPS * (95.0 / 96.0))) {
+        int x, y;
+        DBL_T f_ip1j, f_im1j, f_ijp1, f_ijm1;
+        DBL_T p0, p1, p2, p3, p4;
+
+        for (COORD_T crd: coord) {
+            x = crd[0], y = crd[1];
+
+            if (y == 0) {
+                if (x == 0) {
+                    f_ip1j = f(x, y + 1);
+                    f_im1j = 0;
+                    f_ijp1 = 0;
+                    f_ijm1 = f(x + 1, y);
+
+                    p1 = 0;
+                    p2 = (DT * pars->DN[IDX] / (H * H)) + (DT * pars->GAMMA[IDX] / (4.0 * (H * H)) * (f_ip1j - f_im1j));
+                    p3 = (DT * pars->DN[IDX] / (H * H)) - (DT * pars->GAMMA[IDX] / (4.0 * (H * H)) * (f_ijp1 - f_ijm1));
+                    p4 = 0;
+                } else if (x == Y_LEN - 1) {
+                    f_ip1j = f(x, y + 1);
+                    f_im1j = 0;
+                    f_ijp1 = f(x - 1, y);
+                    f_ijm1 = 0;
+
+                    p1 = 0;
+                    p2 = (DT * pars->DN[IDX] / (H * H)) + (DT * pars->GAMMA[IDX] / (4.0 * (H * H)) * (f_ip1j - f_im1j));
+                    p3 = 0;
+                    p4 = (DT * pars->DN[IDX] / (H * H)) + (DT * pars->GAMMA[IDX] / (4.0 * (H * H)) * (f_ijp1 - f_ijm1));
+                } else {
+                    f_ip1j = f(x, y + 1);
+                    f_im1j = 0;
+                    f_ijp1 = f(x - 1, y);
+                    f_ijm1 = f(x + 1, y);
+
+                    p1 = 0;
+                    p2 = (DT * pars->DN[IDX] / (H * H)) + (DT * pars->GAMMA[IDX] / (4.0 * (H * H)) * (f_ip1j - f_im1j));
+                    p3 = (DT * pars->DN[IDX] / (H * H)) - (DT * pars->GAMMA[IDX] / (4.0 * (H * H)) * (f_ijp1 - f_ijm1));
+                    p4 = (DT * pars->DN[IDX] / (H * H)) + (DT * pars->GAMMA[IDX] / (4.0 * (H * H)) * (f_ijp1 - f_ijm1));
+                }
+
+                p0 = 1.0 - (4.0 * DT * pars->DN[IDX] / (H * H)) - (DT * pars->GAMMA[IDX] / (H * H) * (
+                        f_ip1j + f_im1j - 4 * f(x, y) + f_ijp1 + f_ijm1
+                )) + pars->RN[IDX] * (1.0 - n(x, y) - f(x, y)) * DT;
+            } else if (y == X_LEN - 1) {
+                if (x == 0) {
+                    f_ip1j = 0;
+                    f_im1j = f(x, y - 1);
+                    f_ijp1 = 0;
+                    f_ijm1 = f(x + 1, y);
+
+                    p1 = (DT * pars->DN[IDX] / (H * H)) + (DT * pars->GAMMA[IDX] / (4.0 * (H * H)) * (f_ip1j - f_im1j));
+                    p2 = 0;
+                    p3 = (DT * pars->DN[IDX] / (H * H)) - (DT * pars->GAMMA[IDX] / (4.0 * (H * H)) * (f_ijp1 - f_ijm1));
+                    p4 = 0;
+                } else if (x == Y_LEN - 1) {
+                    f_ip1j = 0;
+                    f_im1j = f(x, y - 1);
+                    f_ijp1 = f(x - 1, y);
+                    f_ijm1 = 0;
+
+                    p1 = (DT * pars->DN[IDX] / (H * H)) + (DT * pars->GAMMA[IDX] / (4.0 * (H * H)) * (f_ip1j - f_im1j));
+                    p2 = 0;
+                    p3 = 0;
+                    p4 = (DT * pars->DN[IDX] / (H * H)) + (DT * pars->GAMMA[IDX] / (4.0 * (H * H)) * (f_ijp1 - f_ijm1));
+                } else {
+                    f_ip1j = 0;
+                    f_im1j = f(x, y - 1);
+                    f_ijp1 = f(x - 1, y);
+                    f_ijm1 = f(x + 1, y);
+
+                    p1 = (DT * pars->DN[IDX] / (H * H)) + (DT * pars->GAMMA[IDX] / (4.0 * (H * H)) * (f_ip1j - f_im1j));
+                    p2 = 0;
+                    p3 = (DT * pars->DN[IDX] / (H * H)) - (DT * pars->GAMMA[IDX] / (4.0 * (H * H)) * (f_ijp1 - f_ijm1));
+                    p4 = (DT * pars->DN[IDX] / (H * H)) + (DT * pars->GAMMA[IDX] / (4.0 * (H * H)) * (f_ijp1 - f_ijm1));
+                }
+
+                p0 = 1.0 - (4.0 * DT * pars->DN[IDX] / (H * H)) - (DT * pars->GAMMA[IDX] / (H * H) * (
+                        f_ip1j + f_im1j - 4 * f(x, y) + f_ijp1 + f_ijm1
+                )) + pars->RN[IDX] * (1.0 - n(x, y) - f(x, y)) * DT;
+            } else if (x == 0) {
+                f_ip1j = f(x, y + 1);
+                f_im1j = f(x, y - 1);
+                f_ijp1 = 0;
+                f_ijm1 = f(x + 1, y);
+
+                p0 = 1.0 - (4.0 * DT * pars->DN[IDX] / (H * H)) - (DT * pars->GAMMA[IDX] / (H * H) * (
+                        f_ip1j + f_im1j - 4 * f(x, y) + f_ijp1 + f_ijm1
+                )) + pars->RN[IDX] * (1.0 - n(x, y) - f(x, y)) * DT;
+                p1 = (DT * pars->DN[IDX] / (H * H)) + (DT * pars->GAMMA[IDX] / (4.0 * (H * H)) * (f_ip1j - f_im1j));
+                p2 = (DT * pars->DN[IDX] / (H * H)) + (DT * pars->GAMMA[IDX] / (4.0 * (H * H)) * (f_ip1j - f_im1j));
+                p3 = (DT * pars->DN[IDX] / (H * H)) - (DT * pars->GAMMA[IDX] / (4.0 * (H * H)) * (f_ijp1 - f_ijm1));
+                p4 = 0;
+            } else if (x == Y_LEN - 1) {
+                f_ip1j = f(x, y + 1);
+                f_im1j = f(x, y - 1);
+                f_ijp1 = f(x - 1, y);
+                f_ijm1 = 0;
+
+                p0 = 1.0 - (4.0 * DT * pars->DN[IDX] / (H * H)) - (DT * pars->GAMMA[IDX] / (H * H) * (
+                        f_ip1j + f_im1j - 4 * f(x, y) + f_ijp1 + f_ijm1
+                )) + pars->RN[IDX] * (1.0 - n(x, y) - f(x, y)) * DT;
+                p1 = (DT * pars->DN[IDX] / (H * H)) + (DT * pars->GAMMA[IDX] / (4.0 * (H * H)) * (f_ip1j - f_im1j));
+                p2 = (DT * pars->DN[IDX] / (H * H)) + (DT * pars->GAMMA[IDX] / (4.0 * (H * H)) * (f_ip1j - f_im1j));
+                p3 = 0;
+                p4 = (DT * pars->DN[IDX] / (H * H)) + (DT * pars->GAMMA[IDX] / (4.0 * (H * H)) * (f_ijp1 - f_ijm1));
+            } else {
+                f_ip1j = f(x, y + 1);
+                f_im1j = f(x, y - 1);
+                f_ijp1 = f(x - 1, y);
+                f_ijm1 = f(x + 1, y);
+
+                p0 = 1.0 - (4.0 * DT * pars->DN[IDX] / (H * H)) - (DT * pars->GAMMA[IDX] / (H * H) * (
+                        f_ip1j + f_im1j - 4 * f(x, y) + f_ijp1 + f_ijm1
+                )) + pars->RN[IDX] * (1.0 - n(x, y) - f(x, y)) * DT;
+                p1 = (DT * pars->DN[IDX] / (H * H)) + (DT * pars->GAMMA[IDX] / (4.0 * (H * H)) * (f_ip1j - f_im1j));
+                p2 = (DT * pars->DN[IDX] / (H * H)) + (DT * pars->GAMMA[IDX] / (4.0 * (H * H)) * (f_ip1j - f_im1j));
+                p3 = (DT * pars->DN[IDX] / (H * H)) - (DT * pars->GAMMA[IDX] / (4.0 * (H * H)) * (f_ijp1 - f_ijm1));
+                p4 = (DT * pars->DN[IDX] / (H * H)) + (DT * pars->GAMMA[IDX] / (4.0 * (H * H)) * (f_ijp1 - f_ijm1));
+            }
+
+            DBL_T       p[5]  = {p0, p1, p2, p3, p4};
+            DBL_T       p_sum = 0;
+            for (double &i: p) {
+                if (i < 0) { i = 0; } else if (i > 1) { i = 1; }
+                p_sum += i;
+            }
+
+            const int movement = p_sum == 0 ? 0 : sample_prob1(5, p);
+//            std::cout << t + 1 << " " << ++COUNTER << " " << movement << std::endl;
+        }
+    }
 }
 
 template<int Y_LEN, int X_LEN>
 bool Sim_2D<Y_LEN, X_LEN>::pde() {
     for (int t = 0; t < TIME_STEPS; ++t) {
         if (!end_of_day(t)) { return false; }
-        solve_pde(t);
+        if (!solve_pde(t)) { return false; }
+//        movement(t);
     }
-    f.print("%.7f ");
+//    f.print("%.7f ");
     return true;
 }
 
@@ -266,3 +418,5 @@ bool Sim_2D<Y_LEN, X_LEN>::pde() {
 //std::cout << x_cut[0] << " ";
 //}
 //std::cout << std::endl;
+
+//if (x == 0) printf("%.8f %.8f %.8f %.8f %.8f\n", p0, p1, p2, p3, p4);
