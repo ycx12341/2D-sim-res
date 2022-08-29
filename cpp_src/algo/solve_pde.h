@@ -1,6 +1,6 @@
-#include "calculate_sse.h"
-
 #include <iostream>
+
+#include "scc.h"
 
 template<int Y_LEN, int X_LEN>
 template<int Nbr_Num>
@@ -154,13 +154,13 @@ bool Sim_2D<Y_LEN, X_LEN>::end_of_day(const int t) {
 template<int Y_LEN, int X_LEN>
 void Sim_2D<Y_LEN, X_LEN>::solve_pde(const int t) {
     if ((t + 1) > PDE_TIME_STEPS) {
-        f.iterate_range_index(1, 1, Y_LEN - 2, X_LEN - 2, [&](int i, int j) {
-            return f(i, j) * (1.0L - DT * pars->ETA[IDX] * m(i, j));
+        f.iter_range_index(1, 1, Y_LEN - 2, X_LEN - 2, [&](int i, int j) {
+            f(i, j) = f(i, j) * (1.0L - DT * pars->ETA[IDX] * m(i, j));
         });
 
         Matrix<DBL_T, Y_LEN, X_LEN> n_cpy(n);
-        n.iterate_range_index(1, 1, Y_LEN - 2, X_LEN - 2, [&](int i, int j) {
-            return
+        n.iter_range_index(1, 1, Y_LEN - 2, X_LEN - 2, [&](int i, int j) {
+            n(i, j) =
                     n_cpy(i, j) * (
                             1.0 - (4.0 * DT * pars->DN[IDX] / (H * H)) - (
                                     DT * pars->GAMMA[IDX] / (H * H) * (
@@ -199,24 +199,51 @@ void Sim_2D<Y_LEN, X_LEN>::solve_pde(const int t) {
                     );
         });
         Matrix<DBL_T, Y_LEN, X_LEN> m_cpy(m);
-        m.iterate_range_index(1, 1, Y_LEN - 2, X_LEN - 2, [&](int i, int j) {
-            return m_cpy(i, j) * (1.0 - (4.0 * DT * pars->DM[IDX] / (H * H))) +
-                   DT * pars->ALPHA[IDX] * n(i, j) +
-                   DT * pars->DM[IDX] / (H * H) * (
-                           m_cpy(i, j + 1) + m_cpy(i, j - 1) + m_cpy(i - 1, j) + m_cpy(i + 1, j)
-                   );
+        m.iter_range_index(1, 1, Y_LEN - 2, X_LEN - 2, [&](int i, int j) {
+            m(i, j) = m_cpy(i, j) * (1.0 - (4.0 * DT * pars->DM[IDX] / (H * H))) +
+                      DT * pars->ALPHA[IDX] * n(i, j) +
+                      DT * pars->DM[IDX] / (H * H) * (
+                              m_cpy(i, j + 1) + m_cpy(i, j - 1) + m_cpy(i - 1, j) + m_cpy(i + 1, j)
+                      );
         });
     } else {
-        f.iterate_range_index(1, 1, Y_LEN - 2, X_LEN - 2, [&](int i, int j) {
-            return f(i, j) * (1.0L - DT * pars->ETA[IDX] * m(i, j));
+        f.iter_range_index(1, 1, Y_LEN - 2, X_LEN - 2, [&](int i, int j) {
+            f(i, j) = f(i, j) * (1.0L - DT * pars->ETA[IDX] * m(i, j));
         });
-        n.iterate_range_index(1, 1, Y_LEN - 2, X_LEN - 2, [=](int i, int j) {
-            return n(i, j) * (1 + pars->RN[IDX] * (1 - n(i, j) - f(i, j)) * DT);
+        n.iter_range_index(1, 1, Y_LEN - 2, X_LEN - 2, [&](int i, int j) {
+            n(i, j) = n(i, j) * (1 + pars->RN[IDX] * (1 - n(i, j) - f(i, j)) * DT);
         });
-        m.iterate_range_index(1, 1, Y_LEN - 2, X_LEN - 2, [=](int i, int j) {
-            return m(i, j) + pars->ALPHA[IDX] * DT * n(i, j);
+        m.iter_range_index(1, 1, Y_LEN - 2, X_LEN - 2, [&](int i, int j) {
+            m(i, j) = m(i, j) + pars->ALPHA[IDX] * DT * n(i, j);
         });
     }
+
+    n.iter_cols([&](int j) {
+        n(0, j)         = n(1, j);
+        n(Y_LEN - 1, j) = n(Y_LEN - 2, j);
+    });
+    n.iter_rows([&](int i) {
+        n(i, 0)         = n(i, 1);
+        n(i, X_LEN - 1) = n(i, X_LEN - 2);
+    });
+
+    f.iter_cols([&](int j) {
+        f(0, j)         = f(1, j);
+        f(Y_LEN - 1, j) = f(Y_LEN - 2, j);
+    });
+    f.iter_rows([&](int i) {
+        f(i, 0)         = f(i, 1);
+        f(i, X_LEN - 1) = f(i, X_LEN - 2);
+    });
+
+    m.iter_cols([&](int j) {
+        m(0, j)         = m(1, j);
+        m(Y_LEN - 1, j) = m(Y_LEN - 2, j);
+    });
+    m.iter_rows([&](int i) {
+        m(i, 0)         = m(i, 1);
+        m(i, X_LEN - 1) = m(i, X_LEN - 2);
+    });
 }
 
 template<int Y_LEN, int X_LEN>
@@ -225,7 +252,7 @@ bool Sim_2D<Y_LEN, X_LEN>::pde() {
         if (!end_of_day(t)) { return false; }
         solve_pde(t);
     }
-//    m.print("%.7f ");
+    f.print("%.7f ");
     return true;
 }
 

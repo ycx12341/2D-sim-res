@@ -47,30 +47,44 @@ public:
     }
 
     template<typename F>
-    void iterate(F f) {
-        iterate_by_index(0, 0, ROWS, COLS, f);
+    void iter(F f) {
+        iter_by_index(0, 0, ROWS, COLS, f);
     }
 
     template<typename F>
-    void iterate_range(const int i, const int j, const int r, const int c, F f) {
-        iterate_range_index(0, 0, ROWS, COLS, f);
+    void iter_range(const int i, const int j, const int r, const int c, F f) {
+        iter_range_index(0, 0, ROWS, COLS, f);
     }
 
     template<typename F>
-    void iterate_by_index(F f) {
+    void iter_by_index(F f) {
         for (int i = 0; i < ROWS; ++i) {
             for (int j = 0; j < COLS; ++j) {
-                MATRIX[i][j] = f(i, j);
+                f(i, j);
             }
         }
     }
 
     template<typename F>
-    void iterate_range_index(const int i, const int j, const int r, const int c, F f) {
+    void iter_range_index(const int i, const int j, const int r, const int c, F f) {
         for (int ii = i, il = i + r; ii < il; ++ii) {
             for (int jj = j, jl = j + c; jj < jl; ++jj) {
-                MATRIX[ii][jj] = f(ii, jj);
+                f(ii, jj);
             }
+        }
+    }
+
+    template<typename F>
+    void iter_cols(F f) {
+        for (int j = 0; j < COLS; ++j) {
+            f(j);
+        }
+    }
+
+    template<typename F>
+    void iter_rows(F f) {
+        for (int i = 0; i < ROWS; ++i) {
+            f(i);
         }
     }
 
