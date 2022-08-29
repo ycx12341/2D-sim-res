@@ -392,7 +392,23 @@ void Sim_2D<Y_LEN, X_LEN>::movement(const int t) {
             }
 
             const int movement = p_sum == 0 ? 0 : sample_prob1(5, p);
-//            std::cout << t + 1 << " " << ++COUNTER << " " << movement << std::endl;
+            assert(0 <= movement && movement <= 5);
+
+            ind_pos(x, y) = 0;
+
+            if (movement == 2 && ind_pos(x, y - 1) == 0) {
+                y--;
+            } else if (movement == 3 && ind_pos(x, y + 1) == 0) {
+                y++;
+            } else if (movement == 4 && ind_pos(x + 1, y) == 0) {
+                x++;
+            } else if (movement == 5 && ind_pos(x - 1, y) == 0) {
+                x--;
+            }
+
+            crd[0] = x;
+            crd[1] = y;
+            ind_pos(x, y) = 1;
         }
     }
 }
