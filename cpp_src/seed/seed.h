@@ -15,4 +15,6 @@ int unif_index(int dn);
 
 std::array<int, 2> unif_index2(int dn);
 
+int sample_prob1(int dn, const DBL_T *prob);
+
 #endif //SIM_2D_CPP_SEED_H

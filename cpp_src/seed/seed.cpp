@@ -1,6 +1,8 @@
 #include "seed.h"
 
 #include <iostream>
+#include <cassert>
+#include <ctime>
 
 static unsigned int i_seed[628];                        /* allow for optimizing compilers to read over bound */
 
@@ -27,6 +29,28 @@ static unsigned int i_seed[628];                        /* allow for optimizing 
 static unsigned int mti = N + 1;                        /* mti==N+1 means mt[N] is not initialized */
 static unsigned int *mt = i_seed + 1;                   /* the array for the state vector  */
 
+unsigned int TimeToSeed() {
+    unsigned int seed, pid = getpid();
+#if defined(HAVE_CLOCK_GETTIME) && defined(CLOCK_REALTIME)
+    {
+    struct timespec tp;
+    clock_gettime(CLOCK_REALTIME, &tp);
+    seed = (unsigned int)(((uint_least64_t) tp.tv_nsec << 16) ^ tp.tv_sec);
+    }
+#elif defined(HAVE_GETTIMEOFDAY)
+    {
+    struct timeval tv;
+    gettimeofday (&tv, NULL);
+    seed = (unsigned int)(((uint_least64_t) tv.tv_usec << 16) ^ tv.tv_sec);
+    }
+#else
+    /* C89, so must work */
+    seed = (unsigned int) time(nullptr);
+#endif
+    seed ^= (pid << 16);
+    return seed;
+}
+
 /**
  * Initialize seed environment using "Mersenne-Twister" approach.
  * @param seed Seed.
@@ -47,9 +71,14 @@ static void seed_init(unsigned int seed) {
     if (I1 <= 0) { I1 = N; }
 
     /* check for all zeroes */
-    for (int j = 1; j <= N; j++) {
-        if (i_seed[j] != 0) { break; }
+    bool     not_all_zero = false;
+    for (int j            = 1; j <= N; j++) {
+        if (i_seed[j] != 0) {
+            not_all_zero = true;
+            break;
+        }
     }
+    if (!not_all_zero) { seed_init(TimeToSeed()); }
 }
 
 static void sgen_rand(unsigned int seed) {
