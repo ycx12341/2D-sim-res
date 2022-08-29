@@ -84,23 +84,23 @@ void Sim_2D::proliferation(const int PROF_CELLS_NUM, int *prof_cells) {
 
 bool Sim_2D::end_of_day(const int t) {
     if ((t + 1) % DAY_TIME_STEPS == 0) {
-        std::vector<LDBL> cell_den;
-        for (auto         c: coord) {
+        std::vector<DBL_T> cell_den;
+        for (auto          c: coord) {
             cell_den.push_back(n(c[0], c[1]));
         }
 
-        const int        DEAD_CELLS_NUM = (int) round((double) (coord.size() * pars->PROB_DEATH[IDX]));
+        const int        DEAD_CELLS_NUM = (int) round((double) ((DBL_T) coord.size() * pars->PROB_DEATH[IDX]));
         int              dead_cells[DEAD_CELLS_NUM];
         std::vector<int> mins;
 
         for (int i = 0, mins_size, ind_idx, ind; i < DEAD_CELLS_NUM; ++i) {
-            mins      = vector_which_min<LDBL>(cell_den);
+            mins      = vector_which_min<DBL_T>(cell_den);
             mins_size = (int) mins.size();
             ind_idx   = mins_size > 1 ? unif_index(mins_size) : 0;
 
             ind = mins.at(ind_idx);
             dead_cells[i] = ind;
-            cell_den.at(ind) = (LDBL) INFINITY;
+            cell_den.at(ind) = (DBL_T) INFINITY;
         }
 
         if ((int) coord.size() == 0) {
@@ -108,26 +108,26 @@ bool Sim_2D::end_of_day(const int t) {
         }
 
         coord    = vector_remove_many_by_index<COORD_T >(coord, DEAD_CELLS_NUM, dead_cells);
-        cell_den = vector_remove_many_by_index<LDBL>(cell_den, DEAD_CELLS_NUM, dead_cells);
+        cell_den = vector_remove_many_by_index<DBL_T>(cell_den, DEAD_CELLS_NUM, dead_cells);
         assert(coord.size() == cell_den.size());
 
         if ((int) cell_den.size() == 0) { return false; }
 
-        const int        PROF_CELLS_NUM = (int) round((double) (coord.size() * pars->PROB_PROF[IDX]));
+        const int        PROF_CELLS_NUM = (int) round((double) ((DBL_T) coord.size() * pars->PROB_PROF[IDX]));
         int              prof_cells[PROF_CELLS_NUM];
         std::vector<int> maxes;
 
         for (int i = 0, maxes_size, ind_idx, ind; i < PROF_CELLS_NUM; ++i) {
-            maxes      = vector_which_max<LDBL>(cell_den);
+            maxes      = vector_which_max<DBL_T>(cell_den);
             maxes_size = (int) maxes.size();
             ind_idx    = maxes_size > 1 ? unif_index(maxes_size) : 0;
 
             ind = maxes.at(ind_idx);
             prof_cells[i] = ind;
-            cell_den.at(ind) = (LDBL) -INFINITY;
+            cell_den.at(ind) = (DBL_T) -INFINITY;
         }
 
-        ind_pos = MATRIX_ZERO(LDBL, Y_LEN, X_LEN);
+        ind_pos.setAll(0);
         for (COORD_T &i: coord) {
             ind_pos(i[0], i[1]) = 1;
         }
@@ -135,11 +135,11 @@ bool Sim_2D::end_of_day(const int t) {
         proliferation(PROF_CELLS_NUM, prof_cells);
 
         coord.clear();
-        for (COORD_T c: matrix_which_equals<LDBL>(&ind_pos, 1.0L)) {
+        for (COORD_T c: ind_pos.matrix_which_equals(1.0L)) {
             coord.push_back(c);
         }
 
-        ind_pos = MATRIX_ZERO(LDBL, Y_LEN, X_LEN);
+        ind_pos.setAll(0);
         for (COORD_T c: coord) {
             ind_pos(c[0], c[1]) = 1;
         }
@@ -148,11 +148,80 @@ bool Sim_2D::end_of_day(const int t) {
     return true;
 }
 
-bool Sim_2D::solve_pde() {
+void Sim_2D::solve_pde(const int t) {
+    if ((t + 1) > PDE_TIME_STEPS) {
+        f.iterate_range_index(1, 1, Y_LEN - 2, X_LEN - 2, [&](int i, int j) {
+            return f(i, j) * (1.0L - DT * pars->ETA[IDX] * m(i, j));
+        });
+
+        Matrix<DBL_T> n_cpy(n);
+        n.iterate_range_index(1, 1, Y_LEN - 2, X_LEN - 2, [&](int i, int j) {
+            return
+                    n_cpy(i, j) * (
+                            1.0 - (4.0 * DT * pars->DN[IDX] / (H * H)) - (
+                                    DT * pars->GAMMA[IDX] / (H * H) * (
+                                            f(i, j + 1) + f(i, j - 1) - 4 * f(i, j) + f(i - 1, j) + f(i + 1, j)
+                                    )
+                            ) + pars->RN[IDX] * (1.0 - n_cpy(i, j) - f(i, j)) * DT
+                    )
+                    +
+                    n_cpy(i, j + 1) * (
+                            DT * pars->DN[IDX] / (H * H) - (
+                                    DT * pars->GAMMA[IDX] / (4.0 * (H * H)) * (
+                                            f(i, j + 1) - f(i, j - 1)
+                                    )
+                            )
+                    )
+                    + n_cpy(i, j - 1) * (
+                            DT * pars->DN[IDX] / (H * H) + (
+                                    DT * pars->GAMMA[IDX] / (4.0 * (H * H)) * (
+                                            f(i, j + 1) - f(i, j - 1)
+                                    )
+                            )
+                    )
+                    + n_cpy(i - 1, j) * (
+                            DT * pars->DN[IDX] / (H * H) - (
+                                    DT * pars->GAMMA[IDX] / (4.0 * (H * H)) * (
+                                            f(i - 1, j) - f(i + 1, j)
+                                    )
+                            )
+                    )
+                    + n_cpy(i + 1, j) * (
+                            DT * pars->DN[IDX] / (H * H) + (
+                                    DT * pars->GAMMA[IDX] / (4.0 * (H * H)) * (
+                                            f(i - 1, j) - f(i + 1, j)
+                                    )
+                            )
+                    )
+                    ;
+        });
+        Matrix<DBL_T> m_cpy(m);
+        m.iterate_range_index(1, 1, Y_LEN - 2, X_LEN - 2, [&](int i, int j) {
+            return m_cpy(i, j) * (1.0 - (4.0 * DT * pars->DM[IDX] / (H * H))) +
+                   DT * pars->ALPHA[IDX] * n(i, j) +
+                   DT * pars->DM[IDX] / (H * H) * (
+                           m_cpy(i, j + 1) + m_cpy(i, j - 1) + m_cpy(i - 1, j) + m_cpy(i + 1, j)
+                   );
+        });
+    } else {
+        f.iterate_range_index(1, 1, Y_LEN - 2, X_LEN - 2, [&](int i, int j) {
+            return f(i, j) * (1.0L - DT * pars->ETA[IDX] * m(i, j));
+        });
+        n.iterate_range_index(1, 1, Y_LEN - 2, X_LEN - 2, [=](int i, int j) {
+            return n(i, j) * (1 + pars->RN[IDX] * (1 - n(i, j) - f(i, j)) * DT);
+        });
+        m.iterate_range_index(1, 1, Y_LEN - 2, X_LEN - 2, [=](int i, int j) {
+            return m(i, j) + pars->ALPHA[IDX] * DT * n(i, j);
+        });
+    }
+}
+
+bool Sim_2D::pde() {
     for (int t = 0; t < TIME_STEPS; ++t) {
         if (!end_of_day(t)) { return false; }
-        // after some day
+        solve_pde(t);
     }
+    m.print("%.7f ");
     return true;
 }
 

@@ -1,7 +1,7 @@
 #ifndef SIM_2D_CPP_COLLECTION_H
 #define SIM_2D_CPP_COLLECTION_H
 
-#include "matrix_ext.h"
+#include "matrix.h"
 
 template<typename T>
 int seq_length_out(T *buf, T from, T to, const int length_out) {

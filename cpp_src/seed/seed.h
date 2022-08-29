@@ -5,11 +5,11 @@
 
 #include <array>
 
-long double unif_rand();
+DBL_T unif_rand();
 
 void set_seed(unsigned int seed);
 
-void runif_seq(long double *seq, int len, long double min, long double max);
+void runif_seq(DBL_T *seq, int len, DBL_T min, DBL_T max);
 
 int unif_index(int dn);
 

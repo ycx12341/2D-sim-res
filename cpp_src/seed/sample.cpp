@@ -16,18 +16,18 @@ static double rbits(const int bits) {
     return (double) (v & ((one64 << bits) - 1));
 }
 
-long double runif(const long double min, const long double max) {
+DBL_T runif(const DBL_T min, const DBL_T max) {
     assert(std::isfinite(min) && std::isfinite(max) && min <= max);
     if (min == max) { return min; }
 
-    long double u;
+    DBL_T u;
     do {
         u = unif_rand();
     } while (u <= 0 || u >= 1);
     return min + (max - min) * u;
 }
 
-void runif_seq(long double *seq, const int len, const long double min, const long double max) {
+void runif_seq(DBL_T *seq, const int len, const DBL_T min, const DBL_T max) {
     for (int i = 0; i < len; i++) {
         seq[i] = runif(min, max);
     }

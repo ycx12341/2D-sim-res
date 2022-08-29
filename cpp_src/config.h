@@ -1,6 +1,8 @@
 #ifndef SIM_2D_CPP_CONFIG_H
 #define SIM_2D_CPP_CONFIG_H
 
+#define DBL_T                   double
+
 #define DEFAULT_N_DIMS          10000
 #define SEED                    874513
 

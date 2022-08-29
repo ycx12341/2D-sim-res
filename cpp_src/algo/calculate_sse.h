@@ -1,10 +1,9 @@
 #ifndef CPP_SRC_2D_SIM_ALGO_H
 #define CPP_SRC_2D_SIM_ALGO_H
 
-#define LDBL    long double
-
 #include <cmath>
 #include <cfloat>
+#include <vector>
 
 #include "../config.h"
 #include "../seed/seed.h"
@@ -13,26 +12,26 @@
 class Parameters {
 public:
     const int N_DIMS;
-    LDBL *DN;
-    LDBL *GAMMA;
-    LDBL *RN;
-    LDBL *ETA;
-    LDBL *DM;
-    LDBL *ALPHA;
-    LDBL *INIT_CELLS_COLS;
-    LDBL *PROB_DEATH;
-    LDBL *PROB_PROF;
+    DBL_T *DN;
+    DBL_T *GAMMA;
+    DBL_T *RN;
+    DBL_T *ETA;
+    DBL_T *DM;
+    DBL_T *ALPHA;
+    DBL_T *INIT_CELLS_COLS;
+    DBL_T *PROB_DEATH;
+    DBL_T *PROB_PROF;
 
     explicit Parameters(const int n_dims) : N_DIMS(n_dims) {
-        DN              = new LDBL[n_dims];
-        GAMMA           = new LDBL[n_dims];
-        RN              = new LDBL[n_dims];
-        ETA             = new LDBL[n_dims];
-        DM              = new LDBL[n_dims];
-        ALPHA           = new LDBL[n_dims];
-        INIT_CELLS_COLS = new LDBL[n_dims];
-        PROB_DEATH      = new LDBL[n_dims];
-        PROB_PROF       = new LDBL[n_dims];
+        DN              = new DBL_T[n_dims];
+        GAMMA           = new DBL_T[n_dims];
+        RN              = new DBL_T[n_dims];
+        ETA             = new DBL_T[n_dims];
+        DM              = new DBL_T[n_dims];
+        ALPHA           = new DBL_T[n_dims];
+        INIT_CELLS_COLS = new DBL_T[n_dims];
+        PROB_DEATH      = new DBL_T[n_dims];
+        PROB_PROF       = new DBL_T[n_dims];
 
         runif_seq(DN, N_DIMS, DN_MIN, DN_MAX);
         runif_seq(GAMMA, N_DIMS, GAMMA_MIN, GAMMA_MAX);
@@ -61,28 +60,30 @@ public:
 class Sim_2D {
 public:
     int              N_DIMS;
-    const LDBL       H;
-    const LDBL       SPACE_LENGTH_Y;
-    const LDBL       SPACE_LENGTH_X;
+    const DBL_T       H;
+    const DBL_T       SPACE_LENGTH_Y;
+    const DBL_T       SPACE_LENGTH_X;
     const int        X_LEN;
     const int        Y_LEN;
-    const LDBL       T;
-    const LDBL       DT;
-    const LDBL       TIME_STEPS;
-    const LDBL       INT_TIME_STEPS;
+    const DBL_T       T;
+    const DBL_T       DT;
+    const DBL_T       TIME_STEPS;
+    const DBL_T       INT_TIME_STEPS;
     const int        DAY_TIME_STEPS;
+    const double     PDE_TIME_STEPS;        // Diffusion starts having an impact after a certain amount of time
     const Parameters *pars;
 
     Sim_2D(
             const int n_dims,
-            LDBL H,
-            LDBL SPACE_LENGTH_Y,
-            LDBL SPACE_LENGTH_X,
-            LDBL T,
-            LDBL DT,
-            LDBL TIME_STEPS,
-            LDBL INT_TIME_STEPS,
-            int DAY_TIME_STEPS)
+            DBL_T H,
+            DBL_T SPACE_LENGTH_Y,
+            DBL_T SPACE_LENGTH_X,
+            DBL_T T,
+            DBL_T DT,
+            DBL_T TIME_STEPS,
+            DBL_T INT_TIME_STEPS,
+            int DAY_TIME_STEPS,
+            double PDE_TIME_STEPS)
             :
             N_DIMS(n_dims),
             H(H),
@@ -94,30 +95,29 @@ public:
             DT(DT),
             TIME_STEPS(TIME_STEPS),
             INT_TIME_STEPS(INT_TIME_STEPS),
-            DAY_TIME_STEPS(DAY_TIME_STEPS) {
+            DAY_TIME_STEPS(DAY_TIME_STEPS),
+            PDE_TIME_STEPS(PDE_TIME_STEPS) {
         pars = new Parameters(DEFAULT_N_DIMS);
     }
 
     static Sim_2D sim_scc(const int n_dims) {
-        const LDBL h              = 1.0 / 59.0;
-        const LDBL space_length_y = (1.0 / h) + 1.0;
-        const LDBL space_length_x = round((double) space_length_y * (280.0 / 480.0));
-        const LDBL t              = 4.52;
-        const LDBL dt             = 0.0025;
-        const LDBL time_steps     = t / dt;
-        const LDBL int_time_steps = 1 / dt;
-        const LDBL day_time_steps = 600.0;
+        const DBL_T h              = 1.0 / 59.0;
+        const DBL_T space_length_y = (1.0 / h) + 1.0;
+        const DBL_T t              = 4.52;
+        const DBL_T dt             = 0.0025;
+        const DBL_T day_time_steps = 600.0;
 
         return *new Sim_2D(
                 n_dims,
                 h,
                 space_length_y,
-                space_length_x,
-                t,
-                dt,
-                time_steps,
-                int_time_steps,
-                (int) day_time_steps
+                round((double) space_length_y * (280.0 / 480.0)),
+                4.52,
+                0.0025,
+                t / dt,
+                1 / dt,
+                6000,
+                round((double) day_time_steps * (95.0 / 96.0))
         );
     }
 
@@ -130,10 +130,10 @@ public:
 private:
     int IDX;
 
-    MATRIX_T(LDBL) n;
-    MATRIX_T(LDBL) f;
-    MATRIX_T(LDBL) m;
-    MATRIX_T(LDBL) ind_pos;
+    Matrix<DBL_T> n;
+    Matrix<DBL_T> f;
+    Matrix<DBL_T> m;
+    Matrix<DBL_T> ind_pos;
 
     std::vector<COORD_T > coord;
 
@@ -141,7 +141,9 @@ private:
 
     void *generate_pattern();
 
-    bool solve_pde();
+    void solve_pde(int t);
+
+    bool pde();
 
     bool end_of_day(int t);
 

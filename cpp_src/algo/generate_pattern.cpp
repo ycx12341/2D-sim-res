@@ -1,57 +1,61 @@
 #include "calculate_sse.h"
 
 #include <iostream>
+#include <cassert>
 
 void Sim_2D::initial_condition() {
-    LDBL x[X_LEN], y[Y_LEN];
-    assert(seq_length_out<LDBL>(x, 0, H * (SPACE_LENGTH_X - 1), X_LEN) == X_LEN);
-    assert(seq_length_out<LDBL>(y, 0, 1, Y_LEN) == Y_LEN);
+    DBL_T x[X_LEN], y[Y_LEN];
+    assert(seq_length_out<DBL_T>(x, 0, H * (SPACE_LENGTH_X - 1), X_LEN) == X_LEN);
+    assert(seq_length_out<DBL_T>(y, 0, 1, Y_LEN) == Y_LEN);
 
-    n = MATRIX_ZERO(LDBL, Y_LEN, X_LEN);
-    f = MATRIX_ONES(LDBL, Y_LEN, X_LEN);
-    m = MATRIX_ZERO(LDBL, Y_LEN, X_LEN);
+    n = *new Matrix<DBL_T>(Y_LEN, X_LEN, 0);
+    f = *new Matrix<DBL_T>(Y_LEN, X_LEN, 0);
+    m = *new Matrix<DBL_T>(Y_LEN, X_LEN, 0);
 
     for (int j = 0; j < X_LEN; ++j) {
         n(0, j) = x[j] <= 0.1 ? cos(M_PI * x[j] * 5) : 0;
     }
 
-    for (int              i = 1; i < Y_LEN; ++i) {
-        n.block(i, 0, 1, X_LEN) = n.block(0, 0, 1, X_LEN);
+    for (int i = 1; i < Y_LEN; ++i) {
+        for (int j = 0; j < X_LEN; ++j) {
+            n(i, j) = n(0, j);
+        }
     }
 
-    f = f - 0.5 * n;
-    m = 0.5 * n;
+    f.iterate_by_index([&](int i, int j) { return 1 - 0.5 * n(i, j); });
+    m.iterate_by_index([&](int i, int j) { return 0.5 * n(i, j); });
 
-    MATRIX_T(LDBL) n_sort         = n;
+    Matrix<DBL_T>         n_sort(n);
     const int             N_CELLS = (int) round((double) SPACE_LENGTH_Y * (double) pars->INIT_CELLS_COLS[IDX]);
     std::vector<COORD_T > maxes;
 
     for (int ind_idx, maxes_size; coord.size() < N_CELLS;) {
-        maxes      = matrix_which_max<LDBL>(&n_sort);
+        maxes      = n_sort.matrix_which_max();
         maxes_size = (int) maxes.size();
         ind_idx    = maxes_size > 1 ? unif_index(maxes_size) : 0;
+        assert(0 <= ind_idx && ind_idx < maxes_size);
 
         COORD_T ind = maxes.at(ind_idx);
         coord.push_back(ind);
-        n_sort(ind[0], ind[1]) = -LDBL_MAX;
+        n_sort(ind[0], ind[1]) = (DBL_T) -INFINITY;
     }
 
-    ind_pos = MATRIX_ZERO(LDBL, Y_LEN, X_LEN);
+    ind_pos = *new Matrix<DBL_T>(Y_LEN, X_LEN, 0);
     for (COORD_T &c: coord) {
         ind_pos(c[0], c[1]) = 1;
     }
 
-    LDBL MAT_SIZE          = SPACE_LENGTH_Y / 12.0;
+    DBL_T MAT_SIZE         = SPACE_LENGTH_Y / 12.0;
     const int    Y_CUT_LEN = (int) ceil((double) ((SPACE_LENGTH_Y - 1.0) / MAT_SIZE));
     const int    X_CUT_LEN = (int) ceil((double) ((SPACE_LENGTH_X - 1.0) / MAT_SIZE));
-    LDBL x_cut[X_CUT_LEN], y_cut[Y_CUT_LEN];
-    assert(seq_by<LDBL>(y_cut, 1, SPACE_LENGTH_Y, MAT_SIZE) == Y_CUT_LEN);
-    assert(seq_by<LDBL>(x_cut, 1, SPACE_LENGTH_X, MAT_SIZE) == X_CUT_LEN);
+    DBL_T x_cut[X_CUT_LEN], y_cut[Y_CUT_LEN];
+    assert(seq_by<DBL_T>(y_cut, 1, SPACE_LENGTH_Y, MAT_SIZE) == Y_CUT_LEN);
+    assert(seq_by<DBL_T>(x_cut, 1, SPACE_LENGTH_X, MAT_SIZE) == X_CUT_LEN);
 }
 
 void *Sim_2D::generate_pattern() {
     initial_condition();
-    if (!solve_pde()) { return nullptr; }
+    if (!pde()) { return nullptr; }
 }
 
 //for (auto &i: coord) {
