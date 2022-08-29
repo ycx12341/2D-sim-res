@@ -57,20 +57,20 @@ public:
     }
 };
 
+template<int Y_LEN, int X_LEN>
 class Sim_2D {
 public:
-    int              N_DIMS;
-    const DBL_T       H;
-    const DBL_T       SPACE_LENGTH_Y;
-    const DBL_T       SPACE_LENGTH_X;
-    const int        X_LEN;
-    const int        Y_LEN;
-    const DBL_T       T;
-    const DBL_T       DT;
-    const DBL_T       TIME_STEPS;
-    const DBL_T       INT_TIME_STEPS;
+    int N_DIMS;
+
+    const DBL_T      H;
+    const DBL_T      SPACE_LENGTH_Y;
+    const DBL_T      SPACE_LENGTH_X;
+    const DBL_T      T;
+    const DBL_T      DT;
+    const DBL_T      TIME_STEPS;
+    const DBL_T      INT_TIME_STEPS;
     const int        DAY_TIME_STEPS;
-    const double     PDE_TIME_STEPS;        // Diffusion starts having an impact after a certain amount of time
+    const DBL_T      PDE_TIME_STEPS;        // Diffusion starts having an impact after a certain amount of time
     const Parameters *pars;
 
     Sim_2D(
@@ -83,14 +83,12 @@ public:
             DBL_T TIME_STEPS,
             DBL_T INT_TIME_STEPS,
             int DAY_TIME_STEPS,
-            double PDE_TIME_STEPS)
+            DBL_T PDE_TIME_STEPS)
             :
             N_DIMS(n_dims),
             H(H),
             SPACE_LENGTH_Y(SPACE_LENGTH_Y),
             SPACE_LENGTH_X(SPACE_LENGTH_X),
-            X_LEN((int) SPACE_LENGTH_X),
-            Y_LEN((int) SPACE_LENGTH_Y),
             T(T),
             DT(DT),
             TIME_STEPS(TIME_STEPS),
@@ -100,27 +98,6 @@ public:
         pars = new Parameters(DEFAULT_N_DIMS);
     }
 
-    static Sim_2D sim_scc(const int n_dims) {
-        const DBL_T h              = 1.0 / 59.0;
-        const DBL_T space_length_y = (1.0 / h) + 1.0;
-        const DBL_T t              = 4.52;
-        const DBL_T dt             = 0.0025;
-        const DBL_T day_time_steps = 600.0;
-
-        return *new Sim_2D(
-                n_dims,
-                h,
-                space_length_y,
-                round((double) space_length_y * (280.0 / 480.0)),
-                4.52,
-                0.0025,
-                t / dt,
-                1 / dt,
-                6000,
-                round((double) day_time_steps * (95.0 / 96.0))
-        );
-    }
-
     ~Sim_2D() {
         pars->~Parameters();
     }
@@ -128,12 +105,12 @@ public:
     void calculate_sse(int idx);
 
 private:
-    int IDX;
+    int IDX = 0;
 
-    Matrix<DBL_T> n;
-    Matrix<DBL_T> f;
-    Matrix<DBL_T> m;
-    Matrix<DBL_T> ind_pos;
+    Matrix<DBL_T, Y_LEN, X_LEN> n;
+    Matrix<DBL_T, Y_LEN, X_LEN> f;
+    Matrix<DBL_T, Y_LEN, X_LEN> m;
+    Matrix<DBL_T, Y_LEN, X_LEN> ind_pos;
 
     std::vector<COORD_T > coord;
 
@@ -156,5 +133,36 @@ private:
             COORD_T cell_pos
     );
 };
+
+class Sim_2D_Factory {
+public:
+    static auto SCC(const int n_dims) {
+        constexpr static const DBL_T H                  = 1.0 / 59.0;
+        constexpr static const DBL_T SCC_SPACE_LENGTH_Y = (1.0 / H) + 1.0;
+        constexpr static const DBL_T SCC_SPACE_LENGTH_X = (DBL_T) SCC_SPACE_LENGTH_Y * (280.0 / 480.0);
+        constexpr static const int   Y_LEN              = (int) SCC_SPACE_LENGTH_Y;
+        constexpr static const int   X_LEN              = (int) SCC_SPACE_LENGTH_X;
+        constexpr static const DBL_T T                  = 4.52;
+        constexpr static const DBL_T DT                 = 0.0025;
+        constexpr static const DBL_T TIME_STEPS         = T / DT;
+        constexpr static const DBL_T INT_TIME_STEPS     = 1.0 / DT;
+        constexpr static const int   DAY_TIME_STEPS     = 600;
+
+
+        return new Sim_2D<Y_LEN, X_LEN>(
+                n_dims, H,
+                SCC_SPACE_LENGTH_Y, SCC_SPACE_LENGTH_X,
+                T, DT,
+                TIME_STEPS, INT_TIME_STEPS, DAY_TIME_STEPS,
+                (DBL_T) round((double) DAY_TIME_STEPS * (95.0 / 96.0))
+        );
+    }
+};
+
+template<int Y_LEN, int X_LEN>
+void Sim_2D<Y_LEN, X_LEN>::calculate_sse(const int idx) {
+    this->IDX = idx;
+    generate_pattern();
+}
 
 #endif //CPP_SRC_2D_SIM_ALGO_H

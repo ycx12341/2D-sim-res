@@ -2,8 +2,9 @@
 
 #include <iostream>
 
+template<int Y_LEN, int X_LEN>
 template<int Nbr_Num>
-void Sim_2D::cell_proliferate(
+void Sim_2D<Y_LEN, X_LEN>::cell_proliferate(
         std::array<int, Nbr_Num> nbr_temp,
         std::array<COORD_T, Nbr_Num> nghr_cord,
         COORD_T cell_pos
@@ -22,7 +23,8 @@ void Sim_2D::cell_proliferate(
     }
 }
 
-void Sim_2D::proliferation(const int PROF_CELLS_NUM, int *prof_cells) {
+template<int Y_LEN, int X_LEN>
+void Sim_2D<Y_LEN, X_LEN>::proliferation(const int PROF_CELLS_NUM, int *prof_cells) {
     for (int i = 0; i < PROF_CELLS_NUM; ++i) {
         COORD_T cell_pos = coord.at(prof_cells[i]);
         const int x      = cell_pos[0];
@@ -82,7 +84,8 @@ void Sim_2D::proliferation(const int PROF_CELLS_NUM, int *prof_cells) {
     }
 }
 
-bool Sim_2D::end_of_day(const int t) {
+template<int Y_LEN, int X_LEN>
+bool Sim_2D<Y_LEN, X_LEN>::end_of_day(const int t) {
     if ((t + 1) % DAY_TIME_STEPS == 0) {
         std::vector<DBL_T> cell_den;
         for (auto          c: coord) {
@@ -148,13 +151,14 @@ bool Sim_2D::end_of_day(const int t) {
     return true;
 }
 
-void Sim_2D::solve_pde(const int t) {
+template<int Y_LEN, int X_LEN>
+void Sim_2D<Y_LEN, X_LEN>::solve_pde(const int t) {
     if ((t + 1) > PDE_TIME_STEPS) {
         f.iterate_range_index(1, 1, Y_LEN - 2, X_LEN - 2, [&](int i, int j) {
             return f(i, j) * (1.0L - DT * pars->ETA[IDX] * m(i, j));
         });
 
-        Matrix<DBL_T> n_cpy(n);
+        Matrix<DBL_T, Y_LEN, X_LEN> n_cpy(n);
         n.iterate_range_index(1, 1, Y_LEN - 2, X_LEN - 2, [&](int i, int j) {
             return
                     n_cpy(i, j) * (
@@ -192,10 +196,9 @@ void Sim_2D::solve_pde(const int t) {
                                             f(i - 1, j) - f(i + 1, j)
                                     )
                             )
-                    )
-                    ;
+                    );
         });
-        Matrix<DBL_T> m_cpy(m);
+        Matrix<DBL_T, Y_LEN, X_LEN> m_cpy(m);
         m.iterate_range_index(1, 1, Y_LEN - 2, X_LEN - 2, [&](int i, int j) {
             return m_cpy(i, j) * (1.0 - (4.0 * DT * pars->DM[IDX] / (H * H))) +
                    DT * pars->ALPHA[IDX] * n(i, j) +
@@ -216,12 +219,13 @@ void Sim_2D::solve_pde(const int t) {
     }
 }
 
-bool Sim_2D::pde() {
+template<int Y_LEN, int X_LEN>
+bool Sim_2D<Y_LEN, X_LEN>::pde() {
     for (int t = 0; t < TIME_STEPS; ++t) {
         if (!end_of_day(t)) { return false; }
         solve_pde(t);
     }
-    m.print("%.7f ");
+//    m.print("%.7f ");
     return true;
 }
 

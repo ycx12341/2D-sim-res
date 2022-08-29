@@ -9,13 +9,11 @@
 
 #define COORD_T std::array<int, 2>
 
-#define MATRIX(i, j) MATRIX[i * Cols + j]
-
-template<typename T>
+template<typename T, int ROWS, int COLS>
 class Matrix {
 
 private:
-    T *MATRIX = nullptr;
+    T MATRIX[ROWS][COLS];
 
 public:
     int Rows = 0;
@@ -23,57 +21,46 @@ public:
 
     Matrix() = default;
 
-    Matrix(const int rows, const int cols) : Rows(rows), Cols(cols) {
-        MATRIX = new T[rows * cols];
-    }
-
-    Matrix(const int rows, const int cols, const T val) : Matrix(rows, cols) {
+    explicit Matrix(const T val) {
         setAll(val);
     }
 
-    Matrix(Matrix<T> &that) {
-        Rows       = that.Rows;
-        Cols       = that.Cols;
-        MATRIX     = new T[that.Rows * that.Cols];
-        for (int i = 0; i < Rows; ++i) {
-            for (int j = 0; j < Cols; ++j) {
-                MATRIX(i, j) = that.MATRIX(i, j);
+    Matrix(Matrix<T, ROWS, COLS> &that) {
+        for (int i = 0; i < ROWS; ++i) {
+            for (int j = 0; j < COLS; ++j) {
+                MATRIX[i][j] = that.MATRIX[i][j];
             }
         }
     }
 
-    ~Matrix() {
-        delete[] MATRIX;
-    }
-
     T &operator()(const int i, const int j) {
-        assert(0 <= i && i < Rows && 0 <= j && j < Cols && MATRIX != nullptr);
-        return MATRIX(i, j);
+        assert(0 <= i && i < ROWS && 0 <= j && j < COLS);
+        return MATRIX[i][j];
     }
 
     void setAll(T val) {
-        for (int i = 0; i < Rows; ++i) {
-            for (int j = 0; j < Cols; ++j) {
-                MATRIX(i, j) = val;
+        for (int i = 0; i < ROWS; ++i) {
+            for (int j = 0; j < COLS; ++j) {
+                MATRIX[i][j] = val;
             }
         }
     }
 
     template<typename F>
     void iterate(F f) {
-        iterate_by_index(0, 0, Rows, Cols, f);
+        iterate_by_index(0, 0, ROWS, COLS, f);
     }
 
     template<typename F>
     void iterate_range(const int i, const int j, const int r, const int c, F f) {
-        iterate_range_index(0, 0, Rows, Cols, f);
+        iterate_range_index(0, 0, ROWS, COLS, f);
     }
 
     template<typename F>
     void iterate_by_index(F f) {
-        for (int i = 0; i < Rows; ++i) {
-            for (int j = 0; j < Cols; ++j) {
-                MATRIX(i, j) = f(i, j);
+        for (int i = 0; i < ROWS; ++i) {
+            for (int j = 0; j < COLS; ++j) {
+                MATRIX[i][j] = f(i, j);
             }
         }
     }
@@ -82,19 +69,19 @@ public:
     void iterate_range_index(const int i, const int j, const int r, const int c, F f) {
         for (int ii = i, il = i + r; ii < il; ++ii) {
             for (int jj = j, jl = j + c; jj < jl; ++jj) {
-                MATRIX(ii, jj) = f(ii, jj);
+                MATRIX[ii][jj] = f(ii, jj);
             }
         }
     }
 
     long long size() {
-        return Rows * Cols;
+        return ROWS * COLS;
     }
 
     void print(const char *format) {
-        for (int i = 0; i < Rows; ++i) {
-            for (int j = 0; j < Cols; ++j) {
-                printf(format, MATRIX(i, j));
+        for (int i = 0; i < ROWS; ++i) {
+            for (int j = 0; j < COLS; ++j) {
+                printf(format, MATRIX[i][j]);
             }
             printf("\n");
         }
@@ -108,9 +95,9 @@ public:
 
         if (size() <= 0) { return maxes; }
 
-        for (int i = 0; i < Rows; ++i) {
-            for (int j = 0; j < Cols; ++j) {
-                v = MATRIX(i, j);
+        for (int i = 0; i < ROWS; ++i) {
+            for (int j = 0; j < COLS; ++j) {
+                v = MATRIX[i][j];
                 if (v < max) { continue; }
                 if (v > max) {
                     maxes.clear();
@@ -126,9 +113,9 @@ public:
         std::vector<COORD_T > res;
         if (size() <= 0) { return res; }
 
-        for (int j = 0; j < Cols; ++j) {
-            for (int i = 0; i < Rows; ++i) {
-                if (MATRIX(i, j) == val) { res.push_back({i, j}); }
+        for (int j = 0; j < COLS; ++j) {
+            for (int i = 0; i < ROWS; ++i) {
+                if (MATRIX[i][j] == val) { res.push_back({i, j}); }
             }
         }
         return res;
