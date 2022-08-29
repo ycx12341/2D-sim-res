@@ -65,7 +65,7 @@ static void sgen_rand(unsigned int seed) {
 /**
  * @return reals: [0,1)-interval
  */
-static long double gen_rand() {
+static DBL_T gen_rand() {
     /* mag01[x] = x * MATRIX_A  for x=0,1 */
     static unsigned int mag01[2] = {0x0, MATRIX_A};
     unsigned int        y;
@@ -99,13 +99,13 @@ static long double gen_rand() {
     y ^= TEMPERING_SHIFT_L(y);
     i_seed[0] = mti;
 
-    return (long double) (y * 2.3283064365386963e-10L);
+    return (DBL_T) (y * 2.3283064365386963e-10L);
 }
 
-long double unif_rand() {
-    long double x = gen_rand();
-    if (x <= 0.0) { return (long double) (0.5 * i2_32m1); }
-    if ((1.0 - x) <= 0.0) { return (long double) (1.0 - 0.5 * i2_32m1); }
+DBL_T unif_rand() {
+    DBL_T x = gen_rand();
+    if (x <= 0.0) { return (DBL_T) (0.5 * i2_32m1); }
+    if ((1.0 - x) <= 0.0) { return (DBL_T) (1.0 - 0.5 * i2_32m1); }
     return x;
 }
 

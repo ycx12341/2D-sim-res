@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include "algo/calculate_sse.h"
+#include "collection/matrix.h"
 
 int main() {
     set_seed(SEED);
