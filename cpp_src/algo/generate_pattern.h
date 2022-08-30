@@ -25,8 +25,8 @@ void Sim_2D<Y_LEN, X_LEN>::initial_condition() {
         }
     }
 
-    f->iter_by_index([&](int i, int j) { (*f)(i, j) = 1 - 0.5 * (*n)(i, j); });
-    m->iter_by_index([&](int i, int j) { (*m)(i, j) = 0.5 * (*n)(i, j); });
+    f->iter_index([&](int i, int j) { (*f)(i, j) = 1 - 0.5 * (*n)(i, j); });
+    m->iter_index([&](int i, int j) { (*m)(i, j) = 0.5 * (*n)(i, j); });
 
     MatrixS<DBL_T, Y_LEN, X_LEN> n_sort(*n);
     const int                    N_CELLS = (int) round((double) SPACE_LENGTH_Y * (double) pars->INIT_CELLS_COLS[IDX]);
@@ -55,10 +55,9 @@ void Sim_2D<Y_LEN, X_LEN>::initial_condition() {
 }
 
 template<int Y_LEN, int X_LEN>
-void *Sim_2D<Y_LEN, X_LEN>::generate_pattern() {
+void Sim_2D<Y_LEN, X_LEN>::generate_pattern() {
     initial_condition();
-    if (!pde()) { return nullptr; }
-    return nullptr;
+    pde();
 }
 
 //for (auto &i: coord) {

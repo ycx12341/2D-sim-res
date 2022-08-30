@@ -272,7 +272,7 @@ void Sim_2D<Y_LEN, X_LEN>::movement(const int t) {
         DBL_T f_ip1j, f_im1j, f_ijp1, f_ijm1;
         DBL_T p0, p1, p2, p3, p4;
 
-        for (COORD_T crd: coord) {
+        for (COORD_T &crd: coord) {
             x = crd[0], y = crd[1];
 
             if (y == 0) {
@@ -418,26 +418,35 @@ void Sim_2D<Y_LEN, X_LEN>::movement(const int t) {
 }
 
 template<int Y_LEN, int X_LEN>
-bool Sim_2D<Y_LEN, X_LEN>::pde() {
-//    MatrixSDy<DBL_T>             density_mat_dayN(Y_CUT_LEN, X_CUT_LEN, 0);
-    MatrixS<DBL_T, Y_LEN, X_LEN> ind_pos_dayN;
+void Sim_2D<Y_LEN, X_LEN>::density_matrix(const int t) {
+    if ((t + 1) == (DAY_TIME_STEPS * 3)) {
+        dsy_mat_out = new MatrixD<DBL_T>(Y_CUT_LEN, X_CUT_LEN, 0);
+        ind_pos_out = new MatrixS<DBL_T, Y_LEN, X_LEN>(*ind_pos);
 
-    for (int t = 0; t < TIME_STEPS; ++t) {
-        if (!end_of_day(t)) { return false; }
-        if (!solve_pde(t)) { return false; }
-        movement(t);
-
-
-        if ((t + 1) == (DAY_TIME_STEPS * 3)) {
-//            density_mat_dayN.setAll(0);
-//            ind_pos_dayN = ind_pos;
-
+        for (int i = 0; i < Y_CUT_LEN; ++i) {
+            for (int j = 0; j < X_CUT_LEN; ++j) {
+                int ones = 0;
+                (*ind_pos).iter_range(i, j, MAT_SIZE, MAT_SIZE, [&](DBL_T val) {
+                    if (val == 1) { ones++; }
+                });
+                (*dsy_mat_out)(i, j) = ones / (MAT_SIZE * MAT_SIZE);
+            }
         }
 
-
+        n_out = new MatrixS<DBL_T, Y_LEN, X_LEN>(*n);
+        f_out = new MatrixS<DBL_T, Y_LEN, X_LEN>(*f);
+        m_out = new MatrixS<DBL_T, Y_LEN, X_LEN>(*m);
     }
-//    f.print("%.7f ");
-    return true;
+}
+
+template<int Y_LEN, int X_LEN>
+void Sim_2D<Y_LEN, X_LEN>::pde() {
+    for (int t = 0; t < TIME_STEPS; ++t) {
+        if (!end_of_day(t)) { return; }
+        if (!solve_pde(t)) { return; }
+        movement(t);
+        density_matrix(t);
+    }
 }
 
 //for (auto &i: coord) {
