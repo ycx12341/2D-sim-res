@@ -109,6 +109,7 @@ public:
 
 private:
     int IDX = 0;
+    DBL_T diff = NAN;
 
     std::vector<COORD_T > coord;
 

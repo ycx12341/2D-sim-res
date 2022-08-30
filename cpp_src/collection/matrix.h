@@ -105,6 +105,17 @@ public:
         return false;
     }
 
+    template<typename F>
+    DBL_T sum() {
+        DBL_T    sum = 0;
+        for (int i   = 0, r = rows(); i < r; ++i) {
+            for (int j = 0, c = cols(); j < c; ++j) {
+                sum += this->operator()(i, j);
+            }
+        }
+        return sum;
+    }
+
     [[nodiscard]] long long size() const {
         return rows() * cols();
     }
