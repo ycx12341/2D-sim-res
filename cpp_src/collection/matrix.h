@@ -12,6 +12,8 @@
 template<typename T>
 class Matrix {
 public:
+    virtual ~Matrix() = default;
+
     [[nodiscard]] virtual int cols() const = 0;
 
     [[nodiscard]] virtual int rows() const = 0;

@@ -3,7 +3,7 @@
 
 #define DBL_T                   double
 
-#define DEFAULT_N_DIMS          10000
+#define DEFAULT_N_DIMS          10
 #define SEED                    874513
 
 #define DN_MIN                  0.000069L
