@@ -9,57 +9,41 @@
 
 #define COORD_T std::array<int, 2>
 
-template<typename T, int ROWS, int COLS>
+template<typename T>
 class Matrix {
-
-private:
-    T MATRIX[ROWS][COLS];
-
 public:
-    int Rows = 0;
-    int Cols = 0;
+    [[nodiscard]] virtual int cols() const = 0;
 
-    Matrix() = default;
+    [[nodiscard]] virtual int rows() const = 0;
 
-    explicit Matrix(const T val) {
-        setAll(val);
-    }
+    virtual T &operator()(int i, int j) = 0;
 
-    Matrix(Matrix<T, ROWS, COLS> &that) {
-        for (int i = 0; i < ROWS; ++i) {
-            for (int j = 0; j < COLS; ++j) {
-                MATRIX[i][j] = that.MATRIX[i][j];
+    void print(const char *format) {
+        for (int i = 0, r = rows(); i < r; ++i) {
+            for (int j = 0, c = cols(); j < c; ++j) {
+                printf(format, this->operator()(i, j));
             }
+            printf("\n");
         }
     }
 
-    T &operator()(const int i, const int j) {
-        assert(0 <= i && i < ROWS && 0 <= j && j < COLS);
-        return MATRIX[i][j];
-    }
-
     void setAll(T val) {
-        for (int i = 0; i < ROWS; ++i) {
-            for (int j = 0; j < COLS; ++j) {
-                MATRIX[i][j] = val;
+        for (int i = 0, r = rows(); i < r; ++i) {
+            for (int j = 0, c = cols(); j < c; ++j) {
+                this->operator()(i, j) = val;
             }
         }
     }
 
     template<typename F>
     void iter(F f) {
-        iter_by_index(0, 0, ROWS, COLS, f);
-    }
-
-    template<typename F>
-    void iter_range(const int i, const int j, const int r, const int c, F f) {
-        iter_range_index(0, 0, ROWS, COLS, f);
+        iter_by_index(0, 0, rows(), cols(), f);
     }
 
     template<typename F>
     void iter_by_index(F f) {
-        for (int i = 0; i < ROWS; ++i) {
-            for (int j = 0; j < COLS; ++j) {
+        for (int i = 0, r = rows(); i < r; ++i) {
+            for (int j = 0, c = cols(); j < c; ++j) {
                 f(i, j);
             }
         }
@@ -76,39 +60,30 @@ public:
 
     template<typename F>
     void iter_cols(F f) {
-        for (int j = 0; j < COLS; ++j) {
+        for (int j = 0, c = cols(); j < c; ++j) {
             f(j);
         }
     }
 
     template<typename F>
     void iter_rows(F f) {
-        for (int i = 0; i < ROWS; ++i) {
+        for (int i = 0, r = rows(); i < r; ++i) {
             f(i);
         }
     }
 
     template<typename F>
     bool any(F f) {
-        for (int i = 0; i < ROWS; ++i) {
-            for (int j = 0; j < COLS; ++j) {
-                if (f(MATRIX[i][j])) { return true; }
+        for (int i = 0, r = rows(); i < r; ++i) {
+            for (int j = 0, c = cols(); j < c; ++j) {
+                if (f(this->operator()(i, j))) { return true; }
             }
         }
         return false;
     }
 
-    long long size() {
-        return ROWS * COLS;
-    }
-
-    void print(const char *format) {
-        for (int i = 0; i < ROWS; ++i) {
-            for (int j = 0; j < COLS; ++j) {
-                printf(format, MATRIX[i][j]);
-            }
-            printf("\n");
-        }
+    [[nodiscard]] long long size() const {
+        return rows() * cols();
     }
 
     std::vector<COORD_T > matrix_which_max() {
@@ -119,9 +94,9 @@ public:
 
         if (size() <= 0) { return maxes; }
 
-        for (int i = 0; i < ROWS; ++i) {
-            for (int j = 0; j < COLS; ++j) {
-                v = MATRIX[i][j];
+        for (int i = 0, r = rows(); i < r; ++i) {
+            for (int j = 0, c = cols(); j < c; ++j) {
+                v = this->operator()(i, j);
                 if (v < max) { continue; }
                 if (v > max) {
                     maxes.clear();
@@ -137,15 +112,94 @@ public:
         std::vector<COORD_T > res;
         if (size() <= 0) { return res; }
 
-        for (int j = 0; j < COLS; ++j) {
-            for (int i = 0; i < ROWS; ++i) {
-                if (MATRIX[i][j] == val) { res.push_back({i, j}); }
+        for (int i = 0, r = rows(); i < r; ++i) {
+            for (int j = 0, c = cols(); j < c; ++j) {
+                if (this->operator()(i, j) == val) { res.push_back({i, j}); }
             }
         }
         return res;
     }
 };
 
-#undef MATRIX
+template<typename T, int ROWS, int COLS>
+class MatrixS : public Matrix<T> {
+
+private:
+    T MATRIX[ROWS][COLS];
+
+public:
+
+    MatrixS() = default;
+
+    explicit MatrixS(const T val) {
+        Matrix<T>::setAll(val);
+    }
+
+    explicit MatrixS(Matrix<T> &that) {
+        assert(that.rows() == ROWS && that.cols() == COLS);
+        for (int i = 0; i < ROWS; ++i) {
+            for (int j = 0; j < COLS; ++j) {
+                MATRIX[i][j] = that.operator()(i, j);
+            }
+        }
+    }
+
+    T &operator()(const int i, const int j) {
+        assert(0 <= i && i < ROWS && 0 <= j && j < COLS);
+        return MATRIX[i][j];
+    }
+
+    [[nodiscard]] int cols() const {
+        return COLS;
+    }
+
+    [[nodiscard]] int rows() const {
+        return ROWS;
+    }
+};
+
+template<typename T>
+class MatrixDy : public Matrix<T> {
+
+private:
+    T   **MATRIX = nullptr;
+    int ROWS     = 0;
+    int COLS     = 0;
+
+public:
+    MatrixDy(const int r, const int c) : ROWS(r), COLS(c) {
+        MATRIX     = new T *[ROWS];
+        for (int i = 0; i < ROWS; ++i) {
+            MATRIX[i] = new T[COLS];
+        }
+    }
+
+    MatrixDy(const int r, const int c, const T val) : MatrixDy(r, c) {
+        Matrix<T>::setAll(val);
+    }
+
+    ~MatrixDy() {
+        for (int i = 0; i < ROWS; ++i) {
+            delete[] MATRIX[i];
+        }
+        delete[] MATRIX;
+        MATRIX = nullptr;
+        ROWS   = 0;
+        COLS   = 0;
+    }
+
+    T &operator()(const int i, const int j) {
+        assert(0 <= i && i < ROWS && 0 <= j && j < COLS);
+        return MATRIX[i][j];
+    }
+
+    [[nodiscard]] int cols() const {
+        return COLS;
+    }
+
+    [[nodiscard]] int rows() const {
+        return ROWS;
+    }
+};
 
 #endif //SIM_2D_CPP_MATRIX_H
