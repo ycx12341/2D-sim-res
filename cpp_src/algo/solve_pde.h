@@ -420,7 +420,7 @@ void Sim_2D<Y_LEN, X_LEN>::movement(const int t) {
 template<int Y_LEN, int X_LEN>
 void Sim_2D<Y_LEN, X_LEN>::density_matrix(const int t) {
     if ((t + 1) == (DAY_TIME_STEPS * 3)) {
-        dsy_mat_out = new MatrixD<DBL_T>(Y_CUT_LEN, X_CUT_LEN, 0);
+        den_mat_out = new MatrixD<DBL_T>(Y_CUT_LEN, X_CUT_LEN, 0);
         ind_pos_out = new MatrixS<DBL_T, Y_LEN, X_LEN>(*ind_pos);
 
         for (int i = 0; i < Y_CUT_LEN; ++i) {
@@ -429,7 +429,7 @@ void Sim_2D<Y_LEN, X_LEN>::density_matrix(const int t) {
                 (*ind_pos).iter_range(i, j, MAT_SIZE, MAT_SIZE, [&](DBL_T val) {
                     if (val == 1) { ones++; }
                 });
-                (*dsy_mat_out)(i, j) = ones / (MAT_SIZE * MAT_SIZE);
+                (*den_mat_out)(i, j) = ones / (MAT_SIZE * MAT_SIZE);
             }
         }
 
