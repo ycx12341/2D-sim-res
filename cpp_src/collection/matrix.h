@@ -18,13 +18,14 @@ public:
 
     virtual T &operator()(int i, int j) = 0;
 
-    void print(const char *format) {
-        for (int i = 0, r = rows(); i < r; ++i) {
-            for (int j = 0, c = cols(); j < c; ++j) {
-                printf(format, this->operator()(i, j));
+    friend std::ostream &operator<<(std::ostream &os, Matrix<T> &that) {
+        for (int i = 0, r = that.rows(); i < r; ++i) {
+            for (int j = 0, c = that.cols(); j < c; ++j) {
+                os << that.operator()(i, j) << " ";
             }
-            printf("\n");
+            os << std::endl;
         }
+        return os;
     }
 
     void setAll(T val) {
