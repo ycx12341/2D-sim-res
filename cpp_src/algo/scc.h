@@ -56,7 +56,7 @@ public:
 template<int Y_LEN, int X_LEN>
 class Sim_2D {
 public:
-    int N_DIMS;
+    int   N_DIMS;
 
     const DBL_T      H;
     const DBL_T      SPACE_LENGTH_Y;
@@ -67,6 +67,7 @@ public:
     const DBL_T      INT_TIME_STEPS;
     const int        DAY_TIME_STEPS;
     const DBL_T      PDE_TIME_STEPS;        // Diffusion starts having an impact after a certain amount of time
+    const DBL_T      MAT_SIZE;
     const Parameters *pars;
 
     Sim_2D(
@@ -79,7 +80,8 @@ public:
             DBL_T TIME_STEPS,
             DBL_T INT_TIME_STEPS,
             int DAY_TIME_STEPS,
-            DBL_T PDE_TIME_STEPS)
+            DBL_T PDE_TIME_STEPS,
+            DBL_T MAT_SIZE)
             :
             N_DIMS(n_dims),
             H(H),
@@ -90,12 +92,17 @@ public:
             TIME_STEPS(TIME_STEPS),
             INT_TIME_STEPS(INT_TIME_STEPS),
             DAY_TIME_STEPS(DAY_TIME_STEPS),
-            PDE_TIME_STEPS(PDE_TIME_STEPS) {
-        pars = new Parameters(DEFAULT_N_DIMS);
+            PDE_TIME_STEPS(PDE_TIME_STEPS),
+            MAT_SIZE(MAT_SIZE) {
+        pars      = new Parameters(DEFAULT_N_DIMS);
+        Y_CUT_LEN = (int) ceil((double) ((SPACE_LENGTH_Y - 1.0) / MAT_SIZE));
+        X_CUT_LEN = (int) ceil((double) ((SPACE_LENGTH_X - 1.0) / MAT_SIZE));
     }
 
     ~Sim_2D() {
         pars->~Parameters();
+        delete[] x_cut;
+        delete[] y_cut;
     }
 
     void calculate_sse(int idx);
@@ -103,12 +110,17 @@ public:
 private:
     int IDX = 0;
 
-    Matrix<DBL_T, Y_LEN, X_LEN> n;
-    Matrix<DBL_T, Y_LEN, X_LEN> f;
-    Matrix<DBL_T, Y_LEN, X_LEN> m;
-    Matrix<DBL_T, Y_LEN, X_LEN> ind_pos;
+    Matrix<DBL_T> *n;
+    Matrix<DBL_T> *f;
+    Matrix<DBL_T> *m;
+    Matrix<DBL_T> *ind_pos;
 
     std::vector<COORD_T > coord;
+
+    DBL_T *y_cut = nullptr;
+    DBL_T *x_cut = nullptr;
+    int                   Y_CUT_LEN;
+    int                   X_CUT_LEN;
 
     void initial_condition();
 
@@ -152,7 +164,8 @@ public:
                 SCC_SPACE_LENGTH_Y, SCC_SPACE_LENGTH_X,
                 T, DT,
                 TIME_STEPS, INT_TIME_STEPS, DAY_TIME_STEPS,
-                (DBL_T) round((double) DAY_TIME_STEPS * (95.0 / 96.0))
+                (DBL_T) round((double) DAY_TIME_STEPS * (95.0 / 96.0)),
+                SCC_SPACE_LENGTH_Y / 12.0
         );
     }
 };
