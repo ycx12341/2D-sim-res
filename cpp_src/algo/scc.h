@@ -117,11 +117,12 @@ private:
     Matrix<DBL_T> *m;
     Matrix<DBL_T> *ind_pos;
 
-    Matrix<DBL_T> *n_out       = nullptr;
-    Matrix<DBL_T> *f_out       = nullptr;
-    Matrix<DBL_T> *m_out       = nullptr;
-    Matrix<DBL_T> *ind_pos_out = nullptr;
-    Matrix<DBL_T> *dsy_mat_out = nullptr;   // density mat
+    Matrix<DBL_T> *n_out        = nullptr;
+    Matrix<DBL_T> *f_out        = nullptr;
+    Matrix<DBL_T> *m_out        = nullptr;
+    Matrix<DBL_T> *ind_pos_out  = nullptr;
+    Matrix<DBL_T> *ind_pos_init = nullptr;
+    Matrix<DBL_T> *den_mat_out  = nullptr;
 
     DBL_T *y_cut = nullptr;
     DBL_T *x_cut = nullptr;

@@ -48,6 +48,8 @@ void Sim_2D<Y_LEN, X_LEN>::initial_condition() {
         (*ind_pos)(c[0], c[1]) = 1;
     }
 
+    ind_pos_init = new MatrixS<DBL_T, Y_LEN, X_LEN>(ind_pos);
+
     x_cut = new DBL_T[X_CUT_LEN];
     y_cut = new DBL_T[Y_CUT_LEN];
     assert(seq_by<DBL_T>(y_cut, 1, SPACE_LENGTH_Y, MAT_SIZE) == Y_CUT_LEN);
