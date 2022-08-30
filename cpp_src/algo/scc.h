@@ -110,23 +110,29 @@ public:
 private:
     int IDX = 0;
 
+    std::vector<COORD_T > coord;
+
     Matrix<DBL_T> *n;
     Matrix<DBL_T> *f;
     Matrix<DBL_T> *m;
     Matrix<DBL_T> *ind_pos;
 
-    std::vector<COORD_T > coord;
+    Matrix<DBL_T> *n_out       = nullptr;
+    Matrix<DBL_T> *f_out       = nullptr;
+    Matrix<DBL_T> *m_out       = nullptr;
+    Matrix<DBL_T> *ind_pos_out = nullptr;
+    Matrix<DBL_T> *dsy_mat_out = nullptr;   // density mat
 
     DBL_T *y_cut = nullptr;
     DBL_T *x_cut = nullptr;
-    int                   Y_CUT_LEN;
-    int                   X_CUT_LEN;
+    int           Y_CUT_LEN;
+    int           X_CUT_LEN;
 
     void initial_condition();
 
-    void *generate_pattern();
+    void generate_pattern();
 
-    bool pde();
+    void pde();
 
     bool solve_pde(int t);
 
@@ -142,6 +148,8 @@ private:
             std::array<COORD_T, Nbr_Num> nghr_cord,
             COORD_T cell_pos
     );
+
+    void density_matrix(int t);
 };
 
 class Sim_2D_Factory {

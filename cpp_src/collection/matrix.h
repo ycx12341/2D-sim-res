@@ -35,16 +35,39 @@ public:
         }
     }
 
-    template<typename F>
-    void iter(F f) {
-        iter_by_index(0, 0, rows(), cols(), f);
+    bool equals(Matrix<T> *that) {
+        if (this == that) { return true; }
+        for (int i = 0, r = rows(); i < r; ++i) {
+            for (int j = 0, c = cols(); j < c; ++j) {
+                if (this->operator()(i, j) != that->operator()(i, j)) { return false; }
+            }
+        }
+        return true;
     }
 
     template<typename F>
-    void iter_by_index(F f) {
+    void iter(F f) {
+        for (int i = 0, r = rows(); i < r; ++i) {
+            for (int j = 0, c = cols(); j < c; ++j) {
+                f(this->operator()(i, j));
+            }
+        }
+    }
+
+    template<typename F>
+    void iter_index(F f) {
         for (int i = 0, r = rows(); i < r; ++i) {
             for (int j = 0, c = cols(); j < c; ++j) {
                 f(i, j);
+            }
+        }
+    }
+
+    template<typename F>
+    void iter_range(const int i, const int j, const int r, const int c, F f) {
+        for (int ii = i, il = i + r; ii < il; ++ii) {
+            for (int jj = j, jl = j + c; jj < jl; ++jj) {
+                f(this->operator()(ii, jj));
             }
         }
     }
@@ -159,7 +182,7 @@ public:
 };
 
 template<typename T>
-class MatrixDy : public Matrix<T> {
+class MatrixD : public Matrix<T> {
 
 private:
     T   **MATRIX = nullptr;
@@ -167,18 +190,18 @@ private:
     int COLS     = 0;
 
 public:
-    MatrixDy(const int r, const int c) : ROWS(r), COLS(c) {
+    MatrixD(const int r, const int c) : ROWS(r), COLS(c) {
         MATRIX     = new T *[ROWS];
         for (int i = 0; i < ROWS; ++i) {
             MATRIX[i] = new T[COLS];
         }
     }
 
-    MatrixDy(const int r, const int c, const T val) : MatrixDy(r, c) {
+    MatrixD(const int r, const int c, const T val) : MatrixD(r, c) {
         Matrix<T>::setAll(val);
     }
 
-    ~MatrixDy() {
+    ~MatrixD() {
         for (int i = 0; i < ROWS; ++i) {
             delete[] MATRIX[i];
         }
