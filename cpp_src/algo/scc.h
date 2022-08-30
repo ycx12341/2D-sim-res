@@ -5,6 +5,8 @@
 #include "../seed/seed.h"
 #include "../collection/collection.h"
 
+#include <unordered_map>
+
 class Parameters {
 public:
     const int N_DIMS;
@@ -65,24 +67,27 @@ public:
     const DBL_T      time_steps;
     const DBL_T      int_time_steps;
     const int        day_time_steps;
-    const DBL_T      pde_time_steps;        // Diffusion starts having an impact after a certain amount of time
+    const DBL_T      pde_time_steps;                    // Diffusion starts having an impact after a certain amount of time
     const DBL_T      mat_size;
     const Parameters *pars;
     int              y_cut_len;
     int              x_cut_len;
 
-    Sim_2D(
-            const int n_dims,
-            DBL_T h,
-            DBL_T space_length_y,
-            DBL_T space_length_x,
-            DBL_T t,
-            DBL_T dt,
-            DBL_T time_steps,
-            DBL_T int_time_steps,
-            int day_time_steps,
-            DBL_T pde_time_steps,
-            DBL_T mat_size)
+    std::unordered_map<unsigned, DBL_T> diffs;          // <idx,         diff>
+    std::unordered_map<unsigned, DBL_T> diffs_nNAN;     // <idx, non-NAN diff>
+
+    Sim_2D(const unsigned int seed,
+           const int n_dims,
+           DBL_T h,
+           DBL_T space_length_y,
+           DBL_T space_length_x,
+           DBL_T t,
+           DBL_T dt,
+           DBL_T time_steps,
+           DBL_T int_time_steps,
+           int day_time_steps,
+           DBL_T pde_time_steps,
+           DBL_T mat_size)
             :
             N_DIMS(n_dims),
             h(h),
@@ -95,6 +100,7 @@ public:
             day_time_steps(day_time_steps),
             pde_time_steps(pde_time_steps),
             mat_size(mat_size) {
+        set_seed(seed);
         pars      = new Parameters(DEFAULT_N_DIMS);
         y_cut_len = (int) ceil((double) ((space_length_y - 1.0) / mat_size));
         x_cut_len = (int) ceil((double) ((space_length_x - 1.0) / mat_size));
@@ -104,9 +110,12 @@ public:
         pars->~Parameters();
     }
 
-    void calculate_sse();
+    void simulate();
 
 private:
+    void calculate_sse();
+
+    void calculate_bw();
 
     class Dimension {
     private:
@@ -138,12 +147,10 @@ private:
         ~Dimension() {
             delete[] x_cut;
             delete[] y_cut;
-
             delete n;
             delete f;
             delete m;
             delete ind_pos;
-
             delete n_out;
             delete f_out;
             delete m_out;
@@ -152,17 +159,24 @@ private:
             delete den_mat_out;
         }
 
+        void calculate();
+
+        DBL_T get_diff() {
+            return diff;
+        }
+
+    private:
         void initial_condition();
 
         void generate_pattern();
 
         void pde();
 
-        bool solve_pde(int t);
+        bool solve_pde(int time);
 
-        void movement(int t);
+        void movement(int time);
 
-        bool end_of_day(int t);
+        bool end_of_day(int time);
 
         void proliferation(int PROF_CELLS_NUM, int *prof_cells);
 
@@ -173,15 +187,13 @@ private:
                 COORD_T cell_pos
         );
 
-        void density_matrix(int t);
-
-        void calculate();
+        void density_matrix(int time);
     };
 };
 
 class Sim_2D_Factory {
 public:
-    static auto SCC(const int n_dims) {
+    static auto SCC(const int n_dims, const unsigned int seed) {
         constexpr static const DBL_T H                  = 1.0 / 59.0;
         constexpr static const DBL_T SCC_SPACE_LENGTH_Y = (1.0 / H) + 1.0;
         constexpr static const DBL_T SCC_SPACE_LENGTH_X = (DBL_T) SCC_SPACE_LENGTH_Y * (280.0 / 480.0);
@@ -195,6 +207,7 @@ public:
 
 
         return new Sim_2D<Y_LEN, X_LEN>(
+                seed,
                 n_dims, H,
                 SCC_SPACE_LENGTH_Y, SCC_SPACE_LENGTH_X,
                 T, DT,

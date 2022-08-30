@@ -6,7 +6,7 @@
 
 static double rbits(const int bits) {
     int_least64_t v = 0;
-    for (int n = 0; n <= bits; n += 16) {
+    for (int      n = 0; n <= bits; n += 16) {
         int v1 = (int) floor(unif_rand() * 65536);
         v = 65536 * v + v1;
     }
@@ -120,7 +120,7 @@ void revsort(DBL_T *a, int *ib, int n) {
 }
 
 int sample_prob1(const int dn, const DBL_T *prob) {
-    int    perm[dn];
+    int   perm[dn];
     DBL_T prob_cpy[dn];
 
     for (int i = 0; i < dn; i++) {
@@ -132,7 +132,7 @@ int sample_prob1(const int dn, const DBL_T *prob) {
     revsort(prob_cpy, perm, dn);
 
     DBL_T rT = unif_rand(), mass = 0;
-    int    i;
+    int      i;
     for (i = 0; i < dn - 1; i++) {
         mass += prob_cpy[i];
         if (rT <= mass) { break; }
