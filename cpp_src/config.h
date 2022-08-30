@@ -3,8 +3,8 @@
 
 #define DBL_T                   double
 
-#define DEFAULT_N_DIMS          10
-#define SEED                    874513
+#define DEFAULT_N_DIMS          500
+#define SEED                    234567          // R-style 6 digits unsigned integer
 
 #define DN_MIN                  0.000069L
 #define DN_MAX                  0.02L

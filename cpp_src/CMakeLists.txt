@@ -5,4 +5,4 @@ set(CMAKE_CXX_STANDARD 17)
 
 #include_directories(eigen-3.4.0)
 
-add_executable(cpp_src main.cpp algo/calculate_sse.h algo/generate_pattern.h seed/seed.h seed/seed.cpp seed/sample.cpp config.h collection/collection.h algo/solve_pde.h collection/matrix.h algo/scc.h algo/sim2d.h)
+add_executable(cpp_src main.cpp algo/calculate.h algo/pattern.h seed/seed.h seed/seed.cpp seed/sample.cpp config.h collection/collection.h algo/pde.h collection/matrix.h algo/scc.h algo/sim2d.h)

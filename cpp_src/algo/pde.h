@@ -95,8 +95,8 @@ void Sim_2D<Y_LEN, X_LEN>::Dimension::proliferation(const int PROF_CELLS_NUM, in
 }
 
 template<int Y_LEN, int X_LEN>
-bool Sim_2D<Y_LEN, X_LEN>::Dimension::end_of_day(const int t) {
-    if ((t + 1) % DAY_TIME_STEPS == 0) {
+bool Sim_2D<Y_LEN, X_LEN>::Dimension::end_of_day(const int time) {
+    if ((time + 1) % DAY_TIME_STEPS == 0) {
         std::vector<DBL_T> cell_den;
         for (COORD_T       c: coord) {
             cell_den.push_back((*n)(c[0], c[1]));
@@ -162,8 +162,8 @@ bool Sim_2D<Y_LEN, X_LEN>::Dimension::end_of_day(const int t) {
 }
 
 template<int Y_LEN, int X_LEN>
-bool Sim_2D<Y_LEN, X_LEN>::Dimension::solve_pde(const int t) {
-    if ((t + 1) > PDE_TIME_STEPS) {
+bool Sim_2D<Y_LEN, X_LEN>::Dimension::solve_pde(const int time) {
+    if ((time + 1) > PDE_TIME_STEPS) {
         (*f).iter_range_index(1, 1, Y_LEN - 2, X_LEN - 2, [&](int i, int j) {
             (*f)(i, j) = (*f)(i, j) * (1.0L - DT * PARS->ETA[IDX] * (*m)(i, j));
         });
@@ -276,8 +276,8 @@ bool Sim_2D<Y_LEN, X_LEN>::Dimension::solve_pde(const int t) {
 }
 
 template<int Y_LEN, int X_LEN>
-void Sim_2D<Y_LEN, X_LEN>::Dimension::movement(const int t) {
-    if ((t + 1) > round(DAY_TIME_STEPS * (95.0 / 96.0))) {
+void Sim_2D<Y_LEN, X_LEN>::Dimension::movement(const int time) {
+    if ((time + 1) > round(DAY_TIME_STEPS * (95.0 / 96.0))) {
         int x, y;
         DBL_T f_ip1j, f_im1j, f_ijp1, f_ijm1;
         DBL_T p0, p1, p2, p3, p4;
@@ -428,8 +428,8 @@ void Sim_2D<Y_LEN, X_LEN>::Dimension::movement(const int t) {
 }
 
 template<int Y_LEN, int X_LEN>
-void Sim_2D<Y_LEN, X_LEN>::Dimension::density_matrix(const int t) {
-    if ((t + 1) == (DAY_TIME_STEPS * 3)) {
+void Sim_2D<Y_LEN, X_LEN>::Dimension::density_matrix(const int time) {
+    if ((time + 1) == (DAY_TIME_STEPS * 3)) {
         den_mat_out = new MatrixD<DBL_T>(Y_CUT_LEN, X_CUT_LEN, 0);
         ind_pos_out = new MatrixS<DBL_T, Y_LEN, X_LEN>(*ind_pos);
 
@@ -451,11 +451,11 @@ void Sim_2D<Y_LEN, X_LEN>::Dimension::density_matrix(const int t) {
 
 template<int Y_LEN, int X_LEN>
 void Sim_2D<Y_LEN, X_LEN>::Dimension::pde() {
-    for (int t = 0; t < TIME_STEPS; ++t) {
-        if (!end_of_day(t)) { return; }
-        if (!solve_pde(t)) { return; }
-        movement(t);
-        density_matrix(t);
+    for (int time = 0; time < TIME_STEPS; ++time) {
+        if (!end_of_day(time)) { return; }
+        if (!solve_pde(time)) { return; }
+        movement(time);
+        density_matrix(time);
     }
 }
 
