@@ -2,9 +2,19 @@
 
 #include "scc.h"
 
+#define H               parent->h
+#define DAY_TIME_STEPS  parent->day_time_steps
+#define PARS            parent->pars
+#define DT              parent->dt
+#define PDE_TIME_STEPS  parent->pde_time_steps
+#define X_CUT_LEN       parent->x_cut_len
+#define Y_CUT_LEN       parent->y_cut_len
+#define MAT_SIZE        parent->mat_size
+#define TIME_STEPS      parent->time_steps
+
 template<int Y_LEN, int X_LEN>
 template<int Nbr_Num>
-void Sim_2D<Y_LEN, X_LEN>::cell_proliferate(
+void Sim_2D<Y_LEN, X_LEN>::Dimension::cell_proliferate(
         std::array<int, Nbr_Num> nbr_temp,
         std::array<COORD_T, Nbr_Num> nghr_cord,
         COORD_T cell_pos
@@ -24,7 +34,7 @@ void Sim_2D<Y_LEN, X_LEN>::cell_proliferate(
 }
 
 template<int Y_LEN, int X_LEN>
-void Sim_2D<Y_LEN, X_LEN>::proliferation(const int PROF_CELLS_NUM, int *prof_cells) {
+void Sim_2D<Y_LEN, X_LEN>::Dimension::proliferation(const int PROF_CELLS_NUM, int *prof_cells) {
     for (int i = 0; i < PROF_CELLS_NUM; ++i) {
         COORD_T cell_pos = coord.at(prof_cells[i]);
         const int x      = cell_pos[0];
@@ -85,14 +95,14 @@ void Sim_2D<Y_LEN, X_LEN>::proliferation(const int PROF_CELLS_NUM, int *prof_cel
 }
 
 template<int Y_LEN, int X_LEN>
-bool Sim_2D<Y_LEN, X_LEN>::end_of_day(const int t) {
+bool Sim_2D<Y_LEN, X_LEN>::Dimension::end_of_day(const int t) {
     if ((t + 1) % DAY_TIME_STEPS == 0) {
         std::vector<DBL_T> cell_den;
         for (COORD_T       c: coord) {
             cell_den.push_back((*n)(c[0], c[1]));
         }
 
-        const int        DEAD_CELLS_NUM = (int) round((double) ((DBL_T) coord.size() * pars->PROB_DEATH[IDX]));
+        const int        DEAD_CELLS_NUM = (int) round((double) ((DBL_T) coord.size() * PARS->PROB_DEATH[IDX]));
         int              dead_cells[DEAD_CELLS_NUM];
         std::vector<int> mins;
 
@@ -116,7 +126,7 @@ bool Sim_2D<Y_LEN, X_LEN>::end_of_day(const int t) {
 
         if ((int) cell_den.size() == 0) { return false; }
 
-        const int        PROF_CELLS_NUM = (int) round((double) ((DBL_T) coord.size() * pars->PROB_PROF[IDX]));
+        const int        PROF_CELLS_NUM = (int) round((double) ((DBL_T) coord.size() * PARS->PROB_PROF[IDX]));
         int              prof_cells[PROF_CELLS_NUM];
         std::vector<int> maxes;
 
@@ -152,51 +162,51 @@ bool Sim_2D<Y_LEN, X_LEN>::end_of_day(const int t) {
 }
 
 template<int Y_LEN, int X_LEN>
-bool Sim_2D<Y_LEN, X_LEN>::solve_pde(const int t) {
+bool Sim_2D<Y_LEN, X_LEN>::Dimension::solve_pde(const int t) {
     if ((t + 1) > PDE_TIME_STEPS) {
         (*f).iter_range_index(1, 1, Y_LEN - 2, X_LEN - 2, [&](int i, int j) {
-            (*f)(i, j) = (*f)(i, j) * (1.0L - DT * pars->ETA[IDX] * (*m)(i, j));
+            (*f)(i, j) = (*f)(i, j) * (1.0L - DT * PARS->ETA[IDX] * (*m)(i, j));
         });
 
         MatrixS<DBL_T, Y_LEN, X_LEN> n_cpy(*n);
         (*n).iter_range_index(1, 1, Y_LEN - 2, X_LEN - 2, [&](int i, int j) {
             (*n)(i, j) =
                     n_cpy(i, j) * (
-                            1.0 - (4.0 * DT * pars->DN[IDX] / (H * H)) - (
-                                    DT * pars->GAMMA[IDX] / (H * H) * (
+                            1.0 - (4.0 * DT * PARS->DN[IDX] / (H * H)) - (
+                                    DT * PARS->GAMMA[IDX] / (H * H) * (
                                             (*f)(i, j + 1) +
                                             (*f)(i, j - 1) -
                                             4 * (*f)(i, j) +
                                             (*f)(i - 1, j) +
                                             (*f)(i + 1, j)
                                     )
-                            ) + pars->RN[IDX] * (1.0 - n_cpy(i, j) - (*f)(i, j)) * DT
+                            ) + PARS->RN[IDX] * (1.0 - n_cpy(i, j) - (*f)(i, j)) * DT
                     )
                     +
                     n_cpy(i, j + 1) * (
-                            DT * pars->DN[IDX] / (H * H) - (
-                                    DT * pars->GAMMA[IDX] / (4.0 * (H * H)) * (
+                            DT * PARS->DN[IDX] / (H * H) - (
+                                    DT * PARS->GAMMA[IDX] / (4.0 * (H * H)) * (
                                             (*f)(i, j + 1) - (*f)(i, j - 1)
                                     )
                             )
                     )
                     + n_cpy(i, j - 1) * (
-                            DT * pars->DN[IDX] / (H * H) + (
-                                    DT * pars->GAMMA[IDX] / (4.0 * (H * H)) * (
+                            DT * PARS->DN[IDX] / (H * H) + (
+                                    DT * PARS->GAMMA[IDX] / (4.0 * (H * H)) * (
                                             (*f)(i, j + 1) - (*f)(i, j - 1)
                                     )
                             )
                     )
                     + n_cpy(i - 1, j) * (
-                            DT * pars->DN[IDX] / (H * H) - (
-                                    DT * pars->GAMMA[IDX] / (4.0 * (H * H)) * (
+                            DT * PARS->DN[IDX] / (H * H) - (
+                                    DT * PARS->GAMMA[IDX] / (4.0 * (H * H)) * (
                                             (*f)(i - 1, j) - (*f)(i + 1, j)
                                     )
                             )
                     )
                     + n_cpy(i + 1, j) * (
-                            DT * pars->DN[IDX] / (H * H) + (
-                                    DT * pars->GAMMA[IDX] / (4.0 * (H * H)) * (
+                            DT * PARS->DN[IDX] / (H * H) + (
+                                    DT * PARS->GAMMA[IDX] / (4.0 * (H * H)) * (
                                             (*f)(i - 1, j) - (*f)(i + 1, j)
                                     )
                             )
@@ -204,21 +214,21 @@ bool Sim_2D<Y_LEN, X_LEN>::solve_pde(const int t) {
         });
         MatrixS<DBL_T, Y_LEN, X_LEN> m_cpy(*m);
         (*m).iter_range_index(1, 1, Y_LEN - 2, X_LEN - 2, [&](int i, int j) {
-            (*m)(i, j) = m_cpy(i, j) * (1.0 - (4.0 * DT * pars->DM[IDX] / (H * H))) +
-                         DT * pars->ALPHA[IDX] * (*n)(i, j) +
-                         DT * pars->DM[IDX] / (H * H) * (
+            (*m)(i, j) = m_cpy(i, j) * (1.0 - (4.0 * DT * PARS->DM[IDX] / (H * H))) +
+                         DT * PARS->ALPHA[IDX] * (*n)(i, j) +
+                         DT * PARS->DM[IDX] / (H * H) * (
                                  m_cpy(i, j + 1) + m_cpy(i, j - 1) + m_cpy(i - 1, j) + m_cpy(i + 1, j)
                          );
         });
     } else {
         (*f).iter_range_index(1, 1, Y_LEN - 2, X_LEN - 2, [&](int i, int j) {
-            (*f)(i, j) = (*f)(i, j) * (1.0L - DT * pars->ETA[IDX] * (*m)(i, j));
+            (*f)(i, j) = (*f)(i, j) * (1.0L - DT * PARS->ETA[IDX] * (*m)(i, j));
         });
         (*n).iter_range_index(1, 1, Y_LEN - 2, X_LEN - 2, [&](int i, int j) {
-            (*n)(i, j) = (*n)(i, j) * (1 + pars->RN[IDX] * (1 - (*n)(i, j) - (*f)(i, j)) * DT);
+            (*n)(i, j) = (*n)(i, j) * (1 + PARS->RN[IDX] * (1 - (*n)(i, j) - (*f)(i, j)) * DT);
         });
         (*m).iter_range_index(1, 1, Y_LEN - 2, X_LEN - 2, [&](int i, int j) {
-            (*m)(i, j) = (*m)(i, j) + pars->ALPHA[IDX] * DT * (*n)(i, j);
+            (*m)(i, j) = (*m)(i, j) + PARS->ALPHA[IDX] * DT * (*n)(i, j);
         });
     }
 
@@ -266,7 +276,7 @@ bool Sim_2D<Y_LEN, X_LEN>::solve_pde(const int t) {
 }
 
 template<int Y_LEN, int X_LEN>
-void Sim_2D<Y_LEN, X_LEN>::movement(const int t) {
+void Sim_2D<Y_LEN, X_LEN>::Dimension::movement(const int t) {
     if ((t + 1) > round(DAY_TIME_STEPS * (95.0 / 96.0))) {
         int x, y;
         DBL_T f_ip1j, f_im1j, f_ijp1, f_ijm1;
@@ -283,8 +293,8 @@ void Sim_2D<Y_LEN, X_LEN>::movement(const int t) {
                     f_ijm1 = (*f)(x + 1, y);
 
                     p1 = 0;
-                    p2 = (DT * pars->DN[IDX] / (H * H)) + (DT * pars->GAMMA[IDX] / (4.0 * (H * H)) * (f_ip1j - f_im1j));
-                    p3 = (DT * pars->DN[IDX] / (H * H)) - (DT * pars->GAMMA[IDX] / (4.0 * (H * H)) * (f_ijp1 - f_ijm1));
+                    p2 = (DT * PARS->DN[IDX] / (H * H)) + (DT * PARS->GAMMA[IDX] / (4.0 * (H * H)) * (f_ip1j - f_im1j));
+                    p3 = (DT * PARS->DN[IDX] / (H * H)) - (DT * PARS->GAMMA[IDX] / (4.0 * (H * H)) * (f_ijp1 - f_ijm1));
                     p4 = 0;
                 } else if (x == Y_LEN - 1) {
                     f_ip1j = (*f)(x, y + 1);
@@ -293,9 +303,9 @@ void Sim_2D<Y_LEN, X_LEN>::movement(const int t) {
                     f_ijm1 = 0;
 
                     p1 = 0;
-                    p2 = (DT * pars->DN[IDX] / (H * H)) + (DT * pars->GAMMA[IDX] / (4.0 * (H * H)) * (f_ip1j - f_im1j));
+                    p2 = (DT * PARS->DN[IDX] / (H * H)) + (DT * PARS->GAMMA[IDX] / (4.0 * (H * H)) * (f_ip1j - f_im1j));
                     p3 = 0;
-                    p4 = (DT * pars->DN[IDX] / (H * H)) + (DT * pars->GAMMA[IDX] / (4.0 * (H * H)) * (f_ijp1 - f_ijm1));
+                    p4 = (DT * PARS->DN[IDX] / (H * H)) + (DT * PARS->GAMMA[IDX] / (4.0 * (H * H)) * (f_ijp1 - f_ijm1));
                 } else {
                     f_ip1j = (*f)(x, y + 1);
                     f_im1j = 0;
@@ -303,14 +313,14 @@ void Sim_2D<Y_LEN, X_LEN>::movement(const int t) {
                     f_ijm1 = (*f)(x + 1, y);
 
                     p1 = 0;
-                    p2 = (DT * pars->DN[IDX] / (H * H)) + (DT * pars->GAMMA[IDX] / (4.0 * (H * H)) * (f_ip1j - f_im1j));
-                    p3 = (DT * pars->DN[IDX] / (H * H)) - (DT * pars->GAMMA[IDX] / (4.0 * (H * H)) * (f_ijp1 - f_ijm1));
-                    p4 = (DT * pars->DN[IDX] / (H * H)) + (DT * pars->GAMMA[IDX] / (4.0 * (H * H)) * (f_ijp1 - f_ijm1));
+                    p2 = (DT * PARS->DN[IDX] / (H * H)) + (DT * PARS->GAMMA[IDX] / (4.0 * (H * H)) * (f_ip1j - f_im1j));
+                    p3 = (DT * PARS->DN[IDX] / (H * H)) - (DT * PARS->GAMMA[IDX] / (4.0 * (H * H)) * (f_ijp1 - f_ijm1));
+                    p4 = (DT * PARS->DN[IDX] / (H * H)) + (DT * PARS->GAMMA[IDX] / (4.0 * (H * H)) * (f_ijp1 - f_ijm1));
                 }
 
-                p0 = 1.0 - (4.0 * DT * pars->DN[IDX] / (H * H)) - (DT * pars->GAMMA[IDX] / (H * H) * (
+                p0 = 1.0 - (4.0 * DT * PARS->DN[IDX] / (H * H)) - (DT * PARS->GAMMA[IDX] / (H * H) * (
                         f_ip1j + f_im1j - 4 * (*f)(x, y) + f_ijp1 + f_ijm1
-                )) + pars->RN[IDX] * (1.0 - (*n)(x, y) - (*f)(x, y)) * DT;
+                )) + PARS->RN[IDX] * (1.0 - (*n)(x, y) - (*f)(x, y)) * DT;
             } else if (y == X_LEN - 1) {
                 if (x == 0) {
                     f_ip1j = 0;
@@ -318,9 +328,9 @@ void Sim_2D<Y_LEN, X_LEN>::movement(const int t) {
                     f_ijp1 = 0;
                     f_ijm1 = (*f)(x + 1, y);
 
-                    p1 = (DT * pars->DN[IDX] / (H * H)) + (DT * pars->GAMMA[IDX] / (4.0 * (H * H)) * (f_ip1j - f_im1j));
+                    p1 = (DT * PARS->DN[IDX] / (H * H)) + (DT * PARS->GAMMA[IDX] / (4.0 * (H * H)) * (f_ip1j - f_im1j));
                     p2 = 0;
-                    p3 = (DT * pars->DN[IDX] / (H * H)) - (DT * pars->GAMMA[IDX] / (4.0 * (H * H)) * (f_ijp1 - f_ijm1));
+                    p3 = (DT * PARS->DN[IDX] / (H * H)) - (DT * PARS->GAMMA[IDX] / (4.0 * (H * H)) * (f_ijp1 - f_ijm1));
                     p4 = 0;
                 } else if (x == Y_LEN - 1) {
                     f_ip1j = 0;
@@ -328,37 +338,37 @@ void Sim_2D<Y_LEN, X_LEN>::movement(const int t) {
                     f_ijp1 = (*f)(x - 1, y);
                     f_ijm1 = 0;
 
-                    p1 = (DT * pars->DN[IDX] / (H * H)) + (DT * pars->GAMMA[IDX] / (4.0 * (H * H)) * (f_ip1j - f_im1j));
+                    p1 = (DT * PARS->DN[IDX] / (H * H)) + (DT * PARS->GAMMA[IDX] / (4.0 * (H * H)) * (f_ip1j - f_im1j));
                     p2 = 0;
                     p3 = 0;
-                    p4 = (DT * pars->DN[IDX] / (H * H)) + (DT * pars->GAMMA[IDX] / (4.0 * (H * H)) * (f_ijp1 - f_ijm1));
+                    p4 = (DT * PARS->DN[IDX] / (H * H)) + (DT * PARS->GAMMA[IDX] / (4.0 * (H * H)) * (f_ijp1 - f_ijm1));
                 } else {
                     f_ip1j = 0;
                     f_im1j = (*f)(x, y - 1);
                     f_ijp1 = (*f)(x - 1, y);
                     f_ijm1 = (*f)(x + 1, y);
 
-                    p1 = (DT * pars->DN[IDX] / (H * H)) + (DT * pars->GAMMA[IDX] / (4.0 * (H * H)) * (f_ip1j - f_im1j));
+                    p1 = (DT * PARS->DN[IDX] / (H * H)) + (DT * PARS->GAMMA[IDX] / (4.0 * (H * H)) * (f_ip1j - f_im1j));
                     p2 = 0;
-                    p3 = (DT * pars->DN[IDX] / (H * H)) - (DT * pars->GAMMA[IDX] / (4.0 * (H * H)) * (f_ijp1 - f_ijm1));
-                    p4 = (DT * pars->DN[IDX] / (H * H)) + (DT * pars->GAMMA[IDX] / (4.0 * (H * H)) * (f_ijp1 - f_ijm1));
+                    p3 = (DT * PARS->DN[IDX] / (H * H)) - (DT * PARS->GAMMA[IDX] / (4.0 * (H * H)) * (f_ijp1 - f_ijm1));
+                    p4 = (DT * PARS->DN[IDX] / (H * H)) + (DT * PARS->GAMMA[IDX] / (4.0 * (H * H)) * (f_ijp1 - f_ijm1));
                 }
 
-                p0 = 1.0 - (4.0 * DT * pars->DN[IDX] / (H * H)) - (DT * pars->GAMMA[IDX] / (H * H) * (
+                p0 = 1.0 - (4.0 * DT * PARS->DN[IDX] / (H * H)) - (DT * PARS->GAMMA[IDX] / (H * H) * (
                         f_ip1j + f_im1j - 4 * (*f)(x, y) + f_ijp1 + f_ijm1
-                )) + pars->RN[IDX] * (1.0 - (*n)(x, y) - (*f)(x, y)) * DT;
+                )) + PARS->RN[IDX] * (1.0 - (*n)(x, y) - (*f)(x, y)) * DT;
             } else if (x == 0) {
                 f_ip1j = (*f)(x, y + 1);
                 f_im1j = (*f)(x, y - 1);
                 f_ijp1 = 0;
                 f_ijm1 = (*f)(x + 1, y);
 
-                p0 = 1.0 - (4.0 * DT * pars->DN[IDX] / (H * H)) - (DT * pars->GAMMA[IDX] / (H * H) * (
+                p0 = 1.0 - (4.0 * DT * PARS->DN[IDX] / (H * H)) - (DT * PARS->GAMMA[IDX] / (H * H) * (
                         f_ip1j + f_im1j - 4 * (*f)(x, y) + f_ijp1 + f_ijm1
-                )) + pars->RN[IDX] * (1.0 - (*n)(x, y) - (*f)(x, y)) * DT;
-                p1 = (DT * pars->DN[IDX] / (H * H)) + (DT * pars->GAMMA[IDX] / (4.0 * (H * H)) * (f_ip1j - f_im1j));
-                p2 = (DT * pars->DN[IDX] / (H * H)) + (DT * pars->GAMMA[IDX] / (4.0 * (H * H)) * (f_ip1j - f_im1j));
-                p3 = (DT * pars->DN[IDX] / (H * H)) - (DT * pars->GAMMA[IDX] / (4.0 * (H * H)) * (f_ijp1 - f_ijm1));
+                )) + PARS->RN[IDX] * (1.0 - (*n)(x, y) - (*f)(x, y)) * DT;
+                p1 = (DT * PARS->DN[IDX] / (H * H)) + (DT * PARS->GAMMA[IDX] / (4.0 * (H * H)) * (f_ip1j - f_im1j));
+                p2 = (DT * PARS->DN[IDX] / (H * H)) + (DT * PARS->GAMMA[IDX] / (4.0 * (H * H)) * (f_ip1j - f_im1j));
+                p3 = (DT * PARS->DN[IDX] / (H * H)) - (DT * PARS->GAMMA[IDX] / (4.0 * (H * H)) * (f_ijp1 - f_ijm1));
                 p4 = 0;
             } else if (x == Y_LEN - 1) {
                 f_ip1j = (*f)(x, y + 1);
@@ -366,26 +376,26 @@ void Sim_2D<Y_LEN, X_LEN>::movement(const int t) {
                 f_ijp1 = (*f)(x - 1, y);
                 f_ijm1 = 0;
 
-                p0 = 1.0 - (4.0 * DT * pars->DN[IDX] / (H * H)) - (DT * pars->GAMMA[IDX] / (H * H) * (
+                p0 = 1.0 - (4.0 * DT * PARS->DN[IDX] / (H * H)) - (DT * PARS->GAMMA[IDX] / (H * H) * (
                         f_ip1j + f_im1j - 4 * (*f)(x, y) + f_ijp1 + f_ijm1
-                )) + pars->RN[IDX] * (1.0 - (*n)(x, y) - (*f)(x, y)) * DT;
-                p1 = (DT * pars->DN[IDX] / (H * H)) + (DT * pars->GAMMA[IDX] / (4.0 * (H * H)) * (f_ip1j - f_im1j));
-                p2 = (DT * pars->DN[IDX] / (H * H)) + (DT * pars->GAMMA[IDX] / (4.0 * (H * H)) * (f_ip1j - f_im1j));
+                )) + PARS->RN[IDX] * (1.0 - (*n)(x, y) - (*f)(x, y)) * DT;
+                p1 = (DT * PARS->DN[IDX] / (H * H)) + (DT * PARS->GAMMA[IDX] / (4.0 * (H * H)) * (f_ip1j - f_im1j));
+                p2 = (DT * PARS->DN[IDX] / (H * H)) + (DT * PARS->GAMMA[IDX] / (4.0 * (H * H)) * (f_ip1j - f_im1j));
                 p3 = 0;
-                p4 = (DT * pars->DN[IDX] / (H * H)) + (DT * pars->GAMMA[IDX] / (4.0 * (H * H)) * (f_ijp1 - f_ijm1));
+                p4 = (DT * PARS->DN[IDX] / (H * H)) + (DT * PARS->GAMMA[IDX] / (4.0 * (H * H)) * (f_ijp1 - f_ijm1));
             } else {
                 f_ip1j = (*f)(x, y + 1);
                 f_im1j = (*f)(x, y - 1);
                 f_ijp1 = (*f)(x - 1, y);
                 f_ijm1 = (*f)(x + 1, y);
 
-                p0 = 1.0 - (4.0 * DT * pars->DN[IDX] / (H * H)) - (DT * pars->GAMMA[IDX] / (H * H) * (
+                p0 = 1.0 - (4.0 * DT * PARS->DN[IDX] / (H * H)) - (DT * PARS->GAMMA[IDX] / (H * H) * (
                         f_ip1j + f_im1j - 4 * (*f)(x, y) + f_ijp1 + f_ijm1
-                )) + pars->RN[IDX] * (1.0 - (*n)(x, y) - (*f)(x, y)) * DT;
-                p1 = (DT * pars->DN[IDX] / (H * H)) + (DT * pars->GAMMA[IDX] / (4.0 * (H * H)) * (f_ip1j - f_im1j));
-                p2 = (DT * pars->DN[IDX] / (H * H)) + (DT * pars->GAMMA[IDX] / (4.0 * (H * H)) * (f_ip1j - f_im1j));
-                p3 = (DT * pars->DN[IDX] / (H * H)) - (DT * pars->GAMMA[IDX] / (4.0 * (H * H)) * (f_ijp1 - f_ijm1));
-                p4 = (DT * pars->DN[IDX] / (H * H)) + (DT * pars->GAMMA[IDX] / (4.0 * (H * H)) * (f_ijp1 - f_ijm1));
+                )) + PARS->RN[IDX] * (1.0 - (*n)(x, y) - (*f)(x, y)) * DT;
+                p1 = (DT * PARS->DN[IDX] / (H * H)) + (DT * PARS->GAMMA[IDX] / (4.0 * (H * H)) * (f_ip1j - f_im1j));
+                p2 = (DT * PARS->DN[IDX] / (H * H)) + (DT * PARS->GAMMA[IDX] / (4.0 * (H * H)) * (f_ip1j - f_im1j));
+                p3 = (DT * PARS->DN[IDX] / (H * H)) - (DT * PARS->GAMMA[IDX] / (4.0 * (H * H)) * (f_ijp1 - f_ijm1));
+                p4 = (DT * PARS->DN[IDX] / (H * H)) + (DT * PARS->GAMMA[IDX] / (4.0 * (H * H)) * (f_ijp1 - f_ijm1));
             }
 
             DBL_T       p[5]  = {p0, p1, p2, p3, p4};
@@ -418,7 +428,7 @@ void Sim_2D<Y_LEN, X_LEN>::movement(const int t) {
 }
 
 template<int Y_LEN, int X_LEN>
-void Sim_2D<Y_LEN, X_LEN>::density_matrix(const int t) {
+void Sim_2D<Y_LEN, X_LEN>::Dimension::density_matrix(const int t) {
     if ((t + 1) == (DAY_TIME_STEPS * 3)) {
         den_mat_out = new MatrixD<DBL_T>(Y_CUT_LEN, X_CUT_LEN, 0);
         ind_pos_out = new MatrixS<DBL_T, Y_LEN, X_LEN>(*ind_pos);
@@ -440,7 +450,7 @@ void Sim_2D<Y_LEN, X_LEN>::density_matrix(const int t) {
 }
 
 template<int Y_LEN, int X_LEN>
-void Sim_2D<Y_LEN, X_LEN>::pde() {
+void Sim_2D<Y_LEN, X_LEN>::Dimension::pde() {
     for (int t = 0; t < TIME_STEPS; ++t) {
         if (!end_of_day(t)) { return; }
         if (!solve_pde(t)) { return; }
@@ -449,15 +459,12 @@ void Sim_2D<Y_LEN, X_LEN>::pde() {
     }
 }
 
-//for (auto &i: coord) {
-//    std::cout << i[0] << " " << i[1] << std::endl;
-//}
-
-// std::cout << m << std::endl;
-
-//for (int i = 0; i < Y_CUT_LEN; ++i) {
-//std::cout << x_cut[0] << " ";
-//}
-//std::cout << std::endl;
-
-//if (x == 0) printf("%.8f %.8f %.8f %.8f %.8f\n", p0, p1, p2, p3, p4);
+#undef H
+#undef DAY_TIME_STEPS
+#undef PARS
+#undef DT
+#undef PDE_TIME_STEPS
+#undef X_CUT_LEN
+#undef Y_CUT_LEN
+#undef MAT_SIZE
+#undef TIME_STEPS

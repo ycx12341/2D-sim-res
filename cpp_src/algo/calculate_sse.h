@@ -8,8 +8,7 @@
 #include "scc.h"
 
 template<int Y_LEN, int X_LEN>
-void Sim_2D<Y_LEN, X_LEN>::calculate_sse(const int idx) {
-    this->IDX = idx;
+void Sim_2D<Y_LEN, X_LEN>::Dimension::calculate() {
     generate_pattern();
 
     if (n_out == nullptr || f_out == nullptr || m_out == nullptr ||
@@ -17,6 +16,14 @@ void Sim_2D<Y_LEN, X_LEN>::calculate_sse(const int idx) {
         diff = NAN;
     } else {
         diff = den_mat_out->sum<DBL_T>();
+    }
+}
+
+template<int Y_LEN, int X_LEN>
+void Sim_2D<Y_LEN, X_LEN>::calculate_sse() {
+    for (int i = 0; i < N_DIMS; ++i) {
+        Dimension dimension(this, i);
+        dimension.calculate();
     }
 }
 

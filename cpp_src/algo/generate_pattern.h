@@ -5,8 +5,16 @@
 
 #include "scc.h"
 
+#define H               parent->h
+#define SPACE_LENGTH_X  parent->space_length_x
+#define SPACE_LENGTH_Y  parent->space_length_y
+#define PARS            parent->pars
+#define X_CUT_LEN       parent->x_cut_len
+#define Y_CUT_LEN       parent->y_cut_len
+#define MAT_SIZE        parent->mat_size
+
 template<int Y_LEN, int X_LEN>
-void Sim_2D<Y_LEN, X_LEN>::initial_condition() {
+void Sim_2D<Y_LEN, X_LEN>::Dimension::initial_condition() {
     DBL_T x[X_LEN], y[Y_LEN];
     assert(seq_length_out<DBL_T>(x, 0, H * (SPACE_LENGTH_X - 1), X_LEN) == X_LEN);
     assert(seq_length_out<DBL_T>(y, 0, 1, Y_LEN) == Y_LEN);
@@ -29,7 +37,7 @@ void Sim_2D<Y_LEN, X_LEN>::initial_condition() {
     m->iter_index([&](int i, int j) { (*m)(i, j) = 0.5 * (*n)(i, j); });
 
     MatrixS<DBL_T, Y_LEN, X_LEN> n_sort(*n);
-    const int                    N_CELLS = (int) round((double) SPACE_LENGTH_Y * (double) pars->INIT_CELLS_COLS[IDX]);
+    const int                    N_CELLS = (int) round((double) SPACE_LENGTH_Y * (double) PARS->INIT_CELLS_COLS[IDX]);
     std::vector<COORD_T >        maxes;
 
     for (int ind_idx, maxes_size; coord.size() < N_CELLS;) {
@@ -57,18 +65,15 @@ void Sim_2D<Y_LEN, X_LEN>::initial_condition() {
 }
 
 template<int Y_LEN, int X_LEN>
-void Sim_2D<Y_LEN, X_LEN>::generate_pattern() {
+void Sim_2D<Y_LEN, X_LEN>::Dimension::generate_pattern() {
     initial_condition();
     pde();
 }
 
-//for (auto &i: coord) {
-//    std::cout << i[0] << " " << i[1] << std::endl;
-//}
-
-// std::cout << m << std::endl;
-
-//for (int i = 0; i < Y_CUT_LEN; ++i) {
-//std::cout << x_cut[0] << " ";
-//}
-//std::cout << std::endl;
+#undef H
+#undef SPACE_LENGTH_X
+#undef SPACE_LENGTH_Y
+#undef PARS
+#undef X_CUT_LEN
+#undef Y_CUT_LEN
+#undef MAT_SIZE

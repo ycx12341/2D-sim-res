@@ -56,102 +56,127 @@ public:
 template<int Y_LEN, int X_LEN>
 class Sim_2D {
 public:
-    int   N_DIMS;
-
-    const DBL_T      H;
-    const DBL_T      SPACE_LENGTH_Y;
-    const DBL_T      SPACE_LENGTH_X;
-    const DBL_T      T;
-    const DBL_T      DT;
-    const DBL_T      TIME_STEPS;
-    const DBL_T      INT_TIME_STEPS;
-    const int        DAY_TIME_STEPS;
-    const DBL_T      PDE_TIME_STEPS;        // Diffusion starts having an impact after a certain amount of time
-    const DBL_T      MAT_SIZE;
+    const int        N_DIMS;
+    const DBL_T      h;
+    const DBL_T      space_length_y;
+    const DBL_T      space_length_x;
+    const DBL_T      t;
+    const DBL_T      dt;
+    const DBL_T      time_steps;
+    const DBL_T      int_time_steps;
+    const int        day_time_steps;
+    const DBL_T      pde_time_steps;        // Diffusion starts having an impact after a certain amount of time
+    const DBL_T      mat_size;
     const Parameters *pars;
+    int              y_cut_len;
+    int              x_cut_len;
 
     Sim_2D(
             const int n_dims,
-            DBL_T H,
-            DBL_T SPACE_LENGTH_Y,
-            DBL_T SPACE_LENGTH_X,
-            DBL_T T,
-            DBL_T DT,
-            DBL_T TIME_STEPS,
-            DBL_T INT_TIME_STEPS,
-            int DAY_TIME_STEPS,
-            DBL_T PDE_TIME_STEPS,
-            DBL_T MAT_SIZE)
+            DBL_T h,
+            DBL_T space_length_y,
+            DBL_T space_length_x,
+            DBL_T t,
+            DBL_T dt,
+            DBL_T time_steps,
+            DBL_T int_time_steps,
+            int day_time_steps,
+            DBL_T pde_time_steps,
+            DBL_T mat_size)
             :
             N_DIMS(n_dims),
-            H(H),
-            SPACE_LENGTH_Y(SPACE_LENGTH_Y),
-            SPACE_LENGTH_X(SPACE_LENGTH_X),
-            T(T),
-            DT(DT),
-            TIME_STEPS(TIME_STEPS),
-            INT_TIME_STEPS(INT_TIME_STEPS),
-            DAY_TIME_STEPS(DAY_TIME_STEPS),
-            PDE_TIME_STEPS(PDE_TIME_STEPS),
-            MAT_SIZE(MAT_SIZE) {
+            h(h),
+            space_length_y(space_length_y),
+            space_length_x(space_length_x),
+            t(t),
+            dt(dt),
+            time_steps(time_steps),
+            int_time_steps(int_time_steps),
+            day_time_steps(day_time_steps),
+            pde_time_steps(pde_time_steps),
+            mat_size(mat_size) {
         pars      = new Parameters(DEFAULT_N_DIMS);
-        Y_CUT_LEN = (int) ceil((double) ((SPACE_LENGTH_Y - 1.0) / MAT_SIZE));
-        X_CUT_LEN = (int) ceil((double) ((SPACE_LENGTH_X - 1.0) / MAT_SIZE));
+        y_cut_len = (int) ceil((double) ((space_length_y - 1.0) / mat_size));
+        x_cut_len = (int) ceil((double) ((space_length_x - 1.0) / mat_size));
     }
 
     ~Sim_2D() {
         pars->~Parameters();
-        delete[] x_cut;
-        delete[] y_cut;
     }
 
-    void calculate_sse(int idx);
+    void calculate_sse();
 
 private:
-    int IDX = 0;
-    DBL_T diff = NAN;
 
-    std::vector<COORD_T > coord;
+    class Dimension {
+    private:
+        Sim_2D<Y_LEN, X_LEN> *parent;
 
-    Matrix<DBL_T> *n;
-    Matrix<DBL_T> *f;
-    Matrix<DBL_T> *m;
-    Matrix<DBL_T> *ind_pos;
+        int IDX = 0;
+        DBL_T diff = NAN;
 
-    Matrix<DBL_T> *n_out        = nullptr;
-    Matrix<DBL_T> *f_out        = nullptr;
-    Matrix<DBL_T> *m_out        = nullptr;
-    Matrix<DBL_T> *ind_pos_out  = nullptr;
-    Matrix<DBL_T> *ind_pos_init = nullptr;
-    Matrix<DBL_T> *den_mat_out  = nullptr;
+        std::vector<COORD_T > coord;
 
-    DBL_T *y_cut = nullptr;
-    DBL_T *x_cut = nullptr;
-    int           Y_CUT_LEN;
-    int           X_CUT_LEN;
+        Matrix<DBL_T> *n            = nullptr;
+        Matrix<DBL_T> *f            = nullptr;
+        Matrix<DBL_T> *m            = nullptr;
+        Matrix<DBL_T> *ind_pos      = nullptr;
+        Matrix<DBL_T> *n_out        = nullptr;
+        Matrix<DBL_T> *f_out        = nullptr;
+        Matrix<DBL_T> *m_out        = nullptr;
+        Matrix<DBL_T> *ind_pos_out  = nullptr;
+        Matrix<DBL_T> *ind_pos_init = nullptr;
+        Matrix<DBL_T> *den_mat_out  = nullptr;
 
-    void initial_condition();
+        DBL_T *y_cut = nullptr;
+        DBL_T *x_cut = nullptr;
 
-    void generate_pattern();
+    public:
+        explicit Dimension(Sim_2D<Y_LEN, X_LEN> *parent, const int idx) : parent(parent), IDX(idx) {
+        };
 
-    void pde();
+        ~Dimension() {
+            delete[] x_cut;
+            delete[] y_cut;
 
-    bool solve_pde(int t);
+            delete n;
+            delete f;
+            delete m;
+            delete ind_pos;
 
-    void movement(int t);
+            delete n_out;
+            delete f_out;
+            delete m_out;
+            delete ind_pos_out;
+            delete ind_pos_init;
+            delete den_mat_out;
+        }
 
-    bool end_of_day(int t);
+        void initial_condition();
 
-    void proliferation(int PROF_CELLS_NUM, int *prof_cells);
+        void generate_pattern();
 
-    template<int Nbr_Num>
-    void cell_proliferate(
-            std::array<int, Nbr_Num> nbr_temp,
-            std::array<COORD_T, Nbr_Num> nghr_cord,
-            COORD_T cell_pos
-    );
+        void pde();
 
-    void density_matrix(int t);
+        bool solve_pde(int t);
+
+        void movement(int t);
+
+        bool end_of_day(int t);
+
+        void proliferation(int PROF_CELLS_NUM, int *prof_cells);
+
+        template<int Nbr_Num>
+        void cell_proliferate(
+                std::array<int, Nbr_Num> nbr_temp,
+                std::array<COORD_T, Nbr_Num> nghr_cord,
+                COORD_T cell_pos
+        );
+
+        void density_matrix(int t);
+
+        void calculate();
+    };
 };
 
 class Sim_2D_Factory {
