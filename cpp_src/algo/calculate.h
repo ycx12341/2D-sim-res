@@ -21,9 +21,7 @@ void Sim_2D<Y_LEN, X_LEN>::Dimension::calculate() {
 
 template<int Y_LEN, int X_LEN>
 void Sim_2D<Y_LEN, X_LEN>::calculate_sse() {
-    DBL_T diff;
-    std::pair<unsigned, DBL_T> pair;
-
+    DBL_T    diff;
     for (int i = 0; i < N_DIMS; ++i) {
         std::cout << i << std::endl;    // TODO
 
@@ -31,16 +29,17 @@ void Sim_2D<Y_LEN, X_LEN>::calculate_sse() {
         dimension.calculate();
 
         diff = dimension.get_diff();
-        pair = {i, diff};
-        diffs.insert(pair);
-        if (!std::isnan(diff)) { diffs_valid.insert(pair); }
+        diffs.insert({i, diff});
+        if (!std::isnan(diff)) {
+            infos.insert({i, {diff, NAN}});
+        }
     }
 
     // TODO output diffs and print mean (?)
 
-    DBL_T                      mean = 0;
-    for (auto const &[_, d]: diffs_valid) { mean += d; }
-    mean /= diffs_valid.size();
+//    DBL_T                      mean = 0;
+//    for (auto const &[_, d]: diffs_valid) { mean += d; }
+//    mean /= diffs_valid.size();
 }
 
 DBL_T calculate_ess(const std::vector<DBL_T> &resamp_prob) {
@@ -57,31 +56,47 @@ void Sim_2D<Y_LEN, X_LEN>::calculate_bw() {
     DBL_T power[power_len];
     assert(seq_by<DBL_T>(power, POWER_MIN, POWER_MAX, POWER_STEP) == power_len);
 
-    std::vector<DBL_T>        ess_vec;
-    std::map<unsigned, DBL_T> wt(diffs_valid);
+    std::map<DBL_T, DBL_T>    ess_map;
+    std::map<unsigned, DBL_T> wt;
 
     for (int i = 0; i < power_len; ++i) {
-        for (auto const    &[idx, d]: diffs_valid) {
-            wt[idx] = pow(d, -power[i]);
+        for (auto          &[idx, info]: infos) {
+            wt[idx] = pow(info.diff, -power[i]);
         }
 
-        DBL_T min = map_values_min<unsigned>(wt);
-        DBL_T max = map_values_max<unsigned>(wt);
+        DBL_T w_min = map_values_min<unsigned>(wt);
+        DBL_T w_max = map_values_max<unsigned>(wt);
         std::vector<DBL_T> resamp_prob;
-        for (auto const &[idx, d]: wt) {
-            if (d == min) {
+        for (auto const &[idx, w]: wt) {
+            if (w == w_min) {
                 resamp_prob.push_back(0);
-            } else if (d == max) {
+            } else if (w == w_max) {
                 resamp_prob.push_back(1);
             } else {
-                resamp_prob.push_back((d - min) / (max - min));
+                resamp_prob.push_back((w - w_min) / (w_max - w_min));
             }
         }
         assert(resamp_prob.size() == wt.size());
 
-        ess_vec.push_back(calculate_ess(resamp_prob));
+        DBL_T ess = calculate_ess(resamp_prob);
+        if (!std::isnan(ess)) { ess_map.insert({power[i], ess}); }
     }
-    assert(ess_vec.size() == power_len);
+    assert(ess_map.size() <= power_len);
+
+    DBL_T ess_diff_min = INFINITY, ess_diff;
+    for (auto const &[p, e]: ess_map) {
+        ess_diff = abs(e - ESS_TARGET);
+        if (ess_diff < ess_diff_min) {
+            ess_obj      = ess_diff;
+            ess_diff_min = ess_diff;
+            bw_obj       = p;
+        }
+    }
+
+    assert(!std::isnan(bw_obj) && !std::isnan(ess_obj));
+    for (auto &[_, info]: infos) {
+        info.wt = pow(info.diff, -bw_obj);
+    }
 }
 
 template<int Y_LEN, int X_LEN>

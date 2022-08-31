@@ -6,6 +6,7 @@
 #include <cmath>
 #include <vector>
 #include <iostream>
+#include <map>
 
 #define COORD_T std::array<int, 2>
 

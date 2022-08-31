@@ -57,6 +57,12 @@ public:
 
 template<int Y_LEN, int X_LEN>
 class Sim_2D {
+private:
+    typedef struct {
+        DBL_T diff;                             // excluding NAN value
+        DBL_T wt;                               // wt_obj
+
+    } Info_T;
 public:
     const int        N_DIMS;
     const DBL_T      h;
@@ -67,15 +73,17 @@ public:
     const DBL_T      time_steps;
     const DBL_T      int_time_steps;
     const int        day_time_steps;
-    const DBL_T      pde_time_steps;                    // Diffusion starts having an impact after a certain amount of time
+    const DBL_T      pde_time_steps;            // Diffusion starts having an impact after a certain amount of time
     const DBL_T      mat_size;
     const Parameters *pars;
     int              y_cut_len;
     int              x_cut_len;
     const int        power_len = (int) ceil((POWER_MAX - POWER_MIN) / POWER_STEP);
 
-    std::map<unsigned, DBL_T> diffs;            // <idx,         diff>
-    std::map<unsigned, DBL_T> diffs_valid;      // <idx, non-NAN diff>
+    std::map<unsigned, DBL_T>  diffs;           // <idx, diff>
+    std::map<unsigned, Info_T> infos;           // <idx, { non-NAN diff, ess, ... } >
+    DBL_T ess_obj = NAN;
+    DBL_T bw_obj  = NAN;
 
     Sim_2D(const unsigned int seed,
            const int n_dims,
@@ -183,8 +191,8 @@ private:
 
         template<int Nbr_Num>
         void cell_proliferate(
-                std::array<int, Nbr_Num> nbr_temp,
-                std::array<COORD_T, Nbr_Num> nghr_cord,
+                const std::array<int, Nbr_Num> &nbr_temp,
+                const std::array<COORD_T, Nbr_Num> &nghr_cord,
                 COORD_T cell_pos
         );
 

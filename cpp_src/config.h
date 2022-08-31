@@ -29,4 +29,6 @@
 #define POWER_MAX               2.0
 #define POWER_STEP              0.01
 
+#define ESS_TARGET              722
+
 #endif //SIM_2D_CPP_CONFIG_H
