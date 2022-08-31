@@ -40,16 +40,16 @@ int unif_index(const int dn) {
 }
 
 // TODO rewrite
-std::array<int, 2> unif_index2(const int dn) {
-    std::array<int, 2> ry = {-1, -1};
-    if (dn < 2) { return ry; }
+std::vector<int> unif_index(const int index_num, const int dn) {
+    std::vector<int> ry;
+    if (dn <= 0) { return ry; }
 
     int x[dn], n = dn;
 
     for (int i = 0; i < dn; i++) { x[i] = i; }
-    for (int i = 0; i < 2; i++) {
+    for (int i = 0; i < index_num; i++) {
         int j = unif_index(n);
-        ry[i] = x[j];
+        ry.push_back(x[j]);
         x[j]  = x[--n];
     }
     return ry;
