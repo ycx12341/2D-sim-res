@@ -119,4 +119,11 @@ void Sim_2D<Y_LEN, X_LEN>::simulate() {
     calculate_bw();
 }
 
+template<int Y_LEN, int X_LEN>
+void Sim_2D<Y_LEN, X_LEN>::abc_bcd() {
+    for (int i = 0; i < N_DIMS; ++i) {
+
+    }
+}
+
 #endif //CPP_SRC_2D_SIM_ALGO_H

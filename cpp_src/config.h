@@ -4,7 +4,7 @@
 #define DBL_T                   double
 
 #define DEFAULT_N_DIMS          50
-#define SEED                    234567          // R-style 6 digits unsigned integer
+#define SEED                    234567          // prefer R-style 6 digits unsigned integer
 
 #define DN_MIN                  0.000069L
 #define DN_MAX                  0.02L
@@ -30,5 +30,9 @@
 #define POWER_STEP              0.01
 
 #define ESS_TARGET              722
+
+#define ABC_BCD_PAR_NUM         9
+#define ABC_BCD_PAR_LB          { 0.000069, 0.005, 0.0008,  7, 0.0001, 0.07, 1, 0.01, 0.2 }
+#define ABC_BCD_PAR_UB          { 0.02    , 0.26 , 0.08  , 18, 0.033 , 0.18, 5, 0.1 , 1   }
 
 #endif //SIM_2D_CPP_CONFIG_H

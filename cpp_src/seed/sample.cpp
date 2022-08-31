@@ -39,6 +39,7 @@ int unif_index(const int dn) {
     return (int) dv;
 }
 
+// TODO rewrite
 std::array<int, 2> unif_index2(const int dn) {
     std::array<int, 2> ry = {-1, -1};
     if (dn < 2) { return ry; }
@@ -119,8 +120,8 @@ void revsort(DBL_T *a, int *ib, int n) {
     }
 }
 
-int sample_prob1(const int dn, const DBL_T *prob) {
-    int   perm[dn];
+int sample_int_index(const int dn, const DBL_T *prob) {
+    int   perm[dn], nm1 = dn - 1;
     DBL_T prob_cpy[dn];
 
     for (int i = 0; i < dn; i++) {
@@ -133,9 +134,75 @@ int sample_prob1(const int dn, const DBL_T *prob) {
 
     DBL_T rT = unif_rand(), mass = 0;
     int      i;
-    for (i = 0; i < dn - 1; i++) {
+    for (i = 0; i < nm1; i++) {
         mass += prob_cpy[i];
         if (rT <= mass) { break; }
     }
     return perm[i];
+}
+
+std::vector<DBL_T> sample_indices(
+        const int sample_num,
+        const std::vector<DBL_T> &prob,
+        const bool replace
+) {
+    int                dn = (int) prob.size(), nm1 = dn - 1;
+    assert(dn <= INT_MAX);
+
+    if (!replace) { assert(sample_num <= dn); }
+
+    DBL_T              prob_cpy[dn];
+    int                i  = 0, j = 0;
+    int                perm[dn];
+    std::vector<DBL_T> res;
+
+    for (const DBL_T p: prob) {
+        prob_cpy[i] = p;
+        perm[i]     = i + 1;
+        i++;
+    }
+
+    fixupProb(prob_cpy, dn, replace);
+    revsort(prob_cpy, perm, dn);
+
+    if (replace) {
+        double rU;
+
+        for (i = 1; i < dn; i++) { prob_cpy[i] += prob_cpy[i - 1]; }
+
+
+        /* compute the sample */
+        for (i = 0; i < sample_num; i++) {
+            rU     = unif_rand();
+            for (j = 0; j < nm1; j++) {
+                if (rU <= prob_cpy[j]) { break; }
+            }
+            res.push_back(perm[j]);
+        }
+    } else {
+        double rT, mass, totalmass = 1;
+        int    k, n1;
+
+        for (i = 0, n1 = dn - 1; i < sample_num; i++, n1--) {
+            rT     = totalmass * unif_rand();
+            mass   = 0;
+            for (j = 0; j < n1; j++) {
+                mass += prob_cpy[j];
+                if (rT <= mass) { break; }
+            }
+            res.push_back(perm[j]);
+            totalmass -= prob_cpy[j];
+            for (k = j; k < n1; k++) {
+                prob_cpy[k] = prob_cpy[k + 1];
+                perm[k]     = perm[k + 1];
+            }
+        }
+    }
+
+    assert(res.size() == sample_num);
+    return res;
+}
+
+void put_seed_state() {
+
 }
