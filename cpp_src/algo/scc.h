@@ -61,6 +61,7 @@ private:
     typedef struct {
         DBL_T diff;                             // excluding NAN value
         DBL_T wt;                               // wt_obj
+        DBL_T resample;                         // resamp.prob
 
     } Info_T;
 public:
@@ -82,6 +83,7 @@ public:
 
     std::map<unsigned, DBL_T>  diffs;           // <idx, diff>
     std::map<unsigned, Info_T> infos;           // <idx, { non-NAN diff, ess, ... } >
+    std::map<DBL_T, DBL_T>     ess_map;
     DBL_T ess_obj = NAN;
     DBL_T bw_obj  = NAN;
 
