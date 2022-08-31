@@ -56,7 +56,6 @@ void Sim_2D<Y_LEN, X_LEN>::calculate_bw() {
     DBL_T power[power_len];
     assert(seq_by<DBL_T>(power, POWER_MIN, POWER_MAX, POWER_STEP) == power_len);
 
-    std::map<DBL_T, DBL_T>    ess_map;
     std::map<unsigned, DBL_T> wt;
 
     for (int i = 0; i < power_len; ++i) {
@@ -92,10 +91,25 @@ void Sim_2D<Y_LEN, X_LEN>::calculate_bw() {
             bw_obj       = p;
         }
     }
-
     assert(!std::isnan(bw_obj) && !std::isnan(ess_obj));
+
+    DBL_T wt_min = INFINITY, wt_max = (DBL_T) -INFINITY, info_wt;
     for (auto &[_, info]: infos) {
-        info.wt = pow(info.diff, -bw_obj);
+        info_wt = pow(info.diff, -bw_obj);
+        info.wt = info_wt;
+        if (info_wt < wt_min) { wt_min = info_wt; }
+        if (info_wt > wt_max) { wt_max = info_wt; }
+    }
+
+    for (auto &[_, info]: infos) {
+        info_wt = info.wt;
+        if (info_wt == wt_min) {
+            info.resample = 0;
+        } else if (info_wt == wt_max) {
+            info.resample = 1;
+        } else {
+            info.resample = (info_wt - wt_min) / (wt_max - wt_min);
+        }
     }
 }
 
