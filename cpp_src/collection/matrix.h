@@ -126,8 +126,7 @@ public:
     std::vector<COORD_T > matrix_which_max() {
         std::vector<COORD_T > maxes;
 
-        T max = -INFINITY;
-        T v;
+        T max = -INFINITY, v;
 
         if (size() <= 0) { return maxes; }
 

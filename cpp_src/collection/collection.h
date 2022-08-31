@@ -44,7 +44,7 @@ int seq_by(T *buf, T from, T to, T by) {
 }
 
 template<typename T, int Len>
-std::vector<int> std_array_which_equals(std::array<int, Len> arr, const T val) {
+std::vector<int> std_array_which_equals(const std::array<int, Len> &arr, const T val) {
     std::vector<int> res;
 
     if (Len <= 0) { return res; }
@@ -66,11 +66,10 @@ bool array_contains(T val, const int len, T *arr) {
 }
 
 template<typename T>
-std::vector<int> vector_which_min(std::vector<T> vector) {
+std::vector<int> vector_which_min(const std::vector<T> &vector) {
     std::vector<int> mins;
 
-    T min = INFINITY;
-    T v;
+    T min = INFINITY, v;
 
     if ((int) vector.size() <= 0) { return mins; }
 
@@ -87,11 +86,10 @@ std::vector<int> vector_which_min(std::vector<T> vector) {
 }
 
 template<typename T>
-std::vector<int> vector_which_max(std::vector<T> vector) {
+std::vector<int> vector_which_max(const std::vector<T> &vector) {
     std::vector<int> maxes;
 
-    T max = -INFINITY;
-    T v;
+    T max = -INFINITY, v;
 
     if ((int) vector.size() <= 0) { return maxes; }
 
@@ -108,7 +106,7 @@ std::vector<int> vector_which_max(std::vector<T> vector) {
 }
 
 template<typename T>
-std::vector<T> vector_remove_many_by_index(std::vector<T> vector, const int len, int *indexes) {
+std::vector<T> vector_remove_many_by_index(const std::vector<T> &vector, const int len, int *indexes) {
     std::vector<T> res;
 
     for (int i = 0, l = vector.size(); i < l; ++i) {
@@ -119,7 +117,7 @@ std::vector<T> vector_remove_many_by_index(std::vector<T> vector, const int len,
 }
 
 template<typename K>
-DBL_T map_values_min(std::map<K, DBL_T> map) {
+DBL_T map_values_min(const std::map<K, DBL_T> &map) {
     DBL_T min = INFINITY;
     for (auto const &[_, d]: map) {
         min = d < min ? d : min;
@@ -128,7 +126,7 @@ DBL_T map_values_min(std::map<K, DBL_T> map) {
 }
 
 template<typename K>
-DBL_T map_values_max(std::map<K, DBL_T> map) {
+DBL_T map_values_max(const std::map<K, DBL_T> &map) {
     DBL_T max = (DBL_T) -INFINITY;
     for (auto const &[_, d]: map) {
         max = d > max ? d : max;
