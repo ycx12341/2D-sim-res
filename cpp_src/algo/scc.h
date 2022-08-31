@@ -87,6 +87,9 @@ public:
     DBL_T ess_obj = NAN;
     DBL_T bw_obj  = NAN;
 
+    const DBL_T ABC_BCD_LB[ABC_BCD_PAR_NUM] = ABC_BCD_PAR_LB;
+    const DBL_T ABC_BCD_UB[ABC_BCD_PAR_NUM] = ABC_BCD_PAR_UB;
+
     Sim_2D(const unsigned int seed,
            const int n_dims,
            DBL_T h,
@@ -122,6 +125,8 @@ public:
     }
 
     void simulate();
+
+    void abc_bcd();
 
 private:
     void calculate_sse();

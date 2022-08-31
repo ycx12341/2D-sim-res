@@ -405,7 +405,7 @@ void Sim_2D<Y_LEN, X_LEN>::Dimension::movement(const int time) {
                 p_sum += i;
             }
 
-            const int movement = p_sum == 0 ? 0 : sample_prob1(5, p);
+            const int movement = p_sum == 0 ? 0 : sample_int_index(5, p);
             assert(0 <= movement && movement <= 5);
 
             (*ind_pos)(x, y) = 0;
