@@ -3,6 +3,8 @@
 
 #include "matrix.h"
 
+#include <map>
+
 template<typename T>
 int seq_length_out(T *buf, T from, T to, const int length_out) {
     if (length_out <= 0) { return 0; }
@@ -39,6 +41,28 @@ int seq_by(T *buf, T from, T to, T by) {
         value += by;
     }
     return i;
+}
+
+template<typename T, int Len>
+std::vector<int> std_array_which_equals(std::array<int, Len> arr, const T val) {
+    std::vector<int> res;
+
+    if (Len <= 0) { return res; }
+
+    for (int i = 0; i < Len; ++i) {
+        if (arr[i] == val) {
+            res.push_back(i);
+        }
+    }
+    return res;
+}
+
+template<typename T>
+bool array_contains(T val, const int len, T *arr) {
+    for (int i = 0; i < len; ++i) {
+        if (val == arr[i]) { return true; }
+    }
+    return false;
 }
 
 template<typename T>
@@ -84,14 +108,6 @@ std::vector<int> vector_which_max(std::vector<T> vector) {
 }
 
 template<typename T>
-bool array_contains(T val, const int len, T *arr) {
-    for (int i = 0; i < len; ++i) {
-        if (val == arr[i]) { return true; }
-    }
-    return false;
-}
-
-template<typename T>
 std::vector<T> vector_remove_many_by_index(std::vector<T> vector, const int len, int *indexes) {
     std::vector<T> res;
 
@@ -102,18 +118,22 @@ std::vector<T> vector_remove_many_by_index(std::vector<T> vector, const int len,
     return res;
 }
 
-template<typename T, int Len>
-std::vector<int> std_array_which_equals(std::array<int, Len> arr, const T val) {
-    std::vector<int> res;
-
-    if (Len <= 0) { return res; }
-
-    for (int i = 0; i < Len; ++i) {
-        if (arr[i] == val) {
-            res.push_back(i);
-        }
+template<typename K>
+DBL_T map_values_min(std::map<K, DBL_T> map) {
+    DBL_T min = INFINITY;
+    for (auto const &[_, d]: map) {
+        min = d < min ? d : min;
     }
-    return res;
+    return min;
+}
+
+template<typename K>
+DBL_T map_values_max(std::map<K, DBL_T> map) {
+    DBL_T max = (DBL_T) -INFINITY;
+    for (auto const &[_, d]: map) {
+        max = d > max ? d : max;
+    }
+    return max;
 }
 
 #endif //SIM_2D_CPP_COLLECTION_H

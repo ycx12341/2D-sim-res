@@ -5,7 +5,7 @@
 #include "../seed/seed.h"
 #include "../collection/collection.h"
 
-#include <unordered_map>
+#include <map>
 
 class Parameters {
 public:
@@ -72,9 +72,10 @@ public:
     const Parameters *pars;
     int              y_cut_len;
     int              x_cut_len;
+    const int        power_len = (int) ceil((POWER_MAX - POWER_MIN) / POWER_STEP);
 
-    std::unordered_map<unsigned, DBL_T> diffs;          // <idx,         diff>
-    std::unordered_map<unsigned, DBL_T> diffs_nNAN;     // <idx, non-NAN diff>
+    std::map<unsigned, DBL_T> diffs;            // <idx,         diff>
+    std::map<unsigned, DBL_T> diffs_valid;      // <idx, non-NAN diff>
 
     Sim_2D(const unsigned int seed,
            const int n_dims,
