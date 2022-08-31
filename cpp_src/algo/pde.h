@@ -15,8 +15,8 @@
 template<int Y_LEN, int X_LEN>
 template<int Nbr_Num>
 void Sim_2D<Y_LEN, X_LEN>::Dimension::cell_proliferate(
-        std::array<int, Nbr_Num> nbr_temp,
-        std::array<COORD_T, Nbr_Num> nghr_cord,
+        const std::array<int, Nbr_Num> &nbr_temp,
+        const std::array<COORD_T, Nbr_Num> &nghr_cord,
         COORD_T cell_pos
 ) {
     std::vector<int> zeros = std_array_which_equals<int, Nbr_Num>(nbr_temp, 0);

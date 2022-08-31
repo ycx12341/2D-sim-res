@@ -16,14 +16,14 @@
   - ~~`ind_pos`: correct~~
   - ~~`iter_range()`: incorrect~~
     - ~~using `i` instead of `ii`~~
-    - ~~Solved~~
+    - Solved
 
-- Program crashed in `generate_pattern()`
-  - seed: 234567
-  - dimension: 243-th
-  - on call: `initial_condition()`
-  - `INIT_CELLS_COLS` in `Parameters`: error
-    - total dimensions: 500
+- ~~Program crashed in `generate_pattern()`~~
+  - ~~seed: 234567~~
+  - ~~dimension: 243-th~~
+  - ~~on call: `initial_condition()`~~
+  - ~~`INIT_CELLS_COLS` in `Parameters`: error~~
+    - ~~total dimensions: 500~~
       ```
       3.92764 2.26746 2.23225 4.3747 1.93549 4.53162 1.79133 4.56243 1.54211 2.7872 0 1.29741e-231 0.0111366 0.0926829 0.0673112 
       0.0394321 0.0797405 0.0447875 0.0520084 0.0577969 0.075692 0.0621816 0 1.29741e-231 0.476869 0.498841 0.437558 
@@ -36,3 +36,4 @@
       0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
       3.15399e-294 1.9986e-316 3.75609e-317 3.75602e-317 3.75602e-317 3.77014e-317 1.61895e-319
       ```
+  - Investigation Result: Misusing `N_DIMS` and `for` loop conditions.

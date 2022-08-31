@@ -3,8 +3,6 @@
 
 #include "matrix.h"
 
-#include <map>
-
 template<typename T>
 int seq_length_out(T *buf, T from, T to, const int length_out) {
     if (length_out <= 0) { return 0; }
