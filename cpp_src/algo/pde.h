@@ -21,15 +21,18 @@ void Sim_2D<Y_LEN, X_LEN>::Dimension::cell_proliferate(
 ) {
     std::vector<int> zeros = std_array_which_equals<int, Nbr_Num>(nbr_temp, 0);
     if ((int) zeros.size() >= 2) {
-        std::array<int, 2> sample = unif_index2((int) zeros.size());
-        assert(sample[0] != -1 && sample[1] != -1 && sample[0] != sample[1]);
+        std::vector<int> sample = unif_index(2, (int) zeros.size());
+        assert(sample.size() == 2);
 
-        COORD_T            sample_a = nghr_cord[sample[0]];
-        COORD_T            sample_b = nghr_cord[sample[1]];
+        const int sample_a_idx = sample.at(0), sample_b_idx = sample.at(1);
+        assert(sample_a_idx != sample_b_idx);
 
-        (*ind_pos)(cell_pos[0], cell_pos[1]) = 0;
-        (*ind_pos)(sample_a[0], sample_a[1]) = 1;
-        (*ind_pos)(sample_b[0], sample_b[1]) = 1;
+        COORD_T          sample_a = nghr_cord[sample_a_idx];
+        COORD_T          sample_b = nghr_cord[sample_b_idx];
+
+        (*ind_pos)(cell_pos[0], cell_pos[1])   = 0;
+        (*ind_pos)(sample_a_idx, sample_b_idx) = 1;
+        (*ind_pos)(sample_a_idx, sample_b_idx) = 1;
     }
 }
 
