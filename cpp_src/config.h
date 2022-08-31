@@ -3,7 +3,7 @@
 
 #define DBL_T                   double
 
-#define DEFAULT_N_DIMS          500
+#define DEFAULT_N_DIMS          50
 #define SEED                    234567          // R-style 6 digits unsigned integer
 
 #define DN_MIN                  0.000069L
@@ -24,5 +24,9 @@
 #define PROB_DEATH_MAX          0.1L
 #define PROB_PROF_MIN           0.2L
 #define PROB_PROF_MAX           1.0L
+
+#define POWER_MIN               0.0
+#define POWER_MAX               2.0
+#define POWER_STEP              0.01
 
 #endif //SIM_2D_CPP_CONFIG_H
