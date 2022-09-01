@@ -122,19 +122,37 @@ void Sim_2D<Y_LEN, X_LEN>::simulate() {
 }
 
 template<int Y_LEN, int X_LEN>
-void Sim_2D<Y_LEN, X_LEN>::abc_bcd() {
+Parameters Sim_2D<Y_LEN, X_LEN>::abc_bcd() {
+    assert(Parameters::FEATURES_NUM == ABC_BCD_PAR_NUM);
+
     std::vector<DBL_T> probs;
     for (const int     idx: nnan_idxs) {
         probs.push_back(infos[idx].resample);
     }
 
     std::vector<int> resamp_idx = sample_indices(N_DIMS, probs, true);
+    assert(resamp_idx.size() == N_DIMS);
 
-    for (int i = 0; i < N_DIMS; ++i) {
+    Parameters paras_nr_unperturbed = pars->resample(resamp_idx);
+    Parameters paras_nr_perturbed(N_DIMS);
+
+#define FT Parameters::FEATURE_T
+    const DBL_T ABC_H = ABC_BCD_H;
+    FT    i_;
+    DBL_T p;
+    for (int    i     = 0; i < Parameters::FEATURES_NUM; ++i) {
+        i_ = (FT) i;
         for (int j = 0; j < N_DIMS; ++j) {
-
+            do {
+                paras_nr_perturbed(i_, j) = rnorm(
+                        ABC_H * paras_nr_unperturbed(i_, j) + (1 - ABC_H) * paras_nr_unperturbed.feature_mean(i_),
+                        0.05 * paras_nr_unperturbed.feature_sd(i_)
+                );
+                p = paras_nr_perturbed(i_, j);
+            } while (p > ABC_BCD_UB[i] || p < ABC_BCD_LB[i]);
         }
     }
+    return paras_nr_perturbed;
 }
 
 #endif //CPP_SRC_2D_SIM_ALGO_H
