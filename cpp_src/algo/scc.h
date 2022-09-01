@@ -5,7 +5,7 @@
 #include "../seed/seed.h"
 #include "../collection/collection.h"
 
-#include <map>
+#include <unordered_map>
 
 class Parameters {
 public:
@@ -81,9 +81,10 @@ public:
     int              x_cut_len;
     const int        power_len = (int) ceil((POWER_MAX - POWER_MIN) / POWER_STEP);
 
-    std::map<unsigned, DBL_T>  diffs;           // <idx, diff>
-    std::map<unsigned, Info_T> infos;           // <idx, { non-NAN diff, ess, ... } >
-    std::map<DBL_T, DBL_T>     ess_map;
+    std::vector<int>                     nnan_idxs;       // IDXes of which has non-NAN diff
+    std::unordered_map<unsigned, DBL_T>  diffs;           // <idx, diff>
+    std::unordered_map<unsigned, Info_T> infos;           // <idx, { non-NAN diff, ess, ... } >
+    std::unordered_map<DBL_T, DBL_T>     ess_map;         // <power, ess>
     DBL_T ess_obj = NAN;
     DBL_T bw_obj  = NAN;
 
@@ -210,25 +211,15 @@ private:
 class Sim_2D_Factory {
 public:
     static auto SCC(const int n_dims, const unsigned int seed) {
-        constexpr static const DBL_T H                  = 1.0 / 59.0;
-        constexpr static const DBL_T SCC_SPACE_LENGTH_Y = (1.0 / H) + 1.0;
-        constexpr static const DBL_T SCC_SPACE_LENGTH_X = (DBL_T) SCC_SPACE_LENGTH_Y * (280.0 / 480.0);
-        constexpr static const int   Y_LEN              = (int) SCC_SPACE_LENGTH_Y;
-        constexpr static const int   X_LEN              = (int) SCC_SPACE_LENGTH_X;
-        constexpr static const DBL_T T                  = 4.52;
-        constexpr static const DBL_T DT                 = 0.0025;
-        constexpr static const DBL_T TIME_STEPS         = T / DT;
-        constexpr static const DBL_T INT_TIME_STEPS     = 1.0 / DT;
-        constexpr static const int   DAY_TIME_STEPS     = 600;
-
+        constexpr static const int Y_LEN = SCC_Y_LEN;
+        constexpr static const int X_LEN = SCC_X_LEN;
 
         return new Sim_2D<Y_LEN, X_LEN>(
-                seed,
-                n_dims, H,
+                seed, n_dims, SCC_H,
                 SCC_SPACE_LENGTH_Y, SCC_SPACE_LENGTH_X,
-                T, DT,
-                TIME_STEPS, INT_TIME_STEPS, DAY_TIME_STEPS,
-                (DBL_T) round((double) DAY_TIME_STEPS * (95.0 / 96.0)),
+                SCC_T, SCC_DT,
+                SCC_TIME_STEPS, SCC_INT_TIME_STEPS, SCC_DAY_TIME_STEPS,
+                (DBL_T) round((double) SCC_DAY_TIME_STEPS * (95.0 / 96.0)),
                 SCC_SPACE_LENGTH_Y / 12.0
         );
     }

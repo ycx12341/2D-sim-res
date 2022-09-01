@@ -17,6 +17,12 @@ std::vector<int> unif_index(int index_num, int dn);
 
 int sample_int_index(int dn, const DBL_T *prob);
 
-std::vector<DBL_T> sample_indices(int sample_num, const std::vector<DBL_T> &prob, bool replace);
+std::vector<int> sample_indices(int sample_num, const std::vector<DBL_T> &prob, bool replace);
+
+/**
+ * Default N01_kind: INVERSION
+ * @return
+ */
+DBL_T norm_rand();
 
 #endif //SIM_2D_CPP_SEED_H

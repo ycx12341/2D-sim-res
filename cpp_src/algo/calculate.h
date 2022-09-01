@@ -32,6 +32,7 @@ void Sim_2D<Y_LEN, X_LEN>::calculate_sse() {
         diffs.insert({i, diff});
         if (!std::isnan(diff)) {
             infos.insert({i, {diff, NAN}});
+            nnan_idxs.push_back(i);
         }
     }
 
@@ -117,12 +118,22 @@ template<int Y_LEN, int X_LEN>
 void Sim_2D<Y_LEN, X_LEN>::simulate() {
     calculate_sse();
     calculate_bw();
+    abc_bcd();
 }
 
 template<int Y_LEN, int X_LEN>
 void Sim_2D<Y_LEN, X_LEN>::abc_bcd() {
-    for (int i = 0; i < N_DIMS; ++i) {
+    std::vector<DBL_T> probs;
+    for (const int     idx: nnan_idxs) {
+        probs.push_back(infos[idx].resample);
+    }
 
+    std::vector<int> resamp_idx = sample_indices(N_DIMS, probs, true);
+
+    for (int i = 0; i < N_DIMS; ++i) {
+        for (int j = 0; j < N_DIMS; ++j) {
+
+        }
     }
 }
 

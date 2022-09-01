@@ -39,7 +39,6 @@ int unif_index(const int dn) {
     return (int) dv;
 }
 
-// TODO rewrite
 std::vector<int> unif_index(const int index_num, const int dn) {
     std::vector<int> ry;
     if (dn <= 0) { return ry; }
@@ -141,7 +140,7 @@ int sample_int_index(const int dn, const DBL_T *prob) {
     return perm[i];
 }
 
-std::vector<DBL_T> sample_indices(
+std::vector<int> sample_indices(
         const int sample_num,
         const std::vector<DBL_T> &prob,
         const bool replace
@@ -154,7 +153,7 @@ std::vector<DBL_T> sample_indices(
     DBL_T              prob_cpy[dn];
     int                i  = 0, j = 0;
     int                perm[dn];
-    std::vector<DBL_T> res;
+    std::vector<int> res;
 
     for (const DBL_T p: prob) {
         prob_cpy[i] = p;
@@ -201,8 +200,4 @@ std::vector<DBL_T> sample_indices(
 
     assert(res.size() == sample_num);
     return res;
-}
-
-void put_seed_state() {
-
 }
