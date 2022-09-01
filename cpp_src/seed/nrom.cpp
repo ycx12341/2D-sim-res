@@ -46,8 +46,8 @@ double qnorm5(double p, double mu, double sigma, int lower_tail, int log_p) {
 
 #define R_D_Cval(p)     (lower_tail ? (0.5 - (p) + 0.5) : (p))
 #define R_D_Lval(p)     (lower_tail ? (p) : (0.5 - (p) + 0.5))
-#define R_DT_qIv(p)     (log_p ? (lower_tail ? exp(p) : - expm1(p)) : R_D_Lval(p))
-#define R_DT_CIv(p)     (log_p ? (lower_tail ? -expm1(p) : exp(p)) : R_D_Cval(p))
+#define R_DT_qIv(p)     (log_p ? (lower_tail ? std::exp(p) : - std::expm1(p)) : R_D_Lval(p))
+#define R_DT_CIv(p)     (log_p ? (lower_tail ? -std::expm1(p) : std::exp(p)) : R_D_Cval(p))
 
     DBL_T p_, q, r, val;
     p_ = R_DT_qIv(p);
@@ -68,9 +68,9 @@ double qnorm5(double p, double mu, double sigma, int lower_tail, int log_p) {
         if (log_p && ((lower_tail && q <= 0) || (!lower_tail && q > 0))) {
             r = p;
         } else {
-            r = log((q > 0) ? R_DT_CIv(p) : p_);
+            r = std::log((q > 0) ? R_DT_CIv(p) : p_);
         }
-        r = sqrt(-r);
+        r = std::sqrt(-r);
         if (r <= 5.) {
             r += -1.6;
             val = (((((((r * 7.7454501427834140764e-4 +
@@ -113,7 +113,21 @@ double qnorm5(double p, double mu, double sigma, int lower_tail, int log_p) {
 #undef R_DT_CIv
 }
 
+/**
+ * Default N01_kind: INVERSION
+ * @return
+ */
 DBL_T norm_rand() {
     DBL_T u1 = (int) (BIG * unif_rand()) + unif_rand();
     return qnorm5(u1 / BIG, 0.0, 1.0, 1, 0);
+}
+
+DBL_T rnorm(DBL_T mu, DBL_T sigma) {
+    if (std::isnan(mu) || !std::isfinite(sigma) || sigma < 0.) {
+        return NAN;
+    }
+    if (sigma == 0. || !std::isfinite(mu)) {
+        return mu;
+    }
+    return mu + sigma * norm_rand();
 }

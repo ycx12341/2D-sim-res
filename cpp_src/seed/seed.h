@@ -19,10 +19,6 @@ int sample_int_index(int dn, const DBL_T *prob);
 
 std::vector<int> sample_indices(int sample_num, const std::vector<DBL_T> &prob, bool replace);
 
-/**
- * Default N01_kind: INVERSION
- * @return
- */
-DBL_T norm_rand();
+DBL_T rnorm(DBL_T mu, DBL_T sigma);
 
 #endif //SIM_2D_CPP_SEED_H
