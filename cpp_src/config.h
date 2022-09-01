@@ -6,6 +6,7 @@
 #define DEFAULT_N_DIMS          50
 #define SEED                    234567          // prefer R-style 6 digits unsigned integer
 
+/* Initial Parameters */
 #define DN_MIN                  0.000069L
 #define DN_MAX                  0.02L
 #define GAMMA_MIN               0.005L
@@ -25,6 +26,18 @@
 #define PROB_PROF_MIN           0.2L
 #define PROB_PROF_MAX           1.0L
 
+/* SCC Default Settings */
+#define SCC_H                   (1.0 / 59.0)
+#define SCC_SPACE_LENGTH_Y      ((1.0 / SCC_H) + 1.0)
+#define SCC_SPACE_LENGTH_X      (DBL_T) SCC_SPACE_LENGTH_Y * (280.0 / 480.0)
+#define SCC_Y_LEN               (int) SCC_SPACE_LENGTH_Y
+#define SCC_X_LEN               (int) SCC_SPACE_LENGTH_X
+#define SCC_T                   4.52
+#define SCC_DT                  0.0025
+#define SCC_TIME_STEPS          (SCC_T / SCC_DT)
+#define SCC_INT_TIME_STEPS      (1.0 / SCC_DT)
+#define SCC_DAY_TIME_STEPS      600
+
 #define POWER_MIN               0.0
 #define POWER_MAX               2.0
 #define POWER_STEP              0.01
@@ -34,5 +47,6 @@
 #define ABC_BCD_PAR_NUM         9
 #define ABC_BCD_PAR_LB          { 0.000069, 0.005, 0.0008,  7, 0.0001, 0.07, 1, 0.01, 0.2 }
 #define ABC_BCD_PAR_UB          { 0.02    , 0.26 , 0.08  , 18, 0.033 , 0.18, 5, 0.1 , 1   }
+#define ABC_BCD_H               sqrt(1 - pow(0.05, 2))
 
 #endif //SIM_2D_CPP_CONFIG_H
