@@ -4,7 +4,8 @@
 #define DBL_T                   double
 
 #define DEFAULT_N_DIMS          20
-#define SEED                    123456
+#define SEED                    123456          // use system timestamp as see by setting to 0
+#define USE_PRELOAD_REF                         // using preloaded T3_REF_DEN csv data
 
 /* Initial Parameters */
 #define DN_MIN                  0.000069L
