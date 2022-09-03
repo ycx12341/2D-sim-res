@@ -159,24 +159,21 @@ Parameters Sim_2D<Y_LEN, X_LEN>::abc_bcd() {
     Parameters paras_nr_unperturbed = pars->resample(resamp_idx, nnan_idxs);
     Parameters paras_nr_perturbed(N_DIMS);
 
-#define FT Parameters::FEATURE_T
-    const DBL_T ABC_H                       = ABC_BCD_H;
-    const DBL_T ABC_BCD_LB[ABC_BCD_PAR_NUM] = ABC_BCD_PAR_LB;
-    const DBL_T ABC_BCD_UB[ABC_BCD_PAR_NUM] = ABC_BCD_PAR_UB;
-    // TODO this lowered bound are defined in config.h
-
-    FT    i_;
+#define FT(x) (Parameters::FEATURE_T) x
+    const DBL_T H                   = ABC_BCD_H;
+    const DBL_T LB[ABC_BCD_PAR_NUM] = ABC_BCD_PAR_LB;
+    const DBL_T UB[ABC_BCD_PAR_NUM] = ABC_BCD_PAR_UB;
     DBL_T p;
+
     for (int i = 0; i < Parameters::FEATURES_NUM; ++i) {
-        i_ = (FT) i;
         for (int j = 0; j < N_DIMS; ++j) {
             do {
-                paras_nr_perturbed(i_, j) = rnorm(
-                        ABC_H * paras_nr_unperturbed(i_, j) + (1 - ABC_H) * paras_nr_unperturbed.feature_mean(i_),
-                        0.05 * paras_nr_unperturbed.feature_sd(i_)
+                paras_nr_perturbed(FT(i), j) = rnorm(
+                        H * paras_nr_unperturbed(FT(i), j) + (1 - H) * paras_nr_unperturbed.feature_mean(FT(i)),
+                        0.05 * paras_nr_unperturbed.feature_sd(FT(i))
                 );
-                p = paras_nr_perturbed(i_, j);
-            } while (p > ABC_BCD_UB[i] || p < ABC_BCD_LB[i]);
+                p = paras_nr_perturbed(FT(i), j);
+            } while (p > UB[i] || p < LB[i]);
         }
     }
 #undef FT
