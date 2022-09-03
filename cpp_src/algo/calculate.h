@@ -4,6 +4,8 @@
 #include <cmath>
 #include <cfloat>
 #include <vector>
+#include <thread>
+#include <mutex>
 
 #include "scc.h"
 #include "../ref_den/t3_ref_den.h"
@@ -25,30 +27,6 @@ void Sim_2D<Y_LEN, X_LEN>::Dimension::calculate() {
 
         diff = sum;
     }
-}
-
-template<int Y_LEN, int X_LEN>
-void Sim_2D<Y_LEN, X_LEN>::calculate_sse() {
-    DBL_T df;
-    for (int i = 0; i < N_DIMS; ++i) {
-        Dimension dimension(this, i);
-        dimension.calculate();
-
-        df = dimension.get_diff();
-        diffs.insert({i, df});
-        if (!std::isnan(df)) {
-            infos.insert({i, {df, NAN, NAN}});
-            nnan_idxs.push_back(i);
-        }
-        std::cout << i << " -> " << df << std::endl;  // TODO
-    }
-
-    // TODO output diffs and print mean (?)
-
-    DBL_T    mean = 0;
-    for (auto &[_, info]: infos) { mean += info.diff; }
-    mean /= infos.size();
-    std::cout << "Mean: " << mean << std::endl;
 }
 
 DBL_T calculate_ess(const std::vector<DBL_T> &resamp_prob) {
@@ -125,8 +103,9 @@ void Sim_2D<Y_LEN, X_LEN>::calculate_bw() {
 }
 
 template<int Y_LEN, int X_LEN>
-Parameters Sim_2D<Y_LEN, X_LEN>::simulate() {
-    calculate_sse();
+Parameters Sim_2D<Y_LEN, X_LEN>::simulate(bool multithreading) {
+    reset();
+    calculate_sse(multithreading);
     calculate_bw();
     return abc_bcd();
 }
@@ -166,6 +145,70 @@ Parameters Sim_2D<Y_LEN, X_LEN>::abc_bcd() {
     }
 #undef FT
     return paras_nr_perturbed;
+}
+
+template<int Y_LEN, int X_LEN>
+void Sim_2D<Y_LEN, X_LEN>::calculate_sse(bool multithreading) {
+    mean_diff = 0;
+    if (multithreading) {
+        const unsigned int suggestion = std::thread::hardware_concurrency();
+        if (suggestion <= 1) {
+            std::cerr << "[SYSTEM] MULTITHREADING DISABLED: Hardware concurrency is not well defined." << std::endl;
+            goto single_thread;
+        }
+
+        std::mutex               lock;
+        std::vector<std::thread> threads;
+
+        const int batches    = N_DIMS > suggestion ? suggestion : N_DIMS;
+        const int batch_size = ceil((double) N_DIMS / suggestion);
+
+        std::cout << "batch " << batches << "batch_size " << batch_size << std::endl;
+
+        for (int batch = 0; batch < batches; ++batch) {
+            threads.push_back(std::thread([&lock, this, batch, batch_size]() {
+                for (int d = batch * batch_size; d < (batch + 1) * batch_size && d < this->N_DIMS; d++) {
+                    Dimension dimension(this, d);
+                    dimension.calculate();
+                    DBL_T df = dimension.get_diff();
+                    std::cout << d << " -> " << df << std::endl;  // TODO
+
+                    lock.lock();
+                    diffs.insert({d, df});
+                    if (!std::isnan(df)) {
+                        infos.insert({d, {df, NAN, NAN}});
+                        nnan_idxs.push_back(d);
+                        mean_diff += df;
+                    }
+                    lock.unlock();
+                }
+            }));
+        }
+
+        std::cout << "[SYSTEM] MULTITHREADING ENABLED." << std::endl;
+        for (std::thread &thread: threads) {
+            thread.join();
+        }
+    } else {
+        single_thread:
+        DBL_T    df;
+        for (int i = 0; i < N_DIMS; ++i) {
+            Dimension dimension(this, i);
+            dimension.calculate();
+
+            df = dimension.get_diff();
+            diffs.insert({i, df});
+            if (!std::isnan(df)) {
+                infos.insert({i, {df, NAN, NAN}});
+                nnan_idxs.push_back(i);
+                mean_diff += df;
+            }
+            std::cout << i << " -> " << df << std::endl;  // TODO
+        }
+    }
+
+    mean_diff /= infos.size();
+    std::cout << "Mean: " << mean_diff << std::endl;
 }
 
 #endif //CPP_SRC_2D_SIM_ALGO_H
