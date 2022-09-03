@@ -10,9 +10,9 @@ template<int Y_LEN, int X_LEN>
 class Sim_2D {
 private:
     typedef struct {
-        DBL_T diff;                             // excluding NAN value
-        DBL_T wt;                               // wt_obj
-        DBL_T resample;                         // resamp.prob
+        DBL_T diff;                                     // excluding NAN value
+        DBL_T wt;                                       // wt.obj
+        DBL_T resample;                                 // resamp.prob
 
     } Info_T;
 public:
@@ -25,7 +25,7 @@ public:
     const DBL_T time_steps;
     const DBL_T int_time_steps;
     const int   day_time_steps;
-    const DBL_T pde_time_steps;            // Diffusion starts having an impact after a certain amount of time
+    const DBL_T pde_time_steps;                         // Diffusion starts having an impact after a certain amount of time
     const DBL_T mat_size;
     const int   power_len = (int) ceil((POWER_MAX - POWER_MIN) / POWER_STEP);
     int         y_cut_len;
