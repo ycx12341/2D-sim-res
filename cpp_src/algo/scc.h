@@ -36,9 +36,9 @@ public:
     std::unordered_map<unsigned, DBL_T>  diffs;         // <idx, diff>
     std::unordered_map<unsigned, Info_T> infos;         // <idx, { non-NAN diff, ess, ... } >
     std::unordered_map<DBL_T, DBL_T>     ess_map;       // <power, ess>
-    DBL_T ess_obj   = NAN;
-    DBL_T bw_obj    = NAN;
-    DBL_T mean_diff = NAN;
+    DBL_T ess_obj  = NAN;
+    DBL_T bw_obj   = NAN;
+    DBL_T sum_diff = NAN;
 
     Sim_2D(const unsigned int seed,
            const int n_dims,
@@ -81,9 +81,9 @@ public:
         infos.clear();
         nnan_idxs.clear();
         ess_map.clear();
-        ess_obj   = NAN;
-        bw_obj    = NAN;
-        mean_diff = NAN;
+        ess_obj  = NAN;
+        bw_obj   = NAN;
+        sum_diff = NAN;
     }
 
 private:

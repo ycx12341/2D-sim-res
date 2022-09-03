@@ -6,6 +6,7 @@
 #include <vector>
 #include <thread>
 #include <mutex>
+#include <chrono>
 
 #include "scc.h"
 #include "../ref_den/t3_ref_den.h"
@@ -147,9 +148,41 @@ Parameters Sim_2D<Y_LEN, X_LEN>::abc_bcd() {
     return paras_nr_perturbed;
 }
 
+#ifdef CONSOLE_REPORT
+#define PROGRESS_BAR_LEN    30
+
+static unsigned FINISHED_TASK = 0;
+static auto     TASK_START    = std::chrono::system_clock::now();
+static auto     TASK_END      = std::chrono::system_clock::now();
+
+template<int Y_LEN, int X_LEN>
+void progress_report(const Sim_2D<Y_LEN, X_LEN> *simulation) {
+    FINISHED_TASK++;
+    if (FINISHED_TASK == 0) { TASK_START = std::chrono::system_clock::now(); }
+    if (FINISHED_TASK % (simulation->N_DIMS / PROGRESS_BAR_LEN) == 0) { std::cout << "-"; }
+    if (FINISHED_TASK == simulation->N_DIMS) {
+        TASK_END = std::chrono::system_clock::now();
+        std::cout << std::endl
+                  << "Estimated spending time: "
+                  << (std::chrono::duration_cast<std::chrono::milliseconds>(TASK_END - TASK_START)).count()
+                  << "ms" << std::endl
+                  << "Valid results:           " << simulation->infos.size() << std::endl
+                  << "Mean Square Differences: " << simulation->sum_diff / simulation->infos.size()
+                  << std::endl << std::endl;
+        FINISHED_TASK = 0;
+    }
+}
+
+#else
+
+void progress_report() {
+};
+
+#endif
+
 template<int Y_LEN, int X_LEN>
 void Sim_2D<Y_LEN, X_LEN>::calculate_sse(bool multithreading) {
-    mean_diff = 0;
+    sum_diff = 0;
     if (multithreading) {
         const unsigned int suggestion = std::thread::hardware_concurrency();
         if (suggestion <= 1) {
@@ -163,29 +196,29 @@ void Sim_2D<Y_LEN, X_LEN>::calculate_sse(bool multithreading) {
         const int batches    = N_DIMS > suggestion ? suggestion : N_DIMS;
         const int batch_size = ceil((double) N_DIMS / suggestion);
 
-        std::cout << "batch " << batches << "batch_size " << batch_size << std::endl;
-
         for (int batch = 0; batch < batches; ++batch) {
             threads.push_back(std::thread([&lock, this, batch, batch_size]() {
                 for (int d = batch * batch_size; d < (batch + 1) * batch_size && d < this->N_DIMS; d++) {
                     Dimension dimension(this, d);
                     dimension.calculate();
                     DBL_T df = dimension.get_diff();
-                    std::cout << d << " -> " << df << std::endl;  // TODO
 
                     lock.lock();
                     diffs.insert({d, df});
                     if (!std::isnan(df)) {
                         infos.insert({d, {df, NAN, NAN}});
                         nnan_idxs.push_back(d);
-                        mean_diff += df;
+                        sum_diff += df;
                     }
                     lock.unlock();
+
+                    progress_report(this);
                 }
             }));
         }
 
-        std::cout << "[SYSTEM] MULTITHREADING ENABLED." << std::endl;
+        std::cout << "[SYSTEM] MULTITHREADING ENABLED" << std::endl;
+        std::cout << "[SYSTEM] TASK REGISTERED: " << batches << " batches in queue" << std::endl;
         for (std::thread &thread: threads) {
             thread.join();
         }
@@ -201,14 +234,12 @@ void Sim_2D<Y_LEN, X_LEN>::calculate_sse(bool multithreading) {
             if (!std::isnan(df)) {
                 infos.insert({i, {df, NAN, NAN}});
                 nnan_idxs.push_back(i);
-                mean_diff += df;
+                sum_diff += df;
             }
-            std::cout << i << " -> " << df << std::endl;  // TODO
+
+            progress_report(this);
         }
     }
-
-    mean_diff /= infos.size();
-    std::cout << "Mean: " << mean_diff << std::endl;
 }
 
 #endif //CPP_SRC_2D_SIM_ALGO_H
