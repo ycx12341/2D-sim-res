@@ -3,9 +3,11 @@
 
 #define DBL_T                   double
 
+#define MULTI_THREADING         true
 #define DEFAULT_N_DIMS          50
-#define SEED                    123456          // use system timestamp as see by setting to 0
+#define SEED                    0               // use system timestamp as see by setting to 0
 #define USE_PRELOAD_REF                         // using preloaded T3_REF_DEN csv data
+#define CONSOLE_REPORT                          // enable console report
 
 /* Initial Parameters */
 #define DN_MIN                  0.000069L
