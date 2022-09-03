@@ -45,8 +45,8 @@
 #define ESS_TARGET              722
 
 #define ABC_BCD_PAR_NUM         9
-#define ABC_BCD_PAR_LB          { 0.000069, 0.005, 0.0008,  7, 0.0001, 0.07, 1, 0.01, 0.2 }
-#define ABC_BCD_PAR_UB          { 0.02    , 0.26 , 0.08  , 18, 0.033 , 0.18, 5, 0.1 , 1   }
+#define ABC_BCD_PAR_LB          { DN_MIN, GAMMA_MIN, RN_MIN, ETA_MIN, DM_MIN, ALPHA_MIN, INIT_CELLS_COLS_MIN, PROB_DEATH_MIN, PROB_PROF_MIN }
+#define ABC_BCD_PAR_UB          { DN_MAX, GAMMA_MAX, RN_MAX, ETA_MAX, DM_MAX, ALPHA_MAX, INIT_CELLS_COLS_MAX, PROB_DEATH_MAX, PROB_PROF_MAX }
 #define ABC_BCD_H               sqrt(1 - pow(0.05, 2))
 
 #endif //SIM_2D_CPP_CONFIG_H
