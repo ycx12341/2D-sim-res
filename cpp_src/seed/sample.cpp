@@ -157,7 +157,7 @@ std::vector<int> sample_indices(
 
     for (const DBL_T p: prob) {
         prob_cpy[i] = p;
-        perm[i]     = i + 1;
+        perm[i]     = i;
         i++;
     }
 

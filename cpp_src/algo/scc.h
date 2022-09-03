@@ -39,9 +39,6 @@ public:
     DBL_T ess_obj = NAN;
     DBL_T bw_obj  = NAN;
 
-    const DBL_T ABC_BCD_LB[ABC_BCD_PAR_NUM] = ABC_BCD_PAR_LB;
-    const DBL_T ABC_BCD_UB[ABC_BCD_PAR_NUM] = ABC_BCD_PAR_UB;
-
     Sim_2D(const unsigned int seed,
            const int n_dims,
            DBL_T h,
@@ -67,24 +64,23 @@ public:
             pde_time_steps(pde_time_steps),
             mat_size(mat_size) {
         set_seed(seed);
-        pars = new Parameters(DEFAULT_N_DIMS);
-        pars->init();
         y_cut_len = (int) ceil((double) ((space_length_y - 1.0) / mat_size));
         x_cut_len = (int) ceil((double) ((space_length_x - 1.0) / mat_size));
+        pars      = new Parameters(DEFAULT_N_DIMS);
     }
 
     ~Sim_2D() {
         pars->~Parameters();
     }
 
-    void simulate();
-
-    Parameters abc_bcd();
+    Parameters simulate();
 
 private:
     void calculate_sse();
 
     void calculate_bw();
+
+    Parameters abc_bcd();
 
     class Dimension {
     private:
@@ -165,7 +161,6 @@ public:
     static auto SCC(const int n_dims, const unsigned int seed) {
         constexpr static const int Y_LEN = SCC_Y_LEN;
         constexpr static const int X_LEN = SCC_X_LEN;
-
         return new Sim_2D<Y_LEN, X_LEN>(
                 seed, n_dims, SCC_H,
                 SCC_SPACE_LENGTH_Y, SCC_SPACE_LENGTH_X,
