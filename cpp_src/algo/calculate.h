@@ -7,6 +7,21 @@
 
 #include "scc.h"
 
+static const DBL_T T3_REF_DEN[12][7] = {
+        {0.26500, 0.00000, 0.00000, 0, 0, 0, 0.00000},
+        {0.35125, 0.00562, 0.00500, 0, 0, 0, 0.00000},
+        {0.46812, 0.00000, 0.00000, 0, 0, 0, 0.00000},
+        {0.48000, 0.00000, 0.00000, 0, 0, 0, 0.00000},
+        {0.47938, 0.00000, 0.00000, 0, 0, 0, 0.00375},
+        {0.48812, 0.00938, 0.00000, 0, 0, 0, 0.00000},
+        {0.51750, 0.00000, 0.00000, 0, 0, 0, 0.00000},
+        {0.38750, 0.00000, 0.00000, 0, 0, 0, 0.00000},
+        {0.41812, 0.00000, 0.00000, 0, 0, 0, 0.00000},
+        {0.44875, 0.00000, 0.00125, 0, 0, 0, 0.00000},
+        {0.31875, 0.00000, 0.00875, 0, 0, 0, 0.00000},
+        {0.44625, 0.00000, 0.00000, 0, 0, 0, 0.00000},
+};
+
 template<int Y_LEN, int X_LEN>
 void Sim_2D<Y_LEN, X_LEN>::Dimension::calculate() {
     generate_pattern();
@@ -15,32 +30,38 @@ void Sim_2D<Y_LEN, X_LEN>::Dimension::calculate() {
         den_mat_out == nullptr && ind_pos_out == nullptr) {
         diff = NAN;
     } else {
-        diff = den_mat_out->sum<DBL_T>();
+        DBL_T    sum = 0;
+        for (int i   = 0; i < parent->y_cut_len; ++i) {
+            for (int j = 0; j < parent->x_cut_len; ++j) {
+                sum += pow((*den_mat_out)(i, j) - T3_REF_DEN[i][j], 2);
+            }
+        }
+        diff         = sum;
     }
 }
 
 template<int Y_LEN, int X_LEN>
 void Sim_2D<Y_LEN, X_LEN>::calculate_sse() {
-    DBL_T    diff;
+    DBL_T diff;
     for (int i = 0; i < N_DIMS; ++i) {
-        std::cout << i << std::endl;    // TODO
-
         Dimension dimension(this, i);
         dimension.calculate();
 
         diff = dimension.get_diff();
         diffs.insert({i, diff});
         if (!std::isnan(diff)) {
-            infos.insert({i, {diff, NAN}});
+            infos.insert({i, {diff, NAN, NAN}});
             nnan_idxs.push_back(i);
         }
+        std::cout << i << " -> " << diff << std::endl;  // TODO
     }
 
     // TODO output diffs and print mean (?)
 
-//    DBL_T                      mean = 0;
-//    for (auto const &[_, d]: diffs_valid) { mean += d; }
-//    mean /= diffs_valid.size();
+    DBL_T    mean = 0;
+    for (auto const &[_, info]: infos) { mean += info.diff; }
+    mean /= infos.size();
+    std::cout << "Mean: " << mean << std::endl;
 }
 
 DBL_T calculate_ess(const std::vector<DBL_T> &resamp_prob) {
@@ -54,6 +75,7 @@ DBL_T calculate_ess(const std::vector<DBL_T> &resamp_prob) {
 
 template<int Y_LEN, int X_LEN>
 void Sim_2D<Y_LEN, X_LEN>::calculate_bw() {
+    assert(!infos.empty());
     DBL_T power[power_len];
     assert(seq_by<DBL_T>(power, POWER_MIN, POWER_MAX, POWER_STEP) == power_len);
 
@@ -87,7 +109,7 @@ void Sim_2D<Y_LEN, X_LEN>::calculate_bw() {
     for (auto const &[p, e]: ess_map) {
         ess_diff = abs(e - ESS_TARGET);
         if (ess_diff < ess_diff_min) {
-            ess_obj      = ess_diff;
+            ess_obj      = e;
             ess_diff_min = ess_diff;
             bw_obj       = p;
         }
@@ -115,10 +137,10 @@ void Sim_2D<Y_LEN, X_LEN>::calculate_bw() {
 }
 
 template<int Y_LEN, int X_LEN>
-void Sim_2D<Y_LEN, X_LEN>::simulate() {
+Parameters Sim_2D<Y_LEN, X_LEN>::simulate() {
     calculate_sse();
     calculate_bw();
-    abc_bcd();
+    return abc_bcd();
 }
 
 template<int Y_LEN, int X_LEN>
@@ -128,19 +150,24 @@ Parameters Sim_2D<Y_LEN, X_LEN>::abc_bcd() {
     std::vector<DBL_T> probs;
     for (const int     idx: nnan_idxs) {
         probs.push_back(infos[idx].resample);
+        assert(!std::isnan(infos[idx].diff));
     }
 
     std::vector<int> resamp_idx = sample_indices(N_DIMS, probs, true);
     assert(resamp_idx.size() == N_DIMS);
 
-    Parameters paras_nr_unperturbed = pars->resample(resamp_idx);
+    Parameters paras_nr_unperturbed = pars->resample(resamp_idx, nnan_idxs);
     Parameters paras_nr_perturbed(N_DIMS);
 
 #define FT Parameters::FEATURE_T
-    const DBL_T ABC_H = ABC_BCD_H;
+    const DBL_T ABC_H                       = ABC_BCD_H;
+    const DBL_T ABC_BCD_LB[ABC_BCD_PAR_NUM] = ABC_BCD_PAR_LB;
+    const DBL_T ABC_BCD_UB[ABC_BCD_PAR_NUM] = ABC_BCD_PAR_UB;
+    // TODO this lowered bound are defined in config.h
+
     FT    i_;
     DBL_T p;
-    for (int    i     = 0; i < Parameters::FEATURES_NUM; ++i) {
+    for (int i = 0; i < Parameters::FEATURES_NUM; ++i) {
         i_ = (FT) i;
         for (int j = 0; j < N_DIMS; ++j) {
             do {
@@ -152,6 +179,7 @@ Parameters Sim_2D<Y_LEN, X_LEN>::abc_bcd() {
             } while (p > ABC_BCD_UB[i] || p < ABC_BCD_LB[i]);
         }
     }
+#undef FT
     return paras_nr_perturbed;
 }
 

@@ -5,6 +5,7 @@
 #include "../seed/seed.h"
 
 #include <iomanip>
+#include <cassert>
 
 class Parameters {
 public:
@@ -68,7 +69,8 @@ public:
            << std::endl;
         for (int j = 0; j < that.N_DIMS; ++j) {
             for (int i = 0; i < FEATURES_NUM; ++i) {
-                os << std::setw(10) << that((FEATURE_T) i, j) << " ";
+                os << std::fixed << std::setw(10) << std::setprecision(5)
+                   << that((FEATURE_T) i, j) << " ";
             }
             os << std::endl;
         }
@@ -88,12 +90,21 @@ public:
         runif_seq(PROB_PROF, N_DIMS, PROB_PROF_MIN, PROB_PROF_MAX);
     }
 
-    Parameters resample(const std::vector<int> &idxes) {
+    void load(Parameters &that) {
+        assert(that.N_DIMS == N_DIMS);
+        for (int i = 0; i < FEATURES_NUM; ++i) {
+            for (int j = 0; j < N_DIMS; ++j) {
+                this->operator()((FEATURE_T) i, j) = that((FEATURE_T) i, j);
+            }
+        }
+    }
+
+    Parameters resample(const std::vector<int> &idxes, const std::vector<int> &nnan_idxs) {
         Parameters p((int) idxes.size());
 
         for (int i = 0; i < FEATURES_NUM; ++i) {
             for (int j = 0, js = (int) idxes.size(); j < js; ++j) {
-                p((FEATURE_T) i, j) = this->operator()((FEATURE_T) i, idxes.at(j));
+                p((FEATURE_T) i, j) = this->operator()((FEATURE_T) i, nnan_idxs.at(idxes.at(j)));
             }
         }
         return p;

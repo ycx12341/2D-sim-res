@@ -24,15 +24,16 @@ void Sim_2D<Y_LEN, X_LEN>::Dimension::cell_proliferate(
         std::vector<int> sample = unif_index(2, (int) zeros.size());
         assert(sample.size() == 2);
 
-        const int sample_a_idx = sample.at(0), sample_b_idx = sample.at(1);
+        const int sample_a_idx = zeros.at(sample.at(0));
+        const int sample_b_idx = zeros.at(sample.at(1));
         assert(sample_a_idx != sample_b_idx);
 
         COORD_T          sample_a = nghr_cord[sample_a_idx];
         COORD_T          sample_b = nghr_cord[sample_b_idx];
 
-        (*ind_pos)(cell_pos[0], cell_pos[1])   = 0;
-        (*ind_pos)(sample_a_idx, sample_b_idx) = 1;
-        (*ind_pos)(sample_a_idx, sample_b_idx) = 1;
+        (*ind_pos)(cell_pos[0], cell_pos[1]) = 0;
+        (*ind_pos)(sample_a[0], sample_a[1]) = 1;
+        (*ind_pos)(sample_b[0], sample_b[1]) = 1;
     }
 }
 
@@ -70,11 +71,12 @@ void Sim_2D<Y_LEN, X_LEN>::Dimension::proliferation(const int PROF_CELLS_NUM, in
                 cell_proliferate<5>({L_, R_, D_, LD, RD}, {_l_pos, _r_pos, _d_pos, ld_pos, rd_pos}, cell_pos);
             }
         } else if (x == Y_LEN - 1) {
-            if (y == 0) {
-                cell_proliferate<3>({U_, RU, R_}, {_u_pos, ru_pos, _r_pos}, cell_pos);
+            if (y == 0) {   // fixme ORDER DOESN"T MATCH
+//                cell_proliferate<3>({U_, RU, R_}, {_u_pos, ru_pos, _r_pos}, cell_pos);
+                cell_proliferate<3>({U_, R_, RU}, {_u_pos, _r_pos, ru_pos}, cell_pos);
             } else if (y == X_LEN - 1) {
                 cell_proliferate<3>({L_, U_, LU}, {_l_pos, _u_pos, lu_pos}, cell_pos);
-            } else {
+            } else {        // fixme ORDER DOESN"T MATCH
                 cell_proliferate<5>({L_, LU, U_, RU, R_}, {_l_pos, lu_pos, _u_pos, ru_pos, _r_pos}, cell_pos);
             }
         } else if (y == 0) {
@@ -110,7 +112,8 @@ bool Sim_2D<Y_LEN, X_LEN>::Dimension::end_of_day(const int time) {
         std::vector<int> mins;
 
         for (int i = 0, mins_size, ind_idx, ind; i < DEAD_CELLS_NUM; ++i) {
-            mins      = vector_which_min<DBL_T>(cell_den);
+            mins = vector_which_min<DBL_T>(cell_den);
+
             mins_size = (int) mins.size();
             ind_idx   = mins_size > 1 ? unif_index(mins_size) : 0;
 
@@ -160,7 +163,6 @@ bool Sim_2D<Y_LEN, X_LEN>::Dimension::end_of_day(const int time) {
             (*ind_pos)(c[0], c[1]) = 1;
         }
     }
-
     return true;
 }
 
@@ -168,7 +170,7 @@ template<int Y_LEN, int X_LEN>
 bool Sim_2D<Y_LEN, X_LEN>::Dimension::solve_pde(const int time) {
     if ((time + 1) > PDE_TIME_STEPS) {
         (*f).iter_range_index(1, 1, Y_LEN - 2, X_LEN - 2, [&](int i, int j) {
-            (*f)(i, j) = (*f)(i, j) * (1.0L - DT * PARS->ETA[IDX] * (*m)(i, j));
+            (*f)(i, j) = (*f)(i, j) * (1.0 - DT * PARS->ETA[IDX] * (*m)(i, j));
         });
 
         MatrixS<DBL_T, Y_LEN, X_LEN> n_cpy(*n);
@@ -439,7 +441,7 @@ void Sim_2D<Y_LEN, X_LEN>::Dimension::density_matrix(const int time) {
         for (int i = 0; i < Y_CUT_LEN; ++i) {
             for (int j = 0; j < X_CUT_LEN; ++j) {
                 int ones = 0;
-                (*ind_pos).iter_range(i, j, MAT_SIZE, MAT_SIZE, [&](DBL_T val) {
+                (*ind_pos).iter_range(y_cut[i], x_cut[j], MAT_SIZE - 1, MAT_SIZE - 1, [&](DBL_T val) {
                     if (val == 1) { ones++; }
                 });
                 (*den_mat_out)(i, j) = ones / (MAT_SIZE * MAT_SIZE);
