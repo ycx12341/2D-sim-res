@@ -22,30 +22,31 @@ void Sim_2D<Y_LEN, X_LEN>::Dimension::calculate() {
                 sum += pow((*den_mat_out)(i, j) - T3_REF_DEN[i][j], 2);
             }
         }
-        diff         = sum;
+
+        diff = sum;
     }
 }
 
 template<int Y_LEN, int X_LEN>
 void Sim_2D<Y_LEN, X_LEN>::calculate_sse() {
-    DBL_T diff;
+    DBL_T df;
     for (int i = 0; i < N_DIMS; ++i) {
         Dimension dimension(this, i);
         dimension.calculate();
 
-        diff = dimension.get_diff();
-        diffs.insert({i, diff});
-        if (!std::isnan(diff)) {
-            infos.insert({i, {diff, NAN, NAN}});
+        df = dimension.get_diff();
+        diffs.insert({i, df});
+        if (!std::isnan(df)) {
+            infos.insert({i, {df, NAN, NAN}});
             nnan_idxs.push_back(i);
         }
-        std::cout << i << " -> " << diff << std::endl;  // TODO
+        std::cout << i << " -> " << df << std::endl;  // TODO
     }
 
     // TODO output diffs and print mean (?)
 
     DBL_T    mean = 0;
-    for (auto const &[_, info]: infos) { mean += info.diff; }
+    for (auto &[_, info]: infos) { mean += info.diff; }
     mean /= infos.size();
     std::cout << "Mean: " << mean << std::endl;
 }
@@ -66,14 +67,15 @@ void Sim_2D<Y_LEN, X_LEN>::calculate_bw() {
     assert(seq_by<DBL_T>(power, POWER_MIN, POWER_MAX, POWER_STEP) == power_len);
 
     std::map<unsigned, DBL_T> wt;
+    DBL_T w_min, w_max, ess;
 
     for (int i = 0; i < power_len; ++i) {
-        for (auto          &[idx, info]: infos) {
+        for (auto &[idx, info]: infos) {
             wt[idx] = pow(info.diff, -power[i]);
         }
 
-        DBL_T w_min = map_values_min<unsigned>(wt);
-        DBL_T w_max = map_values_max<unsigned>(wt);
+        w_min = map_values_min<unsigned>(wt);
+        w_max = map_values_max<unsigned>(wt);
         std::vector<DBL_T> resamp_prob;
         for (auto const &[idx, w]: wt) {
             if (w == w_min) {
@@ -86,7 +88,7 @@ void Sim_2D<Y_LEN, X_LEN>::calculate_bw() {
         }
         assert(resamp_prob.size() == wt.size());
 
-        DBL_T ess = calculate_ess(resamp_prob);
+        ess = calculate_ess(resamp_prob);
         if (!std::isnan(ess)) { ess_map.insert({power[i], ess}); }
     }
     assert(ess_map.size() <= power_len);
