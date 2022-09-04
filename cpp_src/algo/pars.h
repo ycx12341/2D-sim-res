@@ -6,6 +6,8 @@
 
 #include <iomanip>
 #include <cassert>
+#include <iostream>
+#include <fstream>
 
 class Parameters {
 public:
@@ -127,6 +129,32 @@ public:
         var /= N_DIMS - 1;
         return sqrt(var);
     }
+
+#ifdef EXPORT_CSV
+
+    void export_csv(const std::string &fn = CSV_PARS_FNAME) {
+        std::ofstream csv;
+
+        std::time_t       now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+        std::stringstream fn_s;
+        fn_s << std::put_time(std::localtime(&now), fn.c_str());
+
+        csv.open(fn_s.str());
+        std::cout << "[SYSTEM] Exporting Parameters results to " << fn_s.str() << std::endl;
+        csv << "DN,GAMMA,RN,ETA,DM,ALPHA,ICC,PD,PP" << std::endl;
+
+        for (int j = 0; j < N_DIMS; ++j) {
+            for (int i = 0; i < FEATURES_NUM; ++i) {
+                csv << std::fixed << std::setprecision(CSV_DBL_PRECISION)
+                    << this->operator()((FEATURE_T) i, j) << ",";
+            }
+            csv << std::endl;
+        }
+
+        csv.close();
+    }
+
+#endif
 
 private:
     void all_zero() const {
