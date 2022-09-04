@@ -3,19 +3,20 @@
 #include "algo/sim2d.h"
 
 int main() {
-    auto scc = *Sim_2D_Factory::SCC_375(DEFAULT_N_DIMS, SEED);
-    scc.pars->load_csv("Parameters_2022-09-04_19-11-29.csv");
-    Parameters p_r2 = scc.simulate(MULTI_THREADING);
-    p_r2.export_csv();
-
 //    auto scc = *Sim_2D_Factory::SCC_375(DEFAULT_N_DIMS, SEED);
-//    scc.pars->init();
+//    scc.pars->load_csv("Parameters_2022-09-04_19-11-29.csv");
 //    Parameters p_r2 = scc.simulate(MULTI_THREADING);
 //    p_r2.export_csv();
 
-//    auto scc_r2 = *Sim_2D_Factory::SCC(DEFAULT_N_DIMS, SEED);
-//    scc_r2.pars->load(p_r2);
-//    Parameters p_r3 = scc_r2.simulate(MULTI_THREADING);
+    auto scc = *Sim_2D_Factory::SCC_375(DEFAULT_N_DIMS, SEED);
+    scc.pars->init();
+    Parameters p_r2 = scc.simulate(MULTI_THREADING);
+//    p_r2.export_csv();
+//
+    auto scc_r2 = *Sim_2D_Factory::SCC(DEFAULT_N_DIMS, SEED);
+    scc_r2.pars->load(p_r2);
+    Parameters p_r3 = scc_r2.simulate(MULTI_THREADING);
+    scc_r2.export_least_square();
 //
 //    auto scc_r3 = *Sim_2D_Factory::SCC(DEFAULT_N_DIMS, SEED);
 //    scc_r3.pars->load(p_r3);

@@ -10,7 +10,7 @@ template<int Y_LEN, int X_LEN>
 class Sim_2D {
 private:
     typedef struct {
-        DBL_T diff;                                     // excluding NAN value
+        DBL_T least_square;                             // excluding NAN value
         DBL_T wt;                                       // wt.obj
         DBL_T resample;                                 // resamp.prob
 
@@ -32,10 +32,10 @@ public:
     int         x_cut_len;
     Parameters  *pars;
 
-    std::vector<int>                     nnan_idxs;     // IDXes of which has non-NAN diff
-    std::unordered_map<unsigned, DBL_T>  diffs;         // <idx, diff>
-    std::unordered_map<unsigned, Info_T> infos;         // <idx, { non-NAN diff, ess, ... } >
-    std::unordered_map<DBL_T, DBL_T>               ess_map;       // <power, ess>
+    std::vector<int>                     nnan_idxs;     // IDXes of which has non-NAN least_square
+    std::unordered_map<unsigned, DBL_T>  least_square;  // <idx, least_square>
+    std::unordered_map<unsigned, Info_T> infos;         // <idx, { non-NAN least_square, ess, ... } >
+    std::unordered_map<DBL_T, DBL_T>     ess_map;       // <power, ess>
     DBL_T ess_obj  = NAN;
     DBL_T bw_obj   = NAN;
     DBL_T sum_diff = NAN;
@@ -77,7 +77,7 @@ public:
     Parameters simulate(bool multithreading = false);
 
     void reset() {
-        diffs.clear();
+        least_square.clear();
         infos.clear();
         nnan_idxs.clear();
         ess_map.clear();
@@ -85,6 +85,8 @@ public:
         bw_obj   = NAN;
         sum_diff = NAN;
     }
+
+    void export_least_square(const std::string &fn = CSV_DIFF_FNAME);
 
 private:
     void calculate_sse(bool multithreading = false);

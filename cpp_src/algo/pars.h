@@ -186,6 +186,8 @@ public:
         assert(j == N_DIMS);
     }
 
+#undef CSV_TITLE_LINE
+
 #endif
 
 private:
