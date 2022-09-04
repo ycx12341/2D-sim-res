@@ -35,7 +35,7 @@ public:
     std::vector<int>                     nnan_idxs;     // IDXes of which has non-NAN diff
     std::unordered_map<unsigned, DBL_T>  diffs;         // <idx, diff>
     std::unordered_map<unsigned, Info_T> infos;         // <idx, { non-NAN diff, ess, ... } >
-    std::unordered_map<DBL_T, DBL_T>     ess_map;       // <power, ess>
+    std::unordered_map<DBL_T, DBL_T>               ess_map;       // <power, ess>
     DBL_T ess_obj  = NAN;
     DBL_T bw_obj   = NAN;
     DBL_T sum_diff = NAN;
@@ -179,6 +179,19 @@ public:
                 SCC_TIME_STEPS, SCC_INT_TIME_STEPS, SCC_DAY_TIME_STEPS,
                 (DBL_T) round((double) SCC_DAY_TIME_STEPS * (95.0 / 96.0)),
                 SCC_SPACE_LENGTH_Y / 12.0
+        );
+    }
+
+    static auto SCC_375(const int n_dims, const unsigned int seed) {
+        constexpr static const int Y_LEN = SCC_Y_LEN_375;
+        constexpr static const int X_LEN = SCC_X_LEN_375;
+        return new Sim_2D<Y_LEN, X_LEN>(
+                seed, n_dims, SCC_H_375,
+                SCC_SPACE_LENGTH_Y_375, SCC_SPACE_LENGTH_X_375,
+                SCC_T_375, SCC_DT_375,
+                SCC_TIME_STEPS_375, SCC_INT_TIME_STEPS_375, SCC_DAY_TIME_STEPS_375,
+                (DBL_T) round((double) SCC_DAY_TIME_STEPS_375 * (95.0 / 96.0)),
+                SCC_SPACE_LENGTH_Y_375 / 12.0
         );
     }
 };

@@ -11,6 +11,8 @@
 #include "scc.h"
 #include "../ref_den/t3_ref_den.h"
 
+#define MINIMUM_MULTI_THREAD_DIMS   30
+
 template<int Y_LEN, int X_LEN>
 void Sim_2D<Y_LEN, X_LEN>::Dimension::calculate() {
     generate_pattern();
@@ -158,14 +160,15 @@ static auto     TASK_END      = std::chrono::system_clock::now();
 template<int Y_LEN, int X_LEN>
 void progress_report(const Sim_2D<Y_LEN, X_LEN> *simulation) {
     FINISHED_TASK++;
-    if (FINISHED_TASK == 0) { TASK_START = std::chrono::system_clock::now(); }
-    if (FINISHED_TASK % (simulation->N_DIMS / PROGRESS_BAR_LEN) == 0) { std::cout << "-"; }
+    if (FINISHED_TASK == 1) { TASK_START = std::chrono::system_clock::now(); }
+    if (FINISHED_TASK % ((int) round(simulation->N_DIMS / PROGRESS_BAR_LEN)) == 0) { std::cout << "-"; }
     if (FINISHED_TASK == simulation->N_DIMS) {
-        TASK_END = std::chrono::system_clock::now();
+        TASK_END                     = std::chrono::system_clock::now();
+        std::chrono::duration period = TASK_END - TASK_START;
         std::cout << std::endl
                   << "Estimated spending time: "
-                  << (std::chrono::duration_cast<std::chrono::milliseconds>(TASK_END - TASK_START)).count()
-                  << "ms" << std::endl
+                  << (std::chrono::duration_cast<std::chrono::seconds>(period)).count()
+                  << " secs" << std::endl
                   << "Valid results:           " << simulation->infos.size() << std::endl
                   << "Mean Square Differences: " << simulation->sum_diff / simulation->infos.size()
                   << std::endl << std::endl;
@@ -175,8 +178,7 @@ void progress_report(const Sim_2D<Y_LEN, X_LEN> *simulation) {
 
 #else
 
-void progress_report() {
-};
+void progress_report() {};
 
 #endif
 
@@ -185,18 +187,19 @@ void Sim_2D<Y_LEN, X_LEN>::calculate_sse(bool multithreading) {
     sum_diff = 0;
     if (multithreading) {
         const unsigned int suggestion = std::thread::hardware_concurrency();
-        if (suggestion <= 1) {
-            std::cerr << "[SYSTEM] MULTITHREADING DISABLED: Hardware concurrency is not well defined." << std::endl;
+        if (suggestion <= 1 || N_DIMS <= MINIMUM_MULTI_THREAD_DIMS) {
+            std::cerr << "[SYSTEM] MULTITHREADING DISABLED: Hardware concurrency is not well defined or not needed"
+                      << std::endl;
             goto single_thread;
         }
 
         std::mutex               lock;
         std::vector<std::thread> threads;
 
-        const int batches    = N_DIMS > suggestion ? suggestion : N_DIMS;
-        const int batch_size = ceil((double) N_DIMS / suggestion);
+        const int threads_num = N_DIMS > suggestion ? suggestion : N_DIMS;
+        const int batch_size  = ceil((double) N_DIMS / suggestion);
 
-        for (int batch = 0; batch < batches; ++batch) {
+        for (int batch = 0; batch < threads_num; ++batch) {
             threads.push_back(std::thread([&lock, this, batch, batch_size]() {
                 for (int d = batch * batch_size; d < (batch + 1) * batch_size && d < this->N_DIMS; d++) {
                     Dimension dimension(this, d);
@@ -218,7 +221,7 @@ void Sim_2D<Y_LEN, X_LEN>::calculate_sse(bool multithreading) {
         }
 
         std::cout << "[SYSTEM] MULTITHREADING ENABLED" << std::endl;
-        std::cout << "[SYSTEM] TASK REGISTERED: " << batches << " batches in queue" << std::endl;
+        std::cout << "[SYSTEM] TASK REGISTERED: " << threads_num << " threads in use" << std::endl;
         for (std::thread &thread: threads) {
             thread.join();
         }
