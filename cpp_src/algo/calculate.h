@@ -115,7 +115,7 @@ Parameters Sim_2D<Y_LEN, X_LEN>::simulate(bool multithreading) {
 
 template<int Y_LEN, int X_LEN>
 Parameters Sim_2D<Y_LEN, X_LEN>::abc_bcd() {
-    assert(Parameters::FEATURES_NUM == ABC_BCD_PAR_NUM);
+    assert(Parameters::FEATURES_NUM == PARS_NUM);
 
     std::vector<DBL_T> probs;
     for (const int     idx: nnan_idxs) {
@@ -130,9 +130,9 @@ Parameters Sim_2D<Y_LEN, X_LEN>::abc_bcd() {
     Parameters paras_nr_perturbed(N_DIMS);
 
 #define FT(x) (Parameters::FEATURE_T) x
-    const DBL_T H                   = ABC_BCD_H;
-    const DBL_T LB[ABC_BCD_PAR_NUM] = ABC_BCD_PAR_LB;
-    const DBL_T UB[ABC_BCD_PAR_NUM] = ABC_BCD_PAR_UB;
+    const DBL_T H            = ABC_BCD_H;
+    const DBL_T LB[PARS_NUM] = ABC_BCD_PAR_LB;
+    const DBL_T UB[PARS_NUM] = ABC_BCD_PAR_UB;
     DBL_T p;
 
     for (int i = 0; i < Parameters::FEATURES_NUM; ++i) {

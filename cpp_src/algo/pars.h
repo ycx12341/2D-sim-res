@@ -132,6 +132,8 @@ public:
 
 #ifdef EXPORT_CSV
 
+#define CSV_TITLE_LINE "DN,GAMMA,RN,ETA,DM,ALPHA,ICC,PD,PP"
+
     void export_csv(const std::string &fn = CSV_PARS_FNAME) {
         std::ofstream csv;
 
@@ -140,18 +142,48 @@ public:
         fn_s << std::put_time(std::localtime(&now), fn.c_str());
 
         csv.open(fn_s.str());
-        std::cout << "[SYSTEM] Exporting Parameters results to " << fn_s.str() << std::endl;
-        csv << "DN,GAMMA,RN,ETA,DM,ALPHA,ICC,PD,PP" << std::endl;
+        std::cout << "[SYSTEM] Exporting Parameters results to " << fn_s.str()
+                  << " DIMs: " << this->N_DIMS << std::endl;
+        csv << CSV_TITLE_LINE << std::endl;
 
         for (int j = 0; j < N_DIMS; ++j) {
             for (int i = 0; i < FEATURES_NUM; ++i) {
                 csv << std::fixed << std::setprecision(CSV_DBL_PRECISION)
-                    << this->operator()((FEATURE_T) i, j) << ",";
+                    << this->operator()((FEATURE_T) i, j) << CSV_SEPARATOR;
             }
             csv << std::endl;
         }
 
         csv.close();
+    }
+
+    void load_csv(const std::string &fn) {
+        std::cout << "[SYSTEM] Loading Parameters from " << fn
+                  << " DIMs: " << this->N_DIMS << std::endl;
+
+        std::ifstream csv(fn);
+        std::string   line;
+        std::string   value;
+
+        std::getline(csv, line);
+        assert(line == CSV_TITLE_LINE);
+
+        unsigned int i, j = 0;
+        while (std::getline(csv, line)) {
+            assert(j < N_DIMS);
+            i = 0;
+            std::istringstream line_s(line);
+            while (std::getline(line_s, value, CSV_SEPARATOR)) {
+                assert(i < PARS_NUM);
+                this->operator()((FEATURE_T) i, (int) j) = (DBL_T) std::stold(value);
+                i++;
+            }
+            assert(i == PARS_NUM);
+            j++;
+        }
+        csv.close();
+
+        assert(j == N_DIMS);
     }
 
 #endif
