@@ -68,5 +68,6 @@
 #define CSV_SEPARATOR           ','
 #define CSV_DBL_PRECISION       10
 #define CSV_PARS_FNAME          "./Parameters_%Y-%m-%d_%H-%M-%S.csv"
+#define CSV_DIFF_FNAME          "./Differences_%Y-%m-%d_%H-%M-%S.csv"
 
 #endif //SIM_2D_CPP_CONFIG_H

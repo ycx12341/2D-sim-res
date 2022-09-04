@@ -52,7 +52,7 @@ void Sim_2D<Y_LEN, X_LEN>::calculate_bw() {
 
     for (int i = 0; i < power_len; ++i) {
         for (auto &[idx, info]: infos) {
-            wt[idx] = pow(info.diff, -power[i]);
+            wt[idx] = pow(info.least_square, -power[i]);
         }
 
         w_min = map_values_min<unsigned>(wt);
@@ -87,7 +87,7 @@ void Sim_2D<Y_LEN, X_LEN>::calculate_bw() {
 
     DBL_T wt_min = INFINITY, wt_max = (DBL_T) -INFINITY, info_wt;
     for (auto &[_, info]: infos) {
-        info_wt = pow(info.diff, -bw_obj);
+        info_wt = pow(info.least_square, -bw_obj);
         info.wt = info_wt;
         if (info_wt < wt_min) { wt_min = info_wt; }
         if (info_wt > wt_max) { wt_max = info_wt; }
@@ -120,7 +120,7 @@ Parameters Sim_2D<Y_LEN, X_LEN>::abc_bcd() {
     std::vector<DBL_T> probs;
     for (const int     idx: nnan_idxs) {
         probs.push_back(infos[idx].resample);
-        assert(!std::isnan(infos[idx].diff));
+        assert(!std::isnan(infos[idx].least_square));
     }
 
     std::vector<int> resamp_idx = sample_indices(N_DIMS, probs, true);
@@ -207,7 +207,7 @@ void Sim_2D<Y_LEN, X_LEN>::calculate_sse(bool multithreading) {
                     DBL_T df = dimension.get_diff();
 
                     lock.lock();
-                    diffs.insert({d, df});
+                    least_square.insert({d, df});
                     if (!std::isnan(df)) {
                         infos.insert({d, {df, NAN, NAN}});
                         nnan_idxs.push_back(d);
@@ -233,7 +233,7 @@ void Sim_2D<Y_LEN, X_LEN>::calculate_sse(bool multithreading) {
             dimension.calculate();
 
             df = dimension.get_diff();
-            diffs.insert({i, df});
+            least_square.insert({i, df});
             if (!std::isnan(df)) {
                 infos.insert({i, {df, NAN, NAN}});
                 nnan_idxs.push_back(i);
@@ -244,5 +244,31 @@ void Sim_2D<Y_LEN, X_LEN>::calculate_sse(bool multithreading) {
         }
     }
 }
+
+#ifdef EXPORT_CSV
+
+#define CSV_TITLE_LINE "Index,LeastSquare"
+
+template<int Y_LEN, int X_LEN>
+void Sim_2D<Y_LEN, X_LEN>::export_least_square(const std::string &fn) {
+    std::ofstream csv;
+
+    std::time_t       now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+    std::stringstream fn_s;
+    fn_s << std::put_time(std::localtime(&now), fn.c_str());
+
+    csv.open(fn_s.str());
+    std::cout << "[SYSTEM] Exporting Least Square results to " << fn_s.str()
+              << " DIMs: " << this->N_DIMS << std::endl;
+    csv << CSV_TITLE_LINE << std::endl;
+
+    for (auto &[idx, ls]: least_square) {
+        csv << idx << CSV_SEPARATOR << ls << std::endl;
+    }
+
+    csv.close();
+}
+
+#endif
 
 #endif //CPP_SRC_2D_SIM_ALGO_H
