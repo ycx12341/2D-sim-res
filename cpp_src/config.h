@@ -28,6 +28,10 @@
 #define PROB_DEATH_MAX          0.1L
 #define PROB_PROF_MIN           0.2L
 #define PROB_PROF_MAX           1.0L
+#define ABC_BCD_PAR_LB          { DN_MIN, GAMMA_MIN, RN_MIN, ETA_MIN, DM_MIN, ALPHA_MIN, INIT_CELLS_COLS_MIN, PROB_DEATH_MIN, PROB_PROF_MIN }
+#define ABC_BCD_PAR_UB          { DN_MAX, GAMMA_MAX, RN_MAX, ETA_MAX, DM_MAX, ALPHA_MAX, INIT_CELLS_COLS_MAX, PROB_DEATH_MAX, PROB_PROF_MAX }
+#define ABC_BCD_H               sqrt(1 - pow(0.05, 2))
+#define PARS_NUM                9
 
 /* SCC (60 * 35) Settings */
 #define SCC_H                   (1.0 / 59.0)
@@ -59,13 +63,9 @@
 
 #define ESS_TARGET              722
 
-#define ABC_BCD_PAR_NUM         9
-#define ABC_BCD_PAR_LB          { DN_MIN, GAMMA_MIN, RN_MIN, ETA_MIN, DM_MIN, ALPHA_MIN, INIT_CELLS_COLS_MIN, PROB_DEATH_MIN, PROB_PROF_MIN }
-#define ABC_BCD_PAR_UB          { DN_MAX, GAMMA_MAX, RN_MAX, ETA_MAX, DM_MAX, ALPHA_MAX, INIT_CELLS_COLS_MAX, PROB_DEATH_MAX, PROB_PROF_MAX }
-#define ABC_BCD_H               sqrt(1 - pow(0.05, 2))
-
 /* CSV settings */
 #define EXPORT_CSV
+#define CSV_SEPARATOR           ','
 #define CSV_DBL_PRECISION       10
 #define CSV_PARS_FNAME          "./Parameters_%Y-%m-%d_%H-%M-%S.csv"
 
