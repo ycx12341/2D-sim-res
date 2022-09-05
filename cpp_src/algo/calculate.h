@@ -262,12 +262,66 @@ void Sim_2D<Y_LEN, X_LEN>::export_least_square(const std::string &fn) {
               << " DIMs: " << this->N_DIMS << std::endl;
     csv << CSV_TITLE_LINE << std::endl;
 
-    for (auto &[idx, ls]: least_square) {
-        csv << idx << CSV_SEPARATOR << ls << std::endl;
+    for (const auto &[idx, ls]: least_square) {
+        csv << idx << CSV_SEPARATOR
+            << std::fixed << std::setprecision(CSV_DBL_PRECISION)
+            << ls << std::endl;
     }
 
     csv.close();
 }
+
+#undef CSV_TITLE_LINE
+
+#endif
+
+#ifdef EXPORT_CSV
+
+template<int Y_LEN, int X_LEN>
+void Sim_2D<Y_LEN, X_LEN>::export_summary(const std::string &fn) {
+    std::ofstream csv;
+
+    std::time_t       now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+    std::stringstream fn_s;
+    fn_s << std::put_time(std::localtime(&now), fn.c_str());
+
+    csv.open(fn_s.str());
+    std::cout << "[SYSTEM] Exporting Summary to " << fn_s.str()
+              << " DIMs: " << this->N_DIMS << std::endl;
+
+    csv << std::put_time(std::localtime(&now), CSV_TIME_FORMAT)
+        << std::endl << std::endl;
+
+    csv << "non-NAN results" << CSV_SEPARATOR << nnan_idxs.size() << std::endl;
+    csv << "ess.obj" << CSV_SEPARATOR << ess_obj << std::endl;
+    csv << "bw.obj" << CSV_SEPARATOR << bw_obj << std::endl;
+
+    csv << std::endl
+        << "Valid Index" << CSV_SEPARATOR
+        << "Least Square" << CSV_SEPARATOR
+        << "wt.obj" << CSV_SEPARATOR
+        << "resamp.prob.obj" << std::endl;
+    for (const auto &[idx, info]: infos) {
+        csv << idx << CSV_SEPARATOR
+            << std::fixed << std::setprecision(CSV_DBL_PRECISION)
+            << info.least_square << CSV_SEPARATOR
+            << info.wt << CSV_SEPARATOR
+            << info.resample << std::endl;
+    }
+
+    csv << std::endl
+        << "power" << CSV_DBL_PRECISION
+        << "ess" << std::endl;
+    for (const auto &[p, ess]: ess_map) {
+        csv << std::fixed << std::setprecision(CSV_DBL_PRECISION)
+            << p << CSV_SEPARATOR
+            << ess << std::endl;
+    }
+
+    csv.close();
+}
+
+#undef CSV_TITLE_LINE
 
 #endif
 

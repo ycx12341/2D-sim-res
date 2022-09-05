@@ -17,6 +17,7 @@ int main() {
     scc_r2.pars->load(p_r2);
     Parameters p_r3 = scc_r2.simulate(MULTI_THREADING);
     scc_r2.export_least_square();
+    scc_r2.export_summary();
 //
 //    auto scc_r3 = *Sim_2D_Factory::SCC(DEFAULT_N_DIMS, SEED);
 //    scc_r3.pars->load(p_r3);

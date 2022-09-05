@@ -88,6 +88,8 @@ public:
 
     void export_least_square(const std::string &fn = CSV_DIFF_FNAME);
 
+    void export_summary(const std::string &fn = CSV_SMRY_FNAME);
+
 private:
     void calculate_sse(bool multithreading = false);
 
