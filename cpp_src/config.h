@@ -69,5 +69,7 @@
 #define CSV_DBL_PRECISION       10
 #define CSV_PARS_FNAME          "./Parameters_%Y-%m-%d_%H-%M-%S.csv"
 #define CSV_DIFF_FNAME          "./Differences_%Y-%m-%d_%H-%M-%S.csv"
+#define CSV_SMRY_FNAME          "./Summary_%Y-%m-%d_%H-%M-%S.csv"
+#define CSV_TIME_FORMAT         "%Y-%m-%d_%H-%M-%S"
 
 #endif //SIM_2D_CPP_CONFIG_H
