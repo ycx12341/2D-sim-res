@@ -151,7 +151,6 @@ Parameters Sim_2D<Y_LEN, X_LEN>::abc_bcd() {
 }
 
 #ifdef CONSOLE_REPORT
-#define PROGRESS_BAR_LEN    30
 
 static unsigned FINISHED_TASK = 0;
 static auto     TASK_START    = std::chrono::system_clock::now();
@@ -161,7 +160,10 @@ template<int Y_LEN, int X_LEN>
 void progress_report(const Sim_2D<Y_LEN, X_LEN> *simulation) {
     FINISHED_TASK++;
     if (FINISHED_TASK == 1) { TASK_START = std::chrono::system_clock::now(); }
-    if (FINISHED_TASK % ((int) round(simulation->N_DIMS / PROGRESS_BAR_LEN)) == 0) { std::cout << "-"; }
+    if (FINISHED_TASK %
+        (simulation->N_DIMS > MINIMUM_MULTI_THREAD_DIMS ? (int) round(simulation->N_DIMS / MINIMUM_MULTI_THREAD_DIMS) : 1) == 0) {
+        std::cerr << "-";
+    }
     if (FINISHED_TASK == simulation->N_DIMS) {
         TASK_END                     = std::chrono::system_clock::now();
         std::chrono::duration period = TASK_END - TASK_START;
@@ -185,6 +187,11 @@ void progress_report() {};
 template<int Y_LEN, int X_LEN>
 void Sim_2D<Y_LEN, X_LEN>::calculate_sse(bool multithreading) {
     sum_diff = 0;
+
+#ifdef CONSOLE_REPORT
+    FINISHED_TASK = 0;
+#endif
+
     if (multithreading) {
         const unsigned int suggestion = std::thread::hardware_concurrency();
         if (suggestion <= 1 || N_DIMS <= MINIMUM_MULTI_THREAD_DIMS) {
@@ -242,6 +249,15 @@ void Sim_2D<Y_LEN, X_LEN>::calculate_sse(bool multithreading) {
 
             progress_report(this);
         }
+    }
+
+#define NAN_EXIT_CODE (-1)
+
+    if (infos.empty()) {
+        std::cerr << "[SYSTEM] No valid dimension found: Use a different seed or increase the number of dimensions."
+                  << std::endl << "[SYSTEM] Program Terminated."
+                  << std::endl;
+        exit(NAN_EXIT_CODE);
     }
 }
 

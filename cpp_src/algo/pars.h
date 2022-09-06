@@ -11,7 +11,8 @@
 
 class Parameters {
 public:
-    constexpr static const int FEATURES_NUM = 9;
+    constexpr static const DBL_T NaN          = (DBL_T) NAN;
+    constexpr static const int   FEATURES_NUM = 9;
     enum FEATURE_T {
         DN_E, GAMMA_E, RN_E,
         ETA_E, DM_E, ALPHA_E,
@@ -64,6 +65,7 @@ public:
         if (i == INIT_CELLS_COLS_E) { return INIT_CELLS_COLS[j]; }
         if (i == PROB_DEATH_E) { return PROB_DEATH[j]; }
         if (i == PROB_PROF_E) { return PROB_PROF[j]; }
+        return const_cast<double &>(NaN);
     }
 
     friend std::ostream &operator<<(std::ostream &os, Parameters &that) {
