@@ -17,9 +17,9 @@
 #define N               (*n)
 #define IND_POS         (*ind_pos)
 
-template<int Y_LEN, int X_LEN>
+template<unsigned N_DIMS, unsigned Y_LEN, unsigned X_LEN>
 template<int Nbr_Num>
-void Sim_2D<Y_LEN, X_LEN>::Dimension::cell_proliferate(
+void Sim_2D<N_DIMS, Y_LEN, X_LEN>::Dimension::cell_proliferate(
         const std::array<int, Nbr_Num> &nbr_temp,
         const std::array<COORD_T, Nbr_Num> &nghr_cord,
         COORD_T cell_pos
@@ -42,8 +42,8 @@ void Sim_2D<Y_LEN, X_LEN>::Dimension::cell_proliferate(
     }
 }
 
-template<int Y_LEN, int X_LEN>
-void Sim_2D<Y_LEN, X_LEN>::Dimension::proliferation(const int PROF_CELLS_NUM, int *prof_cells) {
+template<unsigned N_DIMS, unsigned Y_LEN, unsigned X_LEN>
+void Sim_2D<N_DIMS, Y_LEN, X_LEN>::Dimension::proliferation(const int PROF_CELLS_NUM, int *prof_cells) {
     for (int i = 0; i < PROF_CELLS_NUM; ++i) {
         COORD_T cell_pos = coord.at(prof_cells[i]);
         const int x      = cell_pos[0];
@@ -111,15 +111,15 @@ void Sim_2D<Y_LEN, X_LEN>::Dimension::proliferation(const int PROF_CELLS_NUM, in
     }
 }
 
-template<int Y_LEN, int X_LEN>
-bool Sim_2D<Y_LEN, X_LEN>::Dimension::end_of_day(const int time) {
+template<unsigned N_DIMS, unsigned Y_LEN, unsigned X_LEN>
+bool Sim_2D<N_DIMS, Y_LEN, X_LEN>::Dimension::end_of_day(const int time) {
     if ((time + 1) % DAY_TIME_STEPS == 0) {
         std::vector<DBL_T> cell_den;
         for (COORD_T       c: coord) {
             cell_den.push_back(N(c[0], c[1]));
         }
 
-        const int        DEAD_CELLS_NUM = (int) round((double) ((DBL_T) coord.size() * PARS->PROB_DEATH[IDX]));
+        const int        DEAD_CELLS_NUM = (int) round((double) ((DBL_T) coord.size() * PARS.PROB_DEATH[IDX]));
         int              dead_cells[DEAD_CELLS_NUM];
         std::vector<int> mins;
 
@@ -142,7 +142,7 @@ bool Sim_2D<Y_LEN, X_LEN>::Dimension::end_of_day(const int time) {
 
         if ((int) cell_den.size() == 0) { return false; }
 
-        const int        PROF_CELLS_NUM = (int) round((double) ((DBL_T) coord.size() * PARS->PROB_PROF[IDX]));
+        const int        PROF_CELLS_NUM = (int) round((double) ((DBL_T) coord.size() * PARS.PROB_PROF[IDX]));
         int              prof_cells[PROF_CELLS_NUM];
         std::vector<int> maxes;
 
@@ -170,8 +170,8 @@ bool Sim_2D<Y_LEN, X_LEN>::Dimension::end_of_day(const int time) {
     return true;
 }
 
-template<int Y_LEN, int X_LEN>
-bool Sim_2D<Y_LEN, X_LEN>::Dimension::solve_pde(const int time) {
+template<unsigned N_DIMS, unsigned Y_LEN, unsigned X_LEN>
+bool Sim_2D<N_DIMS, Y_LEN, X_LEN>::Dimension::solve_pde(const int time) {
 #define MARGIN_X_IDX    1
 #define MARGIN_Y_IDX    1
 #define MARGIN_X_LEN    (X_LEN - 2)
@@ -184,15 +184,15 @@ bool Sim_2D<Y_LEN, X_LEN>::Dimension::solve_pde(const int time) {
 #define NF1(i, j)       (F((i), (j) + 1) - F((i), (j) - 1))
 #define NF2(i, j)       (F((i) - 1, (j)) - F((i) + 1, (j)))
 
-    const DBL_T F1 = DT * PARS->ETA[IDX];
-    const DBL_T N0 = DT * PARS->DN[IDX] / (H * H);
+    const DBL_T F1 = DT * PARS.ETA[IDX];
+    const DBL_T N0 = DT * PARS.DN[IDX] / (H * H);
     const DBL_T N1 = 1.0 - (4.0 * N0);
-    const DBL_T N2 = DT * PARS->RN[IDX];
-    const DBL_T N3 = DT * PARS->GAMMA[IDX] / (H * H);
-    const DBL_T N4 = DT * PARS->GAMMA[IDX] / (4.0 * (H * H));
-    const DBL_T M1 = 1.0 - (4.0 * DT * PARS->DM[IDX] / (H * H));
-    const DBL_T M2 = DT * PARS->ALPHA[IDX];
-    const DBL_T M3 = DT * PARS->DM[IDX] / (H * H);
+    const DBL_T N2 = DT * PARS.RN[IDX];
+    const DBL_T N3 = DT * PARS.GAMMA[IDX] / (H * H);
+    const DBL_T N4 = DT * PARS.GAMMA[IDX] / (4.0 * (H * H));
+    const DBL_T M1 = 1.0 - (4.0 * DT * PARS.DM[IDX] / (H * H));
+    const DBL_T M2 = DT * PARS.ALPHA[IDX];
+    const DBL_T M3 = DT * PARS.DM[IDX] / (H * H);
 
     ITER_RANGE(F, { F(i, j) *= 1.0 - F1 * M(i, j); });
 
@@ -255,18 +255,18 @@ bool Sim_2D<Y_LEN, X_LEN>::Dimension::solve_pde(const int time) {
 #undef ITER_RANGE
 }
 
-template<int Y_LEN, int X_LEN>
-void Sim_2D<Y_LEN, X_LEN>::Dimension::movement(const int time) {
+template<unsigned N_DIMS, unsigned Y_LEN, unsigned X_LEN>
+void Sim_2D<N_DIMS, Y_LEN, X_LEN>::Dimension::movement(const int time) {
     if ((time + 1) > round(PDE_TIME_STEPS)) {
         int x, y;
         DBL_T f_ip1j, f_im1j, f_ijp1, f_ijm1;
         DBL_T p0, p1, p2, p3, p4;
 
-        const DBL_T PF1 = DT * PARS->DN[IDX] / (H * H);
-        const DBL_T PF2 = DT * PARS->GAMMA[IDX] / (4.0 * (H * H));
-        const DBL_T PF3 = 4.0 * DT * PARS->DN[IDX] / (H * H);
-        const DBL_T PF4 = PARS->RN[IDX] * DT;
-        const DBL_T PF5 = DT * PARS->GAMMA[IDX] / (H * H);
+        const DBL_T PF1 = DT * PARS.DN[IDX] / (H * H);
+        const DBL_T PF2 = DT * PARS.GAMMA[IDX] / (4.0 * (H * H));
+        const DBL_T PF3 = 4.0 * DT * PARS.DN[IDX] / (H * H);
+        const DBL_T PF4 = PARS.RN[IDX] * DT;
+        const DBL_T PF5 = DT * PARS.GAMMA[IDX] / (H * H);
 
         for (COORD_T &crd: coord) {
             x = crd[0], y = crd[1];
@@ -344,11 +344,11 @@ void Sim_2D<Y_LEN, X_LEN>::Dimension::movement(const int time) {
     }
 }
 
-template<int Y_LEN, int X_LEN>
-void Sim_2D<Y_LEN, X_LEN>::Dimension::density_matrix(const int time) {
+template<unsigned N_DIMS, unsigned Y_LEN, unsigned X_LEN>
+void Sim_2D<N_DIMS, Y_LEN, X_LEN>::Dimension::density_matrix(const int time) {
     if ((time + 1) == (DAY_TIME_STEPS * 3)) {
         den_mat_out = new MatrixD<DBL_T>(Y_CUT_LEN, X_CUT_LEN, 0);
-        ind_pos_out = new MatrixS<DBL_T, Y_LEN, X_LEN>(*ind_pos);
+        ind_pos_out = new MatrixS<DBL_T, Y_LEN, X_LEN>(IND_POS);
 
         for (int i = 0; i < Y_CUT_LEN; ++i) {
             for (int j = 0; j < X_CUT_LEN; ++j) {
@@ -366,8 +366,8 @@ void Sim_2D<Y_LEN, X_LEN>::Dimension::density_matrix(const int time) {
     }
 }
 
-template<int Y_LEN, int X_LEN>
-void Sim_2D<Y_LEN, X_LEN>::Dimension::pde() {
+template<unsigned N_DIMS, unsigned Y_LEN, unsigned X_LEN>
+void Sim_2D<N_DIMS, Y_LEN, X_LEN>::Dimension::pde() {
     for (int time = 0; time < TIME_STEPS; ++time) {
         if (!end_of_day(time)) { return; }
         if (!solve_pde(time)) { return; }

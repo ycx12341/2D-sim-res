@@ -9,7 +9,7 @@ DBL_T unif_rand();
 
 void set_seed(unsigned int seed);
 
-void runif_seq(DBL_T *seq, int len, DBL_T min, DBL_T max);
+void runif_seq(unsigned len, DBL_T *seq, DBL_T min, DBL_T max);
 
 int unif_index(int dn);
 

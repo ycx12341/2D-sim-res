@@ -7,17 +7,28 @@ int main() {
 //    scc.pars->load_csv("Parameters_2022-09-04_19-11-29.csv");
 //    Parameters p_r2 = scc.simulate(MULTI_THREADING);
 //    p_r2.export_csv();
+    constexpr static const unsigned X = SCC_X_LEN;
+    constexpr static const unsigned Y = SCC_Y_LEN;
+    constexpr static const unsigned N = DEFAULT_N_DIMS;
 
-    auto scc = *Sim_2D_Factory::SCC_375(DEFAULT_N_DIMS, SEED);
-    scc.pars->init();
-    Parameters p_r2 = scc.simulate(MULTI_THREADING);
+    auto scc = *Sim_2D_Factory<N, Y, X>::SCC_375(SEED);
+    scc.pars.init();
+    Parameters<N> p_r2 = scc.simulate(MULTI_THREADING);
 //    p_r2.export_csv();
 //
-    auto scc_r2 = *Sim_2D_Factory::SCC(DEFAULT_N_DIMS, SEED);
-    scc_r2.pars->load(p_r2);
-    Parameters p_r3 = scc_r2.simulate(MULTI_THREADING);
-    scc_r2.export_least_square();
-    scc_r2.export_summary();
+    auto scc2 = *Sim_2D_Factory<N, Y, X>::SCC_375(SEED);
+    scc2.pars = p_r2;
+    Parameters<N> p_r3 = scc2.simulate(MULTI_THREADING);
+
+    auto scc3 = *Sim_2D_Factory<N, Y, X>::SCC_375(SEED);
+    scc3.pars = p_r3;
+    Parameters<N> p_r4 = scc3.simulate(MULTI_THREADING);
+
+
+//    scc_r2.pars->load(p_r2);
+//    Parameters p_r3 = scc_r2.simulate(MULTI_THREADING);
+//    scc_r2.export_least_square();
+//    scc_r2.export_summary();
 //
 //    auto scc_r3 = *Sim_2D_Factory::SCC(DEFAULT_N_DIMS, SEED);
 //    scc_r3.pars->load(p_r3);

@@ -18,8 +18,8 @@
 #define N           (*n)
 #define IND_POS     (*ind_pos)
 
-template<int Y_LEN, int X_LEN>
-void Sim_2D<Y_LEN, X_LEN>::Dimension::initial_condition() {
+template<unsigned N_DIMS, unsigned Y_LEN, unsigned X_LEN>
+void Sim_2D<N_DIMS, Y_LEN, X_LEN>::Dimension::initial_condition() {
     DBL_T x[X_LEN], y[Y_LEN];
     assert(seq_length_out<DBL_T>(x, 0, H * (SLX - 1), X_LEN) == X_LEN);
     assert(seq_length_out<DBL_T>(y, 0, 1, Y_LEN) == Y_LEN);
@@ -41,8 +41,8 @@ void Sim_2D<Y_LEN, X_LEN>::Dimension::initial_condition() {
     f->iter_index([&](int i, int j) { F(i, j) = 1 - 0.5 * N(i, j); });
     m->iter_index([&](int i, int j) { M(i, j) = 0.5 * N(i, j); });
 
-    MatrixS<DBL_T, Y_LEN, X_LEN> n_sort(*n);
-    const int                    N_CELLS = (int) round((double) SLY * (double) PARS->INIT_CELLS_COLS[IDX]);
+    MatrixS<DBL_T, Y_LEN, X_LEN> n_sort(N);
+    const int                    N_CELLS = (int) round((double) SLY * (double) PARS.INIT_CELLS_COLS[IDX]);
     std::vector<COORD_T >        maxes;
 
     for (int ind_idx, maxes_size; coord.size() < N_CELLS;) {
@@ -69,8 +69,8 @@ void Sim_2D<Y_LEN, X_LEN>::Dimension::initial_condition() {
     assert(seq_by<DBL_T>(x_cut, 1, SLX, MAT_SIZE) == X_CUT_LEN);
 }
 
-template<int Y_LEN, int X_LEN>
-void Sim_2D<Y_LEN, X_LEN>::Dimension::generate_pattern() {
+template<unsigned N_DIMS, unsigned Y_LEN, unsigned X_LEN>
+void Sim_2D<N_DIMS, Y_LEN, X_LEN>::Dimension::generate_pattern() {
     initial_condition();
     pde();
 }
