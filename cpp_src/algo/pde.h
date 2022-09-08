@@ -119,7 +119,7 @@ bool Sim_2D<N_DIMS, Y_LEN, X_LEN>::Dimension::end_of_day(const int time) {
             cell_den.push_back(N(c[0], c[1]));
         }
 
-        const int        DEAD_CELLS_NUM = (int) round((double) ((DBL_T) coord.size() * PARS.PROB_DEATH[IDX]));
+        const int        DEAD_CELLS_NUM = (int) round((double) ((DBL_T) coord.size() * PARS->PROB_DEATH[IDX]));
         int              dead_cells[DEAD_CELLS_NUM];
         std::vector<int> mins;
 
@@ -142,7 +142,7 @@ bool Sim_2D<N_DIMS, Y_LEN, X_LEN>::Dimension::end_of_day(const int time) {
 
         if ((int) cell_den.size() == 0) { return false; }
 
-        const int        PROF_CELLS_NUM = (int) round((double) ((DBL_T) coord.size() * PARS.PROB_PROF[IDX]));
+        const int        PROF_CELLS_NUM = (int) round((double) ((DBL_T) coord.size() * PARS->PROB_PROF[IDX]));
         int              prof_cells[PROF_CELLS_NUM];
         std::vector<int> maxes;
 
@@ -184,15 +184,15 @@ bool Sim_2D<N_DIMS, Y_LEN, X_LEN>::Dimension::solve_pde(const int time) {
 #define NF1(i, j)       (F((i), (j) + 1) - F((i), (j) - 1))
 #define NF2(i, j)       (F((i) - 1, (j)) - F((i) + 1, (j)))
 
-    const DBL_T F1 = DT * PARS.ETA[IDX];
-    const DBL_T N0 = DT * PARS.DN[IDX] / (H * H);
+    const DBL_T F1 = DT * PARS->ETA[IDX];
+    const DBL_T N0 = DT * PARS->DN[IDX] / (H * H);
     const DBL_T N1 = 1.0 - (4.0 * N0);
-    const DBL_T N2 = DT * PARS.RN[IDX];
-    const DBL_T N3 = DT * PARS.GAMMA[IDX] / (H * H);
-    const DBL_T N4 = DT * PARS.GAMMA[IDX] / (4.0 * (H * H));
-    const DBL_T M1 = 1.0 - (4.0 * DT * PARS.DM[IDX] / (H * H));
-    const DBL_T M2 = DT * PARS.ALPHA[IDX];
-    const DBL_T M3 = DT * PARS.DM[IDX] / (H * H);
+    const DBL_T N2 = DT * PARS->RN[IDX];
+    const DBL_T N3 = DT * PARS->GAMMA[IDX] / (H * H);
+    const DBL_T N4 = DT * PARS->GAMMA[IDX] / (4.0 * (H * H));
+    const DBL_T M1 = 1.0 - (4.0 * DT * PARS->DM[IDX] / (H * H));
+    const DBL_T M2 = DT * PARS->ALPHA[IDX];
+    const DBL_T M3 = DT * PARS->DM[IDX] / (H * H);
 
     ITER_RANGE(F, { F(i, j) *= 1.0 - F1 * M(i, j); });
 
@@ -262,11 +262,11 @@ void Sim_2D<N_DIMS, Y_LEN, X_LEN>::Dimension::movement(const int time) {
         DBL_T f_ip1j, f_im1j, f_ijp1, f_ijm1;
         DBL_T p0, p1, p2, p3, p4;
 
-        const DBL_T PF1 = DT * PARS.DN[IDX] / (H * H);
-        const DBL_T PF2 = DT * PARS.GAMMA[IDX] / (4.0 * (H * H));
-        const DBL_T PF3 = 4.0 * DT * PARS.DN[IDX] / (H * H);
-        const DBL_T PF4 = PARS.RN[IDX] * DT;
-        const DBL_T PF5 = DT * PARS.GAMMA[IDX] / (H * H);
+        const DBL_T PF1 = DT * PARS->DN[IDX] / (H * H);
+        const DBL_T PF2 = DT * PARS->GAMMA[IDX] / (4.0 * (H * H));
+        const DBL_T PF3 = 4.0 * DT * PARS->DN[IDX] / (H * H);
+        const DBL_T PF4 = PARS->RN[IDX] * DT;
+        const DBL_T PF5 = DT * PARS->GAMMA[IDX] / (H * H);
 
         for (COORD_T &crd: coord) {
             x = crd[0], y = crd[1];

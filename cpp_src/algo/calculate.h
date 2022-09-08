@@ -115,7 +115,7 @@ void Sim_2D<N_DIMS, Y_LEN, X_LEN>::calculate_bw() {
 }
 
 template<unsigned N_DIMS, unsigned Y_LEN, unsigned X_LEN>
-Parameters<N_DIMS> Sim_2D<N_DIMS, Y_LEN, X_LEN>::simulate(bool multithreading) {
+Parameters<N_DIMS> *Sim_2D<N_DIMS, Y_LEN, X_LEN>::simulate(bool multithreading) {
     reset();
     calculate_sse(multithreading);
     calculate_bw();
@@ -123,7 +123,7 @@ Parameters<N_DIMS> Sim_2D<N_DIMS, Y_LEN, X_LEN>::simulate(bool multithreading) {
 }
 
 template<unsigned N_DIMS, unsigned Y_LEN, unsigned X_LEN>
-Parameters<N_DIMS> Sim_2D<N_DIMS, Y_LEN, X_LEN>::abc_bcd() {
+Parameters<N_DIMS> *Sim_2D<N_DIMS, Y_LEN, X_LEN>::abc_bcd() {
     assert(Parameters<N_DIMS>::FEATURES_NUM == PARS_NUM);
 
     std::vector<DBL_T> probs;
@@ -135,8 +135,8 @@ Parameters<N_DIMS> Sim_2D<N_DIMS, Y_LEN, X_LEN>::abc_bcd() {
     std::vector<int> resamp_idx = sample_indices(N_DIMS, probs, true);
     assert(resamp_idx.size() == N_DIMS);
 
-    Parameters<N_DIMS> paras_nr_unperturbed = pars.resample(resamp_idx, nnan_idxs);
-    Parameters<N_DIMS> paras_nr_perturbed;
+    Parameters<N_DIMS> *paras_nr_unperturbed = pars->resample(resamp_idx, nnan_idxs);
+    auto               *paras_nr_perturbed   = new Parameters<N_DIMS>();
 
 #define FT(x) (FEATURE_T) (x)
     const DBL_T H            = ABC_BCD_H;
@@ -147,15 +147,16 @@ Parameters<N_DIMS> Sim_2D<N_DIMS, Y_LEN, X_LEN>::abc_bcd() {
     for (int i = 0; i < Parameters<N_DIMS>::FEATURES_NUM; ++i) {
         for (int j = 0; j < N_DIMS; ++j) {
             do {
-                paras_nr_perturbed(FT(i), j) = rnorm(
-                        H * paras_nr_unperturbed(FT(i), j) + (1 - H) * paras_nr_unperturbed.feature_mean(FT(i)),
-                        0.05 * paras_nr_unperturbed.feature_sd(FT(i))
+                (*paras_nr_perturbed)(FT(i), j) = rnorm(
+                        H * (*paras_nr_unperturbed)(FT(i), j) + (1 - H) * (*paras_nr_unperturbed).feature_mean(FT(i)),
+                        0.05 * (*paras_nr_unperturbed).feature_sd(FT(i))
                 );
-                p = paras_nr_perturbed(FT(i), j);
+                p = (*paras_nr_perturbed)(FT(i), j);
             } while (p > UB[i] || p < LB[i]);
         }
     }
 #undef FT
+    delete paras_nr_unperturbed;
     return paras_nr_perturbed;
 }
 

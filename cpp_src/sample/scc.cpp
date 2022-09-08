@@ -11,17 +11,17 @@ constexpr static const unsigned N = DEFAULT_N_DIMS;
  * Example: TODO
  */
 void scc_simple() {
-    Parameters<N> p;
+    Parameters<N> *p;
     DBL_T         mean_before;
 
     /* Round 1
      *
      */
     auto scc_r1 = *Sim_2D_Factory<N, Y, X>::SCC_375(SEED);
-    scc_r1.pars.init();
+    scc_r1.pars->init();
     p = scc_r1.simulate(MULTI_THREADING);
 
-    p.export_csv();
+    p->export_csv();
     scc_r1.export_least_square();
     scc_r1.export_summary();
 
@@ -34,7 +34,7 @@ void scc_simple() {
         p           = scc.simulate(MULTI_THREADING);
         mean_before = scc.sum_diff / (DBL_T) scc.nnan_idxs.size();
 
-        p.export_csv();
+        p->export_csv();
         scc_r1.export_least_square();
         scc_r1.export_summary();
     }
@@ -47,7 +47,7 @@ void scc_simple() {
         scc.pars = p;
         p = scc.simulate(MULTI_THREADING);
 
-        p.export_csv();
+        p->export_csv();
         scc_r1.export_least_square();
         scc_r1.export_summary();
 
@@ -59,4 +59,5 @@ void scc_simple() {
         }
         mean_before = mean_after;
     }
+    delete p;
 }
