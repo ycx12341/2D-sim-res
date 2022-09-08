@@ -1,5 +1,3 @@
-#include <iostream>
-
 #include "sample/sample.h"
 
 int main() {
