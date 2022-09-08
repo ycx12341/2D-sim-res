@@ -1,8 +1,7 @@
 #include "seed.h"
 
-#include <iostream>
-#include <cassert>
 #include <ctime>
+#include <unistd.h>
 
 static unsigned int i_seed[628];                        /* allow for optimizing compilers to read over bound */
 
