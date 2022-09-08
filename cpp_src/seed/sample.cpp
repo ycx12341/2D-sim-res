@@ -1,6 +1,7 @@
 #include <cmath>
 #include <cstdint>
 #include <cassert>
+#include <climits>
 
 #include "seed.h"
 
