@@ -80,13 +80,13 @@ public:
         runif_seq(N_DIMS, (DBL_T *) PROB_PROF, PROB_PROF_MIN, PROB_PROF_MAX);
     }
 
-    Parameters<N_DIMS> resample(const std::vector<int> &idxes, const std::vector<int> &nnan_idxs) {
+    Parameters<N_DIMS> *resample(const std::vector<int> &idxes, const std::vector<int> &nnan_idxs) {
         assert(idxes.size() == N_DIMS);
-        Parameters<N_DIMS> p;
+        auto *p = new Parameters<N_DIMS>;
 
         for (int i = 0; i < FEATURES_NUM; ++i) {
             for (int j = 0, js = (int) idxes.size(); j < js; ++j) {
-                p((FEATURE_T) i, j) = this->operator()((FEATURE_T) i, nnan_idxs.at(idxes.at(j)));
+                (*p)((FEATURE_T) i, j) = this->operator()((FEATURE_T) i, nnan_idxs.at(idxes.at(j)));
             }
         }
         return p;

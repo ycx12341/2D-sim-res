@@ -42,7 +42,7 @@ void Sim_2D<N_DIMS, Y_LEN, X_LEN>::Dimension::initial_condition() {
     m->iter_index([&](int i, int j) { M(i, j) = 0.5 * N(i, j); });
 
     MatrixS<DBL_T, Y_LEN, X_LEN> n_sort(N);
-    const int                    N_CELLS = (int) round((double) SLY * (double) PARS.INIT_CELLS_COLS[IDX]);
+    const int                    N_CELLS = (int) round((double) SLY * (double) PARS->INIT_CELLS_COLS[IDX]);
     std::vector<COORD_T >        maxes;
 
     for (int ind_idx, maxes_size; coord.size() < N_CELLS;) {

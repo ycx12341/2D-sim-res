@@ -29,7 +29,7 @@ public:
     const int          power_len = (int) ceil((POWER_MAX - POWER_MIN) / POWER_STEP);
     int                y_cut_len;
     int                x_cut_len;
-    Parameters<N_DIMS> pars;
+    Parameters<N_DIMS> *pars;
 
     std::vector<int>                     nnan_idxs;     // IDXes of which has non-NAN least_square
     std::unordered_map<unsigned, DBL_T>  least_square;  // <idx, least_square>
@@ -64,9 +64,14 @@ public:
         set_seed(seed);
         y_cut_len = (int) ceil((double) ((space_length_y - 1.0) / mat_size));
         x_cut_len = (int) ceil((double) ((space_length_x - 1.0) / mat_size));
+        pars      = new Parameters<N_DIMS>();
     }
 
-    Parameters<N_DIMS> simulate(bool multithreading = false);
+    ~Sim_2D() {
+        delete pars;
+    }
+
+    Parameters<N_DIMS> *simulate(bool multithreading = false);
 
     void reset() {
         least_square.clear();
@@ -87,7 +92,7 @@ private:
 
     void calculate_bw();
 
-    Parameters<N_DIMS> abc_bcd();
+    Parameters<N_DIMS> *abc_bcd();
 
     class Dimension {
     private:
