@@ -14,8 +14,8 @@
 #define MINIMUM_MULTI_THREAD_DIMS   30
 #define NAN_EXIT_CODE               (-1)
 
-template<int Y_LEN, int X_LEN>
-void Sim_2D<Y_LEN, X_LEN>::Dimension::calculate() {
+template<unsigned N_DIMS, unsigned Y_LEN, unsigned X_LEN>
+void Sim_2D<N_DIMS, Y_LEN, X_LEN>::Dimension::calculate() {
     generate_pattern();
 
     if (n_out == nullptr || f_out == nullptr || m_out == nullptr ||
@@ -42,8 +42,8 @@ DBL_T calculate_ess(const std::vector<DBL_T> &resamp_prob) {
     return pow(sum, 2) / square_sum;
 }
 
-template<int Y_LEN, int X_LEN>
-void Sim_2D<Y_LEN, X_LEN>::calculate_bw() {
+template<unsigned N_DIMS, unsigned Y_LEN, unsigned X_LEN>
+void Sim_2D<N_DIMS, Y_LEN, X_LEN>::calculate_bw() {
     assert(!infos.empty());
     DBL_T power[power_len];
     assert(seq_by<DBL_T>(power, POWER_MIN, POWER_MAX, POWER_STEP) == power_len);
@@ -114,17 +114,17 @@ void Sim_2D<Y_LEN, X_LEN>::calculate_bw() {
     }
 }
 
-template<int Y_LEN, int X_LEN>
-Parameters Sim_2D<Y_LEN, X_LEN>::simulate(bool multithreading) {
+template<unsigned N_DIMS, unsigned Y_LEN, unsigned X_LEN>
+Parameters<N_DIMS> Sim_2D<N_DIMS, Y_LEN, X_LEN>::simulate(bool multithreading) {
     reset();
     calculate_sse(multithreading);
     calculate_bw();
     return abc_bcd();
 }
 
-template<int Y_LEN, int X_LEN>
-Parameters Sim_2D<Y_LEN, X_LEN>::abc_bcd() {
-    assert(Parameters::FEATURES_NUM == PARS_NUM);
+template<unsigned N_DIMS, unsigned Y_LEN, unsigned X_LEN>
+Parameters<N_DIMS> Sim_2D<N_DIMS, Y_LEN, X_LEN>::abc_bcd() {
+    assert(Parameters<N_DIMS>::FEATURES_NUM == PARS_NUM);
 
     std::vector<DBL_T> probs;
     for (const int     idx: nnan_idxs) {
@@ -135,16 +135,16 @@ Parameters Sim_2D<Y_LEN, X_LEN>::abc_bcd() {
     std::vector<int> resamp_idx = sample_indices(N_DIMS, probs, true);
     assert(resamp_idx.size() == N_DIMS);
 
-    Parameters paras_nr_unperturbed = pars->resample(resamp_idx, nnan_idxs);
-    Parameters paras_nr_perturbed(N_DIMS);
+    Parameters<N_DIMS> paras_nr_unperturbed = pars.resample(resamp_idx, nnan_idxs);
+    Parameters<N_DIMS> paras_nr_perturbed;
 
-#define FT(x) (Parameters::FEATURE_T) x
+#define FT(x) (FEATURE_T) (x)
     const DBL_T H            = ABC_BCD_H;
     const DBL_T LB[PARS_NUM] = ABC_BCD_PAR_LB;
     const DBL_T UB[PARS_NUM] = ABC_BCD_PAR_UB;
     DBL_T p;
 
-    for (int i = 0; i < Parameters::FEATURES_NUM; ++i) {
+    for (int i = 0; i < Parameters<N_DIMS>::FEATURES_NUM; ++i) {
         for (int j = 0; j < N_DIMS; ++j) {
             do {
                 paras_nr_perturbed(FT(i), j) = rnorm(
@@ -165,16 +165,17 @@ static unsigned FINISHED_TASK = 0;
 static auto     TASK_START    = std::chrono::system_clock::now();
 static auto     TASK_END      = std::chrono::system_clock::now();
 
-template<int Y_LEN, int X_LEN>
-void progress_report(const Sim_2D<Y_LEN, X_LEN> *simulation) {
+template<unsigned N_DIMS, unsigned Y_LEN, unsigned X_LEN>
+void progress_report(const Sim_2D<N_DIMS, Y_LEN, X_LEN> *simulation) {
     FINISHED_TASK++;
     if (FINISHED_TASK == 1) { TASK_START = std::chrono::system_clock::now(); }
     if (FINISHED_TASK %
-        (simulation->N_DIMS > MINIMUM_MULTI_THREAD_DIMS ? (int) round(simulation->N_DIMS / MINIMUM_MULTI_THREAD_DIMS)
-                                                        : 1) == 0) {
+        (N_DIMS > MINIMUM_MULTI_THREAD_DIMS
+         ? (int) round((DBL_T) N_DIMS / MINIMUM_MULTI_THREAD_DIMS)
+         : 1) == 0) {
         std::cerr << "-";
     }
-    if (FINISHED_TASK == simulation->N_DIMS) {
+    if (FINISHED_TASK == N_DIMS) {
         TASK_END                     = std::chrono::system_clock::now();
         std::chrono::duration period = TASK_END - TASK_START;
         std::cout << std::endl
@@ -194,8 +195,8 @@ void progress_report() {};
 
 #endif
 
-template<int Y_LEN, int X_LEN>
-void Sim_2D<Y_LEN, X_LEN>::calculate_sse(bool multithreading) {
+template<unsigned N_DIMS, unsigned Y_LEN, unsigned X_LEN>
+void Sim_2D<N_DIMS, Y_LEN, X_LEN>::calculate_sse(bool multithreading) {
     sum_diff = 0;
 
 #ifdef CONSOLE_REPORT
@@ -218,7 +219,7 @@ void Sim_2D<Y_LEN, X_LEN>::calculate_sse(bool multithreading) {
 
         for (int batch = 0; batch < threads_num; ++batch) {
             threads.push_back(std::thread([&lock, this, batch, batch_size]() {
-                for (int d = batch * batch_size; d < (batch + 1) * batch_size && d < this->N_DIMS; d++) {
+                for (int d = batch * batch_size; d < (batch + 1) * batch_size && d < N_DIMS; d++) {
                     Dimension dimension(this, d);
                     dimension.calculate();
                     DBL_T df = dimension.get_diff();
@@ -273,8 +274,8 @@ void Sim_2D<Y_LEN, X_LEN>::calculate_sse(bool multithreading) {
 
 #define CSV_TITLE_LINE "Index,LeastSquare"
 
-template<int Y_LEN, int X_LEN>
-void Sim_2D<Y_LEN, X_LEN>::export_least_square(const std::string &fn) {
+template<unsigned N_DIMS, unsigned Y_LEN, unsigned X_LEN>
+void Sim_2D<N_DIMS, Y_LEN, X_LEN>::export_least_square(const std::string &fn) {
     std::ofstream csv;
 
     std::time_t       now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
@@ -301,8 +302,8 @@ void Sim_2D<Y_LEN, X_LEN>::export_least_square(const std::string &fn) {
 
 #ifdef EXPORT_CSV
 
-template<int Y_LEN, int X_LEN>
-void Sim_2D<Y_LEN, X_LEN>::export_summary(const std::string &fn) {
+template<unsigned N_DIMS, unsigned Y_LEN, unsigned X_LEN>
+void Sim_2D<N_DIMS, Y_LEN, X_LEN>::export_summary(const std::string &fn) {
     std::ofstream csv;
 
     std::time_t       now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());

@@ -25,7 +25,7 @@ DBL_T runif(const DBL_T min, const DBL_T max) {
     return min + (max - min) * u;
 }
 
-void runif_seq(DBL_T *seq, const int len, const DBL_T min, const DBL_T max) {
+void runif_seq(const unsigned len, DBL_T *seq, const DBL_T min, const DBL_T max) {
     for (int i = 0; i < len; i++) {
         seq[i] = runif(min, max);
     }
@@ -145,14 +145,14 @@ std::vector<int> sample_indices(
         const std::vector<DBL_T> &prob,
         const bool replace
 ) {
-    int                dn = (int) prob.size(), nm1 = dn - 1;
+    int              dn = (int) prob.size(), nm1 = dn - 1;
     assert(dn <= INT_MAX);
 
     if (!replace) { assert(sample_num <= dn); }
 
-    DBL_T              prob_cpy[dn];
-    int                i  = 0, j = 0;
-    int                perm[dn];
+    DBL_T            prob_cpy[dn];
+    int              i  = 0, j = 0;
+    int              perm[dn];
     std::vector<int> res;
 
     for (const DBL_T p: prob) {

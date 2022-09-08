@@ -6,7 +6,7 @@
 
 #include <unordered_map>
 
-template<int Y_LEN, int X_LEN>
+template<unsigned N_DIMS, unsigned Y_LEN, unsigned X_LEN>
 class Sim_2D {
 private:
     typedef struct {
@@ -16,21 +16,20 @@ private:
 
     } Info_T;
 public:
-    const int   N_DIMS;
-    const DBL_T h;
-    const DBL_T space_length_y;
-    const DBL_T space_length_x;
-    const DBL_T t;
-    const DBL_T dt;
-    const DBL_T time_steps;
-    const DBL_T int_time_steps;
-    const int   day_time_steps;
-    const DBL_T pde_time_steps;                         // Diffusion starts having an impact after a certain amount of time
-    const DBL_T mat_size;
-    const int   power_len = (int) ceil((POWER_MAX - POWER_MIN) / POWER_STEP);
-    int         y_cut_len;
-    int         x_cut_len;
-    Parameters  *pars;
+    const DBL_T        h;
+    const DBL_T        space_length_y;
+    const DBL_T        space_length_x;
+    const DBL_T        t;
+    const DBL_T        dt;
+    const DBL_T        time_steps;
+    const DBL_T        int_time_steps;
+    const int          day_time_steps;
+    const DBL_T        pde_time_steps;                         // Diffusion starts having an impact after a certain amount of time
+    const DBL_T        mat_size;
+    const int          power_len = (int) ceil((POWER_MAX - POWER_MIN) / POWER_STEP);
+    int                y_cut_len;
+    int                x_cut_len;
+    Parameters<N_DIMS> pars;
 
     std::vector<int>                     nnan_idxs;     // IDXes of which has non-NAN least_square
     std::unordered_map<unsigned, DBL_T>  least_square;  // <idx, least_square>
@@ -41,7 +40,6 @@ public:
     DBL_T sum_diff = NAN;
 
     Sim_2D(const unsigned int seed,
-           const int n_dims,
            DBL_T h,
            DBL_T space_length_y,
            DBL_T space_length_x,
@@ -53,7 +51,6 @@ public:
            DBL_T pde_time_steps,
            DBL_T mat_size)
             :
-            N_DIMS(n_dims),
             h(h),
             space_length_y(space_length_y),
             space_length_x(space_length_x),
@@ -67,14 +64,9 @@ public:
         set_seed(seed);
         y_cut_len = (int) ceil((double) ((space_length_y - 1.0) / mat_size));
         x_cut_len = (int) ceil((double) ((space_length_x - 1.0) / mat_size));
-        pars      = new Parameters(DEFAULT_N_DIMS);
     }
 
-    ~Sim_2D() {
-        pars->~Parameters();
-    }
-
-    Parameters simulate(bool multithreading = false);
+    Parameters<N_DIMS> simulate(bool multithreading = false);
 
     void reset() {
         least_square.clear();
@@ -95,11 +87,11 @@ private:
 
     void calculate_bw();
 
-    Parameters abc_bcd();
+    Parameters<N_DIMS> abc_bcd();
 
     class Dimension {
     private:
-        Sim_2D<Y_LEN, X_LEN> *parent;
+        Sim_2D<N_DIMS, Y_LEN, X_LEN> *parent;
 
         int IDX = 0;
         DBL_T diff = NAN;
@@ -121,7 +113,7 @@ private:
         DBL_T *x_cut = nullptr;
 
     public:
-        explicit Dimension(Sim_2D<Y_LEN, X_LEN> *parent, const int idx) : parent(parent), IDX(idx) {
+        explicit Dimension(Sim_2D<N_DIMS, Y_LEN, X_LEN> *parent, const int idx) : parent(parent), IDX(idx) {
         };
 
         ~Dimension() {
@@ -171,13 +163,12 @@ private:
     };
 };
 
+template<unsigned N_DIMS, unsigned Y_LEN, unsigned X_LEN>
 class Sim_2D_Factory {
 public:
-    static auto SCC(const int n_dims, const unsigned int seed) {
-        constexpr static const int Y_LEN = SCC_Y_LEN;
-        constexpr static const int X_LEN = SCC_X_LEN;
-        return new Sim_2D<Y_LEN, X_LEN>(
-                seed, n_dims, SCC_H,
+    static auto SCC(const unsigned int seed) {
+        return new Sim_2D<N_DIMS, Y_LEN, X_LEN>(
+                seed, SCC_H,
                 SCC_SPACE_LENGTH_Y, SCC_SPACE_LENGTH_X,
                 SCC_T, SCC_DT,
                 SCC_TIME_STEPS, SCC_INT_TIME_STEPS, SCC_DAY_TIME_STEPS,
@@ -186,11 +177,9 @@ public:
         );
     }
 
-    static auto SCC_375(const int n_dims, const unsigned int seed) {
-        constexpr static const int Y_LEN = SCC_Y_LEN_375;
-        constexpr static const int X_LEN = SCC_X_LEN_375;
-        return new Sim_2D<Y_LEN, X_LEN>(
-                seed, n_dims, SCC_H_375,
+    static auto SCC_375(const unsigned int seed) {
+        return new Sim_2D<N_DIMS, Y_LEN, X_LEN>(
+                seed, SCC_H_375,
                 SCC_SPACE_LENGTH_Y_375, SCC_SPACE_LENGTH_X_375,
                 SCC_T_375, SCC_DT_375,
                 SCC_TIME_STEPS_375, SCC_INT_TIME_STEPS_375, SCC_DAY_TIME_STEPS_375,

@@ -9,50 +9,36 @@
 #include <iostream>
 #include <fstream>
 
+enum FEATURE_T {
+    DN_E, GAMMA_E, RN_E,
+    ETA_E, DM_E, ALPHA_E,
+    INIT_CELLS_COLS_E, PROB_DEATH_E, PROB_PROF_E
+};
+
+template<unsigned N_DIMS>
 class Parameters {
 public:
     constexpr static const DBL_T NaN          = (DBL_T) NAN;
     constexpr static const int   FEATURES_NUM = 9;
-    enum FEATURE_T {
-        DN_E, GAMMA_E, RN_E,
-        ETA_E, DM_E, ALPHA_E,
-        INIT_CELLS_COLS_E, PROB_DEATH_E, PROB_PROF_E
-    };
 
-    const int N_DIMS;
-    DBL_T *DN;
-    DBL_T *GAMMA;
-    DBL_T *RN;
-    DBL_T *ETA;
-    DBL_T *DM;
-    DBL_T *ALPHA;
-    DBL_T *INIT_CELLS_COLS;
-    DBL_T *PROB_DEATH;
-    DBL_T *PROB_PROF;
+    DBL_T                        DN[N_DIMS]              = {0};
+    DBL_T                        GAMMA[N_DIMS]           = {0};
+    DBL_T                        RN[N_DIMS]              = {0};
+    DBL_T                        ETA[N_DIMS]             = {0};
+    DBL_T                        DM[N_DIMS]              = {0};
+    DBL_T                        ALPHA[N_DIMS]           = {0};
+    DBL_T                        INIT_CELLS_COLS[N_DIMS] = {0};
+    DBL_T                        PROB_DEATH[N_DIMS]      = {0};
+    DBL_T                        PROB_PROF[N_DIMS]       = {0};
 
-    explicit Parameters(const int n_dims) : N_DIMS(n_dims) {
-        DN              = new DBL_T[n_dims];
-        GAMMA           = new DBL_T[n_dims];
-        RN              = new DBL_T[n_dims];
-        ETA             = new DBL_T[n_dims];
-        DM              = new DBL_T[n_dims];
-        ALPHA           = new DBL_T[n_dims];
-        INIT_CELLS_COLS = new DBL_T[n_dims];
-        PROB_DEATH      = new DBL_T[n_dims];
-        PROB_PROF       = new DBL_T[n_dims];
-        all_zero();
-    }
+    explicit Parameters() = default;
 
-    ~Parameters() {
-        delete DN;
-        delete GAMMA;
-        delete RN;
-        delete ETA;
-        delete DM;
-        delete ALPHA;
-        delete INIT_CELLS_COLS;
-        delete PROB_DEATH;
-        delete PROB_PROF;
+    Parameters(Parameters<N_DIMS> &that) {
+        for (int i = 0; i < FEATURES_NUM; ++i) {
+            for (int j = 0; j < N_DIMS; ++j) {
+                this->operator()((FEATURE_T) i, j) = that((FEATURE_T) i, j);
+            }
+        }
     }
 
     DBL_T &operator()(const FEATURE_T i, const int j) {
@@ -65,13 +51,13 @@ public:
         if (i == INIT_CELLS_COLS_E) { return INIT_CELLS_COLS[j]; }
         if (i == PROB_DEATH_E) { return PROB_DEATH[j]; }
         if (i == PROB_PROF_E) { return PROB_PROF[j]; }
-        return const_cast<double &>(NaN);
+        return const_cast<DBL_T &>(NaN);
     }
 
     friend std::ostream &operator<<(std::ostream &os, Parameters &that) {
         os << "        DN      GAMMA         RN        ETA         DM      ALPHA        ICC         PD         PP"
            << std::endl;
-        for (int j = 0; j < that.N_DIMS; ++j) {
+        for (int j = 0; j < N_DIMS; ++j) {
             for (int i = 0; i < FEATURES_NUM; ++i) {
                 os << std::fixed << std::setw(10) << std::setprecision(5)
                    << that((FEATURE_T) i, j) << " ";
@@ -83,28 +69,20 @@ public:
 
     void init(bool random_seed = false) const {
         if (random_seed) { set_seed(0); }
-        runif_seq(DN, N_DIMS, DN_MIN, DN_MAX);
-        runif_seq(GAMMA, N_DIMS, GAMMA_MIN, GAMMA_MAX);
-        runif_seq(RN, N_DIMS, RN_MIN, RN_MAX);
-        runif_seq(ETA, N_DIMS, ETA_MIN, ETA_MAX);
-        runif_seq(DM, N_DIMS, DM_MIN, DM_MAX);
-        runif_seq(ALPHA, N_DIMS, ALPHA_MIN, ALPHA_MAX);
-        runif_seq(INIT_CELLS_COLS, N_DIMS, INIT_CELLS_COLS_MIN, INIT_CELLS_COLS_MAX);
-        runif_seq(PROB_DEATH, N_DIMS, PROB_DEATH_MIN, PROB_DEATH_MAX);
-        runif_seq(PROB_PROF, N_DIMS, PROB_PROF_MIN, PROB_PROF_MAX);
+        runif_seq(N_DIMS, (DBL_T *) DN, DN_MIN, DN_MAX);
+        runif_seq(N_DIMS, (DBL_T *) GAMMA, GAMMA_MIN, GAMMA_MAX);
+        runif_seq(N_DIMS, (DBL_T *) RN, RN_MIN, RN_MAX);
+        runif_seq(N_DIMS, (DBL_T *) ETA, ETA_MIN, ETA_MAX);
+        runif_seq(N_DIMS, (DBL_T *) DM, DM_MIN, DM_MAX);
+        runif_seq(N_DIMS, (DBL_T *) ALPHA, ALPHA_MIN, ALPHA_MAX);
+        runif_seq(N_DIMS, (DBL_T *) INIT_CELLS_COLS, INIT_CELLS_COLS_MIN, INIT_CELLS_COLS_MAX);
+        runif_seq(N_DIMS, (DBL_T *) PROB_DEATH, PROB_DEATH_MIN, PROB_DEATH_MAX);
+        runif_seq(N_DIMS, (DBL_T *) PROB_PROF, PROB_PROF_MIN, PROB_PROF_MAX);
     }
 
-    void load(Parameters &that) {
-        assert(that.N_DIMS == N_DIMS);
-        for (int i = 0; i < FEATURES_NUM; ++i) {
-            for (int j = 0; j < N_DIMS; ++j) {
-                this->operator()((FEATURE_T) i, j) = that((FEATURE_T) i, j);
-            }
-        }
-    }
-
-    Parameters resample(const std::vector<int> &idxes, const std::vector<int> &nnan_idxs) {
-        Parameters p((int) idxes.size());
+    Parameters<N_DIMS> resample(const std::vector<int> &idxes, const std::vector<int> &nnan_idxs) {
+        assert(idxes.size() == N_DIMS);
+        Parameters<N_DIMS> p;
 
         for (int i = 0; i < FEATURES_NUM; ++i) {
             for (int j = 0, js = (int) idxes.size(); j < js; ++j) {
@@ -191,21 +169,6 @@ public:
 #undef CSV_TITLE_LINE
 
 #endif
-
-private:
-    void all_zero() const {
-        for (int i = 0; i < N_DIMS; ++i) {
-            DN[i]              = 0;
-            GAMMA[i]           = 0;
-            RN[i]              = 0;
-            ETA[i]             = 0;
-            DM[i]              = 0;
-            ALPHA[i]           = 0;
-            INIT_CELLS_COLS[i] = 0;
-            PROB_DEATH[i]      = 0;
-            PROB_PROF[i]       = 0;
-        }
-    }
 };
 
 #endif //SIM_2D_CPP_PARS_H

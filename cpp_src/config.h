@@ -4,7 +4,7 @@
 #define DBL_T                   double          // { long double, double }
 
 #define MULTI_THREADING         true            // { true, false }
-#define DEFAULT_N_DIMS          1000
+#define DEFAULT_N_DIMS          100
 #define SEED                    0               // use system timestamp as see by setting to 0
 #define USE_PRELOAD_REF                         // using preloaded T3_REF_DEN csv data
 #define CONSOLE_REPORT                          // enable console report
