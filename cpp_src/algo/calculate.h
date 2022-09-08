@@ -284,7 +284,7 @@ void Sim_2D<N_DIMS, Y_LEN, X_LEN>::export_least_square(const std::string &fn) {
 
     csv.open(fn_s.str());
     std::cout << "[SYSTEM] Exporting Least Square results to " << fn_s.str()
-              << " DIMs: " << this->N_DIMS << std::endl;
+              << " DIMs: " << N_DIMS << std::endl;
     csv << CSV_TITLE_LINE << std::endl;
 
     for (const auto &[idx, ls]: least_square) {
@@ -312,7 +312,7 @@ void Sim_2D<N_DIMS, Y_LEN, X_LEN>::export_summary(const std::string &fn) {
 
     csv.open(fn_s.str());
     std::cout << "[SYSTEM] Exporting Summary to " << fn_s.str()
-              << " DIMs: " << this->N_DIMS << std::endl;
+              << " DIMs: " << N_DIMS << std::endl;
 
     csv << std::put_time(std::localtime(&now), CSV_TIME_FORMAT)
         << std::endl << std::endl;

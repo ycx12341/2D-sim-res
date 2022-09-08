@@ -123,7 +123,7 @@ public:
 
         csv.open(fn_s.str());
         std::cout << "[SYSTEM] Exporting Parameters results to " << fn_s.str()
-                  << " DIMs: " << this->N_DIMS << std::endl;
+                  << " DIMs: " << N_DIMS << std::endl;
         csv << CSV_TITLE_LINE << std::endl;
 
         for (int j = 0; j < N_DIMS; ++j) {
@@ -139,7 +139,7 @@ public:
 
     void load_csv(const std::string &fn) {
         std::cout << "[SYSTEM] Loading Parameters from " << fn
-                  << " DIMs: " << this->N_DIMS << std::endl;
+                  << " DIMs: " << N_DIMS << std::endl;
 
         std::ifstream csv(fn);
         std::string   line;
