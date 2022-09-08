@@ -12,6 +12,7 @@
 #include "../ref_den/t3_ref_den.h"
 
 #define MINIMUM_MULTI_THREAD_DIMS   30
+#define NAN_EXIT_CODE               (-1)
 
 template<int Y_LEN, int X_LEN>
 void Sim_2D<Y_LEN, X_LEN>::Dimension::calculate() {
@@ -83,6 +84,14 @@ void Sim_2D<Y_LEN, X_LEN>::calculate_bw() {
             bw_obj       = p;
         }
     }
+#ifdef CONSOLE_REPORT
+    if (std::isnan(bw_obj) || std::isnan(ess_obj)) {
+        std::cerr << "[SYSTEM] No valid ess calculated: Use a different seed or increase the number of dimensions."
+                  << std::endl << "[SYSTEM] Program Terminated."
+                  << std::endl;
+        exit(NAN_EXIT_CODE);
+    }
+#endif
     assert(!std::isnan(bw_obj) && !std::isnan(ess_obj));
 
     DBL_T wt_min = INFINITY, wt_max = (DBL_T) -INFINITY, info_wt;
@@ -161,7 +170,8 @@ void progress_report(const Sim_2D<Y_LEN, X_LEN> *simulation) {
     FINISHED_TASK++;
     if (FINISHED_TASK == 1) { TASK_START = std::chrono::system_clock::now(); }
     if (FINISHED_TASK %
-        (simulation->N_DIMS > MINIMUM_MULTI_THREAD_DIMS ? (int) round(simulation->N_DIMS / MINIMUM_MULTI_THREAD_DIMS) : 1) == 0) {
+        (simulation->N_DIMS > MINIMUM_MULTI_THREAD_DIMS ? (int) round(simulation->N_DIMS / MINIMUM_MULTI_THREAD_DIMS)
+                                                        : 1) == 0) {
         std::cerr << "-";
     }
     if (FINISHED_TASK == simulation->N_DIMS) {
@@ -250,8 +260,6 @@ void Sim_2D<Y_LEN, X_LEN>::calculate_sse(bool multithreading) {
             progress_report(this);
         }
     }
-
-#define NAN_EXIT_CODE (-1)
 
     if (infos.empty()) {
         std::cerr << "[SYSTEM] No valid dimension found: Use a different seed or increase the number of dimensions."
