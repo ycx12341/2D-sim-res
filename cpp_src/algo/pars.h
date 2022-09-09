@@ -114,7 +114,7 @@ public:
 
 #define CSV_TITLE_LINE "DN,GAMMA,RN,ETA,DM,ALPHA,ICC,PD,PP"
 
-    void export_csv(const std::string &fn = CSV_PARS_FNAME) {
+    void export_csv(const std::string &fn) {
         std::ofstream csv;
 
         std::time_t       now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());

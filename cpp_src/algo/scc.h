@@ -5,6 +5,7 @@
 #include "../collection/collection.h"
 
 #include <unordered_map>
+#include <filesystem>
 
 template<unsigned N_DIMS, unsigned Y_LEN, unsigned X_LEN>
 class Sim_2D {
@@ -15,6 +16,9 @@ private:
         DBL_T resample;                                 // resamp.prob
 
     } Info_T;
+
+    bool        need_export = false;
+    std::string name;
 public:
     const DBL_T        h;
     const DBL_T        space_length_y;
@@ -83,9 +87,16 @@ public:
         sum_diff = NAN;
     }
 
-    void export_least_square(const std::string &fn = CSV_DIFF_FNAME);
+    void export_csv(const std::string &simulation_name) {
+        std::string dir = CSV_DIR(simulation_name);
+        if (!std::filesystem::exists(dir) && !std::filesystem::create_directory(dir)) {
+            std::cerr << "[SYSTEM] Unable to create directory for details: " << dir << std::endl;
+            return;
+        }
 
-    void export_summary(const std::string &fn = CSV_SMRY_FNAME);
+        need_export = true;
+        name        = simulation_name;
+    }
 
 private:
     void calculate_sse(bool multithreading = false);
@@ -93,6 +104,10 @@ private:
     void calculate_bw();
 
     Parameters<N_DIMS> *abc_bcd();
+
+    void export_least_square(const std::string &fn);
+
+    void export_summary(const std::string &fn);
 
     class Dimension {
     private:
@@ -141,6 +156,76 @@ private:
         DBL_T get_diff() {
             return diff;
         }
+
+#ifdef EXPORT_CSV
+
+        void export_details(const std::string &fn) {
+            if (std::isnan(get_diff())) { return; }
+
+            std::ofstream csv;
+
+            std::time_t       now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+            std::stringstream fn_s;
+            fn_s << std::put_time(std::localtime(&now), fn.c_str());
+
+            csv.open(fn_s.str());
+
+            /* Difference / Least Square */
+            csv << "diff" << CSV_SEPARATOR << get_diff() << std::endl << std::endl;
+
+            /* Density Matrix */
+            csv << "den.mat";
+            den_mat_out->iter_index([&](int i, int j) {
+                if (j == 0) { csv << std::endl; }
+                csv << std::fixed << std::setprecision(CSV_DBL_PRECISION)
+                    << (*den_mat_out)(i, j) << CSV_SEPARATOR;
+            });
+
+            /* Ind Positions */
+            csv << std::endl << std::endl << "ind.pos";
+            ind_pos_out->iter_index([&](int i, int j) {
+                if (j == 0) { csv << std::endl; }
+                csv << std::fixed << std::setprecision(CSV_DBL_PRECISION)
+                    << (*ind_pos_out)(i, j) << CSV_SEPARATOR;
+            });
+
+            /* Initial Ind Positions */
+            csv << std::endl << std::endl << "ind.pos.init";
+            ind_pos_init->iter_index([&](int i, int j) {
+                if (j == 0) { csv << std::endl; }
+                csv << std::fixed << std::setprecision(CSV_DBL_PRECISION)
+                    << (*ind_pos_init)(i, j) << CSV_SEPARATOR;
+            });
+
+            /* N */
+            csv << std::endl << std::endl << "n";
+            n_out->iter_index([&](int i, int j) {
+                if (j == 0) { csv << std::endl; }
+                csv << std::fixed << std::setprecision(CSV_DBL_PRECISION)
+                    << (*n_out)(i, j) << CSV_SEPARATOR;
+            });
+
+            /* F */
+            csv << std::endl << std::endl << "f";
+            f_out->iter_index([&](int i, int j) {
+                if (j == 0) { csv << std::endl; }
+                csv << std::fixed << std::setprecision(CSV_DBL_PRECISION)
+                    << (*f_out)(i, j) << CSV_SEPARATOR;
+            });
+
+            /* M */
+            csv << std::endl << std::endl << "m";
+            m_out->iter_index([&](int i, int j) {
+                if (j == 0) { csv << std::endl; }
+                csv << std::fixed << std::setprecision(CSV_DBL_PRECISION)
+                    << (*m_out)(i, j) << CSV_SEPARATOR;
+            });
+            csv << std::endl;
+
+            csv.close();
+        }
+
+#endif
 
     private:
         void initial_condition();

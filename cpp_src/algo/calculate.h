@@ -117,9 +117,18 @@ void Sim_2D<N_DIMS, Y_LEN, X_LEN>::calculate_bw() {
 template<unsigned N_DIMS, unsigned Y_LEN, unsigned X_LEN>
 Parameters<N_DIMS> *Sim_2D<N_DIMS, Y_LEN, X_LEN>::simulate(bool multithreading) {
     reset();
+#ifdef EXPORT_CSV
+    std::cout << "[SYSTEM] " + name + " STARTED" << std::endl;
+#endif
     calculate_sse(multithreading);
     calculate_bw();
-    return abc_bcd();
+    Parameters<N_DIMS> *p_nr = abc_bcd();
+    if (need_export) {
+        export_summary(CSV_SMRY_FNAME(name));
+        export_least_square(CSV_DIFF_FNAME(name));
+        p_nr->export_csv(CSV_PARS_FNAME(name));
+    }
+    return p_nr;
 }
 
 template<unsigned N_DIMS, unsigned Y_LEN, unsigned X_LEN>
@@ -235,6 +244,12 @@ void Sim_2D<N_DIMS, Y_LEN, X_LEN>::calculate_sse(bool multithreading) {
                     lock.unlock();
 
                     progress_report(this);
+
+#ifdef EXPORT_CSV
+                    if (this->need_export) {
+                        dimension.export_details(CSV_DETL_FNAME(name, std::to_string(d)));
+                    }
+#endif
                 }
             }));
         }
@@ -260,6 +275,12 @@ void Sim_2D<N_DIMS, Y_LEN, X_LEN>::calculate_sse(bool multithreading) {
             }
 
             progress_report(this);
+
+#ifdef EXPORT_CSV
+            if (need_export) {
+                dimension.export_details(CSV_DETL_FNAME(name, std::to_string(i)));
+            }
+#endif
         }
     }
 
@@ -321,6 +342,7 @@ void Sim_2D<N_DIMS, Y_LEN, X_LEN>::export_summary(const std::string &fn) {
     csv << "non-NAN results" << CSV_SEPARATOR << nnan_idxs.size() << std::endl;
     csv << "ess.obj" << CSV_SEPARATOR << ess_obj << std::endl;
     csv << "bw.obj" << CSV_SEPARATOR << bw_obj << std::endl;
+    csv << "mean Least Square" << CSV_SEPARATOR << sum_diff / nnan_idxs.size() << std::endl;
 
     csv << std::endl
         << "Valid Index" << CSV_SEPARATOR
@@ -336,7 +358,7 @@ void Sim_2D<N_DIMS, Y_LEN, X_LEN>::export_summary(const std::string &fn) {
     }
 
     csv << std::endl
-        << "power" << CSV_DBL_PRECISION
+        << "power" << CSV_SEPARATOR
         << "ess" << std::endl;
     for (const auto &[p, ess]: ess_map) {
         csv << std::fixed << std::setprecision(CSV_DBL_PRECISION)
