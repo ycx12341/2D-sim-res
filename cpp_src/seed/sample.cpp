@@ -1,3 +1,9 @@
+/**
+ * Random Samples, Permutations and Uniform Distribution.
+ *
+ * Derived From https://svn.r-project.org/R/ branch R-4-2-branch.
+ */
+
 #include <cmath>
 #include <cstdint>
 #include <cassert>

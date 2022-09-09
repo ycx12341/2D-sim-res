@@ -1,3 +1,9 @@
+/**
+ * The Normal Distribution.
+ *
+ * Derived From https://svn.r-project.org/R/ branch R-4-2-branch.
+ */
+
 #include "seed.h"
 
 #include <cassert>
@@ -114,8 +120,7 @@ double qnorm5(double p, double mu, double sigma, int lower_tail, int log_p) {
 }
 
 /**
- * Default N01_kind: INVERSION
- * @return
+ * Default N01_kind: INVERSION.
  */
 DBL_T norm_rand() {
     DBL_T u1 = (int) (BIG * unif_rand()) + unif_rand();

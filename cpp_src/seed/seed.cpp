@@ -1,3 +1,9 @@
+/**
+ * Seeding and Randomness.
+ *
+ * Derived From https://svn.r-project.org/R/ branch R-4-2-branch.
+ */
+
 #include "seed.h"
 
 #include <ctime>
