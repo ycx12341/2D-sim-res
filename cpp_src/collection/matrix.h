@@ -90,7 +90,7 @@ public:
      *          }
      *      }
      * @tparam F Function type.
-     * @param f  Function in form of: F f(T& element) { ... }
+     * @param f  Function in form of: void f(T& element) { ... }
      *           The reference of each element will be passed to this function.
      */
     template<typename F>
@@ -110,8 +110,9 @@ public:
      *              f( i, j )
      *          }
      *      }
-     * @tparam F
-     * @param f
+     * @tparam F Function type.
+     * @param f  Function in form of: void f(int i, int j) { ... }
+     *           The position of each element will be passed to this function.
      */
     template<typename F>
     void iter_index(F f) {
@@ -122,6 +123,28 @@ public:
         }
     }
 
+    /**
+     * Iterate through elements in a sub-matrix and apply a function to each of them.
+     * Sub-matrix:
+     *      [i,j] <---- r ----> +
+     *        |                 |
+     *        c                 c
+     *        |                 |
+     *        + <------ r ----> +
+     * Equivalent to:
+     *      for (int ii = i; ii < i + r; ++ii) {
+     *          for (int jj = j; jj < j + c; ++jj) {
+     *              f( &MATRIX[ii][jj] )
+     *          }
+     *      }
+     * @tparam F Function type.
+     * @param i  The top-left element that is in row i.
+     * @param j  The top-left element that is in column j.
+     * @param r  The number of rows of the sub-matrix.
+     * @param c  The number of columns of the sub-matrix.
+     * @param f  Function in form of: void f(T& element) { ... }
+     *           The reference of each element will be passed to this function.
+     */
     template<typename F>
     void iter_range(const int i, const int j, const int r, const int c, F f) {
         for (int ii = i, il = i + r; ii < il; ++ii) {
@@ -131,6 +154,28 @@ public:
         }
     }
 
+    /**
+     * Iterate through elements in a sub-matrix and apply a function to each of them.
+     * Sub-matrix:
+     *      [i,j] <---- r ----> +
+     *        |                 |
+     *        c                 c
+     *        |                 |
+     *        + <------ r ----> +
+     * Equivalent to:
+     *      for (int ii = i; ii < i + r; ++ii) {
+     *          for (int jj = j; jj < j + c; ++jj) {
+     *              f( ii, jj )
+     *          }
+     *      }
+     * @tparam F Function type.
+     * @param i  The top-left element that is in row i.
+     * @param j  The top-left element that is in column j.
+     * @param r  The number of rows of the sub-matrix.
+     * @param c  The number of columns of the sub-matrix.
+     * @param f  Function in form of: void f(int i, int j) { ... }
+     *           The position of each element will be passed to this function.
+     */
     template<typename F>
     void iter_range_index(const int i, const int j, const int r, const int c, F f) {
         for (int ii = i, il = i + r; ii < il; ++ii) {
@@ -140,6 +185,16 @@ public:
         }
     }
 
+    /**
+     * Iterate through all columns in the matrix and apply a function to each of columns.
+     * Equivalent to:
+     *      for (int j = 0, c = cols(); j < c; ++j) {
+     *          f(j);
+     *      }
+     * @tparam F Function type.
+     * @param f  Function in form of: void f(int j) { ... }
+     *           The index of each column will be passed to this function.
+     */
     template<typename F>
     void iter_cols(F f) {
         for (int j = 0, c = cols(); j < c; ++j) {
@@ -147,6 +202,16 @@ public:
         }
     }
 
+    /**
+     * Iterate through all rows in the matrix and apply a function to each of rows.
+     * Equivalent to:
+     *      for (int i = 0, r = rows(); i < r; ++i) {
+     *          f(i);
+     *      }
+     * @tparam F Function type.
+     * @param f  Function in form of: void f(int i) { ... }
+     *           The index of each row will be passed to this function.
+     */
     template<typename F>
     void iter_rows(F f) {
         for (int i = 0, r = rows(); i < r; ++i) {
@@ -154,6 +219,13 @@ public:
         }
     }
 
+    /**
+     * Check if there is any element satisfy a condition.
+     * @tparam F Function type.
+     * @param f  Function in form of: bool f(T& element) { ... }
+     *           The reference of each element will be passed to this function.
+     * @return   True if any element e with f(e) returning true.
+     */
     template<typename F>
     bool any(F f) {
         for (int i = 0, r = rows(); i < r; ++i) {
@@ -164,7 +236,11 @@ public:
         return false;
     }
 
-    template<typename F>
+    /**
+     * The sum of all elements.
+     * @attention Only for numerical matrix.
+     * @return    The sum of all elements.
+     */
     DBL_T sum() {
         DBL_T sum = 0;
         for (int i = 0, r = rows(); i < r; ++i) {
@@ -175,10 +251,18 @@ public:
         return sum;
     }
 
+    /**
+     * The size of the matrix.
+     * @return The number of rows times the number of columns.
+     */
     [[nodiscard]] long long size() const {
         return rows() * cols();
     }
 
+    /**
+     * Return positions of those largest elements.
+     * @return A vector of COORD_T (std::array<int, 2>)
+     */
     std::vector<COORD_T > matrix_which_max() {
         std::vector<COORD_T > maxes;
 
@@ -200,6 +284,10 @@ public:
         return maxes;
     }
 
+    /**
+     * Return positions of those elements which are equal to specified value.
+     * @return A vector of COORD_T (std::array<int, 2>)
+     */
     std::vector<COORD_T > matrix_which_equals(const T val) {
         std::vector<COORD_T > res;
         if (size() <= 0) { return res; }
@@ -213,6 +301,12 @@ public:
     }
 };
 
+/**
+ * Static Matrix.
+ * @tparam T    Element type.
+ * @tparam ROWS Number of rows.
+ * @tparam COLS Number of columns.
+ */
 template<typename T, int ROWS, int COLS>
 class MatrixS : public Matrix<T> {
 
@@ -223,6 +317,10 @@ public:
 
     MatrixS() = default;
 
+    /**
+     * Construct a static matrix with all elements set to specified value.
+     * @param val Value of all elements.
+     */
     explicit MatrixS(const T val) {
         Matrix<T>::setAll(val);
     }
@@ -250,6 +348,10 @@ public:
     }
 };
 
+/**
+ * Dynamic matrix.
+ * @tparam T Element type.
+ */
 template<typename T>
 class MatrixD : public Matrix<T> {
 
@@ -259,6 +361,11 @@ private:
     int COLS = 0;
 
 public:
+    /**
+     * Construct a dynamic matrix in size r*c.
+     * @param r Number of rows.
+     * @param c Number of columns.
+     */
     MatrixD(const int r, const int c) : ROWS(r), COLS(c) {
         MATRIX = new T *[ROWS];
         for (int i = 0; i < ROWS; ++i) {
@@ -266,6 +373,12 @@ public:
         }
     }
 
+    /**
+     * Construct a dynamic matrix in size r*c with all elements set to specified value.
+     * @param r Number of rows.
+     * @param c Number of columns.
+     * @param val Value of all elements.
+     */
     MatrixD(const int r, const int c, const T val) : MatrixD(r, c) {
         Matrix<T>::setAll(val);
     }
