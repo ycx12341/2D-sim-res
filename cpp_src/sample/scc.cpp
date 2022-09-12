@@ -49,7 +49,7 @@ void scc_simple_d3() {
     /* Round 2 ~ Round 3 */
     for (int i = 1; i <= 2; ++i) {
         auto scc = *Sim_2D_Factory<N, Y_375, X_375>::SCC_375(SEED);
-        scc.export_csv("ROUND" + std::to_string(i));
+        scc.export_csv("ROUND" + std::to_string(i + 1));
         scc.pars = p;
         scc.set_bw(ROUND[i].ess_target, ROUND[i].lb_bw, ROUND[i].ub_bw, ROUND[i].step_size);
         p           = scc.simulate(MULTI_THREADING);
@@ -59,7 +59,7 @@ void scc_simple_d3() {
     /* Round 4 ~ Round X */
     for (int i = 3;; ++i) {
         auto scc = *Sim_2D_Factory<N, Y, X>::SCC(SEED);
-        scc.export_csv("ROUND" + std::to_string(i));
+        scc.export_csv("ROUND" + std::to_string(i + 1));
         scc.pars = p;
 
         if (i >= MAX_ROUND) {

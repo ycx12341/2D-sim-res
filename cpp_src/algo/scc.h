@@ -25,6 +25,9 @@ private:
     DBL_T power_min  = NAN;
     DBL_T power_max  = NAN;
     DBL_T step_size  = NAN;
+
+    std::chrono::time_point<std::chrono::system_clock> start_time;
+    std::chrono::time_point<std::chrono::system_clock> end_time;
 public:
     const DBL_T        h;
     const DBL_T        space_length_y;
@@ -113,6 +116,10 @@ public:
 
     Parameters<N_DIMS> *simulate(bool multithreading = false);
 
+    long long get_time() const {
+        return (std::chrono::duration_cast<std::chrono::seconds>(end_time - start_time)).count();
+    }
+
 private:
     void calculate_sse(bool multithreading = false);
 
@@ -146,6 +153,9 @@ private:
 
         DBL_T *y_cut = nullptr;
         DBL_T *x_cut = nullptr;
+
+        std::chrono::time_point<std::chrono::system_clock> start_time;
+        std::chrono::time_point<std::chrono::system_clock> end_time;
 
     public:
         explicit Dimension(Sim_2D<N_DIMS, Y_LEN, X_LEN> *parent, const int idx) : parent(parent), IDX(idx) {
@@ -184,6 +194,14 @@ private:
             fn_s << std::put_time(std::localtime(&now), fn.c_str());
 
             csv.open(fn_s.str());
+
+            /* Time */
+            if (end_time > start_time) {
+                std::chrono::duration period = end_time - start_time;
+                csv << "time" << CSV_SEPARATOR
+                    << (std::chrono::duration_cast<std::chrono::seconds>(period)).count()
+                    << std::endl;
+            }
 
             /* Difference / Least Square */
             csv << "diff" << CSV_SEPARATOR << get_diff() << std::endl << std::endl;

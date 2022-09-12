@@ -16,6 +16,7 @@
 
 template<unsigned N_DIMS, unsigned Y_LEN, unsigned X_LEN>
 void Sim_2D<N_DIMS, Y_LEN, X_LEN>::Dimension::calculate() {
+    start_time = std::chrono::system_clock::now();
     generate_pattern();
 
     if (n_out == nullptr || f_out == nullptr || m_out == nullptr ||
@@ -31,6 +32,7 @@ void Sim_2D<N_DIMS, Y_LEN, X_LEN>::Dimension::calculate() {
 
         diff = sum;
     }
+    end_time   = std::chrono::system_clock::now();
 }
 
 DBL_T calculate_ess(const std::vector<DBL_T> &resamp_prob) {
@@ -127,14 +129,23 @@ void Sim_2D<N_DIMS, Y_LEN, X_LEN>::calculate_bw() {
 template<unsigned N_DIMS, unsigned Y_LEN, unsigned X_LEN>
 Parameters<N_DIMS> *Sim_2D<N_DIMS, Y_LEN, X_LEN>::simulate(bool multithreading) {
     reset();
+    start_time = std::chrono::system_clock::now();
 #ifdef EXPORT_CSV
     std::cout << "[SYSTEM] " + name + " STARTED" << std::endl;
 #endif
     calculate_sse(multithreading);
+#ifdef CONSOLE_REPORT
+    std::cout << std::endl
+              << "Valid results:           " << infos.size() << std::endl
+              << "Mean Square Differences: " << sum_diff / infos.size()
+              << std::endl;
+#endif
     calculate_bw();
     Parameters<N_DIMS> *p_nr = abc_bcd();
+    end_time = std::chrono::system_clock::now();
 #ifdef CONSOLE_REPORT
     std::cout << "Ess:                     " << ess_obj << std::endl;
+    std::cout << "Total time:              " << get_time() << " secs" << std::endl;
 #endif
 #ifdef EXPORT_CSV
     if (need_export) {
@@ -187,13 +198,11 @@ Parameters<N_DIMS> *Sim_2D<N_DIMS, Y_LEN, X_LEN>::abc_bcd() {
 #ifdef CONSOLE_REPORT
 
 static unsigned FINISHED_TASK = 0;
-static auto     TASK_START    = std::chrono::system_clock::now();
-static auto     TASK_END      = std::chrono::system_clock::now();
 
 template<unsigned N_DIMS, unsigned Y_LEN, unsigned X_LEN>
 void progress_report(const Sim_2D<N_DIMS, Y_LEN, X_LEN> *simulation) {
     FINISHED_TASK++;
-    if (FINISHED_TASK == 1) { TASK_START = std::chrono::system_clock::now(); }
+    if (FINISHED_TASK == 1) { std::cerr << "-"; }
     if (FINISHED_TASK %
         (N_DIMS > MINIMUM_MULTI_THREAD_DIMS
          ? (int) round((DBL_T) N_DIMS / MINIMUM_MULTI_THREAD_DIMS)
@@ -201,15 +210,6 @@ void progress_report(const Sim_2D<N_DIMS, Y_LEN, X_LEN> *simulation) {
         std::cerr << "-";
     }
     if (FINISHED_TASK == N_DIMS) {
-        TASK_END                     = std::chrono::system_clock::now();
-        std::chrono::duration period = TASK_END - TASK_START;
-        std::cout << std::endl
-                  << "Estimated spending time: "
-                  << (std::chrono::duration_cast<std::chrono::seconds>(period)).count()
-                  << " secs" << std::endl
-                  << "Valid results:           " << simulation->infos.size() << std::endl
-                  << "Mean Square Differences: " << simulation->sum_diff / simulation->infos.size()
-                  << std::endl;
         FINISHED_TASK = 0;
     }
 }
@@ -229,7 +229,7 @@ void Sim_2D<N_DIMS, Y_LEN, X_LEN>::calculate_sse(bool multithreading) {
 #endif
 
     if (multithreading) {
-        const unsigned int suggestion = std::thread::hardware_concurrency();
+        const unsigned int suggestion = std::thread::hardware_concurrency() - 1;
         if (suggestion <= 1 || N_DIMS <= MINIMUM_MULTI_THREAD_DIMS) {
             std::cerr << "[SYSTEM] MULTITHREADING DISABLED: Hardware concurrency is not well defined or not needed"
                       << std::endl;
@@ -354,6 +354,7 @@ void Sim_2D<N_DIMS, Y_LEN, X_LEN>::export_summary(const std::string &fn) {
     csv << std::put_time(std::localtime(&now), CSV_TIME_FORMAT)
         << std::endl << std::endl;
 
+    csv << "time" << CSV_SEPARATOR << get_time() << " sec" << std::endl;
     csv << "non-NAN results" << CSV_SEPARATOR << nnan_idxs.size() << std::endl;
     csv << "ess.obj" << CSV_SEPARATOR << ess_obj << std::endl;
     csv << "bw.obj" << CSV_SEPARATOR << bw_obj << std::endl;

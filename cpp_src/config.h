@@ -3,13 +3,17 @@
 
 #define DBL_T                       double      // Float value type. { long double, double }
 
-#define MULTI_THREADING             true        // { true, false }
-#define DEFAULT_N_DIMS              10000
-#define SEED                        0           // Must be an int value. Use system timestamp as seed by setting it to 0.
 #define USE_PRELOAD_REF                         // Using preloaded REF_DEN csv data.
 #define CONSOLE_REPORT                          // Enable console report.
 
-/* Initial Parameters */
+#define MULTI_THREADING             true        // { true, false }
+#define DEFAULT_N_DIMS              10000       // Number of Dimensions.
+#define SEED                        0           // Must be an int value. Use system timestamp as seed by setting it to 0.
+                                                // To reproduce the same result:
+                                                // -    set MULTI_THREADING to false
+                                                // -    set a fixed seed number
+
+/* Initial Parameters Boundaries */
 #define DN_MIN                      0.000069L
 #define DN_MAX                      0.02L
 #define GAMMA_MIN                   0.005L
