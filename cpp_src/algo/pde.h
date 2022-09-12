@@ -43,20 +43,20 @@ void Sim_2D<N_DIMS, Y_LEN, X_LEN>::Dimension::cell_proliferate(
 }
 
 template<unsigned N_DIMS, unsigned Y_LEN, unsigned X_LEN>
-void Sim_2D<N_DIMS, Y_LEN, X_LEN>::Dimension::proliferation(const int PROF_CELLS_NUM, int *prof_cells) {
-    for (int i = 0; i < PROF_CELLS_NUM; ++i) {
+void Sim_2D<N_DIMS, Y_LEN, X_LEN>::Dimension::proliferation(const unsigned PROF_CELLS_NUM, unsigned *prof_cells) {
+    for (unsigned i = 0; i < PROF_CELLS_NUM; ++i) {
         COORD_T cell_pos = coord.at(prof_cells[i]);
-        const int x      = cell_pos[0];
-        const int y      = cell_pos[1];
+        const unsigned x = cell_pos[0];
+        const unsigned y = cell_pos[1];
 
-        COORD_T   _r_pos = {x, y + 1};
-        COORD_T   rd_pos = {x + 1, y + 1};
-        COORD_T   _d_pos = {x + 1, y};
-        COORD_T   ru_pos = {x - 1, y + 1};
-        COORD_T   _u_pos = {x - 1, y};
-        COORD_T   lu_pos = {x - 1, y - 1};
-        COORD_T   _l_pos = {x, y - 1};
-        COORD_T   ld_pos = {x + 1, y - 1};
+        COORD_T        _r_pos = {x, y + 1};
+        COORD_T        rd_pos = {x + 1, y + 1};
+        COORD_T        _d_pos = {x + 1, y};
+        COORD_T        ru_pos = {x - 1, y + 1};
+        COORD_T        _u_pos = {x - 1, y};
+        COORD_T        lu_pos = {x - 1, y - 1};
+        COORD_T        _l_pos = {x, y - 1};
+        COORD_T        ld_pos = {x + 1, y - 1};
 
 #define R_ (int) (*ind_pos)(_r_pos[0], _r_pos[1])
 #define RD (int) (*ind_pos)(rd_pos[0], rd_pos[1])
@@ -119,11 +119,12 @@ bool Sim_2D<N_DIMS, Y_LEN, X_LEN>::Dimension::end_of_day(const int time) {
             cell_den.push_back(N(c[0], c[1]));
         }
 
-        const int        DEAD_CELLS_NUM = (int) round((double) ((DBL_T) coord.size() * PARS->PROB_DEATH[IDX]));
-        int              dead_cells[DEAD_CELLS_NUM];
-        std::vector<int> mins;
+        const unsigned DEAD_CELLS_NUM = round((double) ((DBL_T) coord.size() * PARS->PROB_DEATH[IDX]));
+        unsigned       dead_cells[DEAD_CELLS_NUM];
 
-        for (int i = 0, mins_size, ind_idx, ind; i < DEAD_CELLS_NUM; ++i) {
+        std::vector<unsigned int> mins;
+
+        for (unsigned i = 0, mins_size, ind_idx, ind; i < DEAD_CELLS_NUM; ++i) {
             mins = vector_which_min<DBL_T>(cell_den);
 
             mins_size = (int) mins.size();
@@ -134,19 +135,20 @@ bool Sim_2D<N_DIMS, Y_LEN, X_LEN>::Dimension::end_of_day(const int time) {
             cell_den.at(ind) = (DBL_T) INFINITY;
         }
 
-        if ((int) coord.size() == 0) { return false; }
+        if ((unsigned) coord.size() == 0) { return false; }
 
         coord    = vector_remove_many_by_index<COORD_T >(coord, DEAD_CELLS_NUM, dead_cells);
         cell_den = vector_remove_many_by_index<DBL_T>(cell_den, DEAD_CELLS_NUM, dead_cells);
         assert(coord.size() == cell_den.size());
 
-        if ((int) cell_den.size() == 0) { return false; }
+        if ((unsigned) cell_den.size() == 0) { return false; }
 
-        const int        PROF_CELLS_NUM = (int) round((double) ((DBL_T) coord.size() * PARS->PROB_PROF[IDX]));
-        int              prof_cells[PROF_CELLS_NUM];
-        std::vector<int> maxes;
+        const unsigned PROF_CELLS_NUM = round((double) ((DBL_T) coord.size() * PARS->PROB_PROF[IDX]));
+        unsigned       prof_cells[PROF_CELLS_NUM];
 
-        for (int i = 0, maxes_size, ind_idx, ind; i < PROF_CELLS_NUM; ++i) {
+        std::vector<unsigned int> maxes;
+
+        for (unsigned i = 0, maxes_size, ind_idx, ind; i < PROF_CELLS_NUM; ++i) {
             maxes      = vector_which_max<DBL_T>(cell_den);
             maxes_size = (int) maxes.size();
             ind_idx    = maxes_size > 1 ? unif_index(maxes_size) : 0;

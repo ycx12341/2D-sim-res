@@ -38,7 +38,7 @@ void runif_seq(const unsigned len, DBL_T *seq, const DBL_T min, const DBL_T max)
     }
 }
 
-int unif_index(const int dn) {
+unsigned int unif_index(const unsigned int dn) {
     if (dn <= 0) { return 0; }
     int    bits = (int) ceil(log2(dn));
     double dv;

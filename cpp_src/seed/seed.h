@@ -47,7 +47,7 @@ void runif_seq(unsigned len, DBL_T *seq, DBL_T min, DBL_T max);
  * @param dn The upper limit of sample area.
  * @return An integer in range of [0, dn-1].
  */
-int unif_index(int dn);
+unsigned int unif_index(const unsigned int dn);
 
 /**
  * Takes multiple samples from [0, dn-1]

@@ -13,7 +13,7 @@
 #include <map>
 
 /* Coordinator Type: [X, Y] */
-#define COORD_T std::array<int, 2>
+#define COORD_T std::array<unsigned , 2>
 
 /**
  * Abstract Matrix class.
@@ -27,12 +27,12 @@ public:
     /**
      * @return The number of columns of the matrix.
      */
-    [[nodiscard]] virtual int cols() const = 0;
+    [[nodiscard]] virtual unsigned int cols() const = 0;
 
     /**
      * @return The number of rows of the matrix.
      */
-    [[nodiscard]] virtual int rows() const = 0;
+    [[nodiscard]] virtual unsigned int rows() const = 0;
 
     /**
      * Access an element in the matrix.
@@ -40,7 +40,7 @@ public:
      * @param j The index of column in which the element presents.
      * @return The element presents in the i-th row and j-th column.
      */
-    virtual T &operator()(int i, int j) = 0;
+    virtual T &operator()(unsigned i, unsigned j) = 0;
 
     friend std::ostream &operator<<(std::ostream &os, Matrix<T> &that) {
         for (int i = 0, r = that.rows(); i < r; ++i) {
@@ -242,8 +242,8 @@ public:
      * @return    The sum of all elements.
      */
     DBL_T sum() {
-        DBL_T sum = 0;
-        for (int i = 0, r = rows(); i < r; ++i) {
+        DBL_T    sum = 0;
+        for (int i   = 0, r = rows(); i < r; ++i) {
             for (int j = 0, c = cols(); j < c; ++j) {
                 sum += this->operator()(i, j);
             }
@@ -270,8 +270,8 @@ public:
 
         if (size() <= 0) { return maxes; }
 
-        for (int i = 0, r = rows(); i < r; ++i) {
-            for (int j = 0, c = cols(); j < c; ++j) {
+        for (unsigned i = 0, r = rows(); i < r; ++i) {
+            for (unsigned j = 0, c = cols(); j < c; ++j) {
                 v = this->operator()(i, j);
                 if (v < max) { continue; }
                 if (v > max) {
@@ -292,8 +292,8 @@ public:
         std::vector<COORD_T > res;
         if (size() <= 0) { return res; }
 
-        for (int i = 0, r = rows(); i < r; ++i) {
-            for (int j = 0, c = cols(); j < c; ++j) {
+        for (unsigned i = 0, r = rows(); i < r; ++i) {
+            for (unsigned j = 0, c = cols(); j < c; ++j) {
                 if (this->operator()(i, j) == val) { res.push_back({i, j}); }
             }
         }
@@ -307,7 +307,7 @@ public:
  * @tparam ROWS Number of rows.
  * @tparam COLS Number of columns.
  */
-template<typename T, int ROWS, int COLS>
+template<typename T, unsigned ROWS, unsigned COLS>
 class MatrixS : public Matrix<T> {
 
 private:
@@ -334,16 +334,16 @@ public:
         }
     }
 
-    T &operator()(const int i, const int j) {
+    T &operator()(const unsigned i, const unsigned j) {
         assert(0 <= i && i < ROWS && 0 <= j && j < COLS);
         return MATRIX[i][j];
     }
 
-    [[nodiscard]] int cols() const {
+    [[nodiscard]] unsigned int cols() const {
         return COLS;
     }
 
-    [[nodiscard]] int rows() const {
+    [[nodiscard]] unsigned int rows() const {
         return ROWS;
     }
 };
@@ -356,9 +356,9 @@ template<typename T>
 class MatrixD : public Matrix<T> {
 
 private:
-    T **MATRIX = nullptr;
-    int ROWS = 0;
-    int COLS = 0;
+    T        **MATRIX = nullptr;
+    unsigned ROWS     = 0;
+    unsigned COLS     = 0;
 
 public:
     /**
@@ -366,8 +366,8 @@ public:
      * @param r Number of rows.
      * @param c Number of columns.
      */
-    MatrixD(const int r, const int c) : ROWS(r), COLS(c) {
-        MATRIX = new T *[ROWS];
+    MatrixD(const unsigned r, const unsigned c) : ROWS(r), COLS(c) {
+        MATRIX     = new T *[ROWS];
         for (int i = 0; i < ROWS; ++i) {
             MATRIX[i] = new T[COLS];
         }
@@ -379,7 +379,7 @@ public:
      * @param c Number of columns.
      * @param val Value of all elements.
      */
-    MatrixD(const int r, const int c, const T val) : MatrixD(r, c) {
+    MatrixD(const unsigned r, const unsigned c, const T val) : MatrixD(r, c) {
         Matrix<T>::setAll(val);
     }
 
@@ -389,20 +389,20 @@ public:
         }
         delete[] MATRIX;
         MATRIX = nullptr;
-        ROWS = 0;
-        COLS = 0;
+        ROWS   = 0;
+        COLS   = 0;
     }
 
-    T &operator()(const int i, const int j) {
+    T &operator()(const unsigned i, const unsigned j) {
         assert(0 <= i && i < ROWS && 0 <= j && j < COLS);
         return MATRIX[i][j];
     }
 
-    [[nodiscard]] int cols() const {
+    [[nodiscard]] unsigned int cols() const {
         return COLS;
     }
 
-    [[nodiscard]] int rows() const {
+    [[nodiscard]] unsigned int rows() const {
         return ROWS;
     }
 };

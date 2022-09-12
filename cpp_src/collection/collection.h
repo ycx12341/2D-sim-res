@@ -100,7 +100,7 @@ std::vector<int> std_array_which_equals(const std::array<int, Len> &arr, const T
  * @return     True if this array contains at least one val.
  */
 template<typename T>
-bool array_contains(T val, const int len, T *arr) {
+bool array_contains(T val, const unsigned int len, T *arr) {
     for (int i = 0; i < len; ++i) {
         if (val == arr[i]) { return true; }
     }
@@ -114,14 +114,14 @@ bool array_contains(T val, const int len, T *arr) {
  * @return       A vector of indexes.
  */
 template<typename T>
-std::vector<int> vector_which_min(const std::vector<T> &vector) {
-    std::vector<int> mins;
+std::vector<unsigned int> vector_which_min(const std::vector<T> &vector) {
+    std::vector<unsigned int> mins;
 
     T min = INFINITY, v;
 
-    if ((int) vector.size() <= 0) { return mins; }
+    if ((unsigned) vector.size() <= 0) { return mins; }
 
-    for (int i = 0, len = (int) vector.size(); i < len; ++i) {
+    for (unsigned int i = 0, len = (int) vector.size(); i < len; ++i) {
         v = vector.at(i);
         if (v > min) { continue; }
         if (v < min) {
@@ -140,8 +140,8 @@ std::vector<int> vector_which_min(const std::vector<T> &vector) {
  * @return       A vector of indexes.
  */
 template<typename T>
-std::vector<int> vector_which_max(const std::vector<T> &vector) {
-    std::vector<int> maxes;
+std::vector<unsigned int> vector_which_max(const std::vector<T> &vector) {
+    std::vector<unsigned int> maxes;
 
     T max = -INFINITY, v;
 
@@ -168,11 +168,11 @@ std::vector<int> vector_which_max(const std::vector<T> &vector) {
  * @return A vector with specified elements removed.
  */
 template<typename T>
-std::vector<T> vector_remove_many_by_index(const std::vector<T> &vector, const int len, int *indexes) {
+std::vector<T> vector_remove_many_by_index(const std::vector<T> &vector, const unsigned int len, unsigned int *indexes) {
     std::vector<T> res;
 
     for (int i = 0, l = vector.size(); i < l; ++i) {
-        if (array_contains<int>(i, len, indexes)) { continue; }
+        if (array_contains<unsigned>(i, len, indexes)) { continue; }
         res.push_back(vector.at(i));
     }
     return res;

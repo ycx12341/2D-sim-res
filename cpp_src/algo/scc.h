@@ -273,7 +273,7 @@ private:
 
         bool end_of_day(int time);
 
-        void proliferation(int PROF_CELLS_NUM, int *prof_cells);
+        void proliferation(unsigned PROF_CELLS_NUM, unsigned *prof_cells);
 
         template<int Nbr_Num>
         void cell_proliferate(

@@ -7,7 +7,7 @@
 #define CONSOLE_REPORT                          // Enable console report.
 
 #define MULTI_THREADING             true        // { true, false }
-#define DEFAULT_N_DIMS              10000       // Number of Dimensions.
+#define DEFAULT_N_DIMS              100       // Number of Dimensions.
 #define SEED                        0           // Must be an int value. Use system timestamp as seed by setting it to 0.
                                                 // To reproduce the same result:
                                                 // -    set MULTI_THREADING to false
