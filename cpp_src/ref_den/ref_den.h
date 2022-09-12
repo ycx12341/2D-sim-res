@@ -1,11 +1,11 @@
-#ifndef SIM_2D_CPP_T3_REF_DEN_H
-#define SIM_2D_CPP_T3_REF_DEN_H
+#ifndef SIM_2D_CPP_REF_DEN_H
+#define SIM_2D_CPP_REF_DEN_H
 
 #include "../config.h"
 
 #ifdef USE_PRELOAD_REF
 
-static const DBL_T T3_REF_DEN[12][7] = {
+static const DBL_T D3_REF_DEN[12][7] = {
         {0.26500, 0.00000, 0.00000, 0, 0, 0, 0.00000},
         {0.35125, 0.00562, 0.00500, 0, 0, 0, 0.00000},
         {0.46812, 0.00000, 0.00000, 0, 0, 0, 0.00000},
@@ -22,4 +22,4 @@ static const DBL_T T3_REF_DEN[12][7] = {
 
 #endif
 
-#endif //SIM_2D_CPP_T3_REF_DEN_H
+#endif //SIM_2D_CPP_REF_DEN_H

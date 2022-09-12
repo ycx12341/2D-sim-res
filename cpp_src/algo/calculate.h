@@ -9,7 +9,7 @@
 #include <chrono>
 
 #include "scc.h"
-#include "../ref_den/t3_ref_den.h"
+#include "../ref_den/ref_den.h"
 
 #define MINIMUM_MULTI_THREAD_DIMS   30
 #define NAN_EXIT_CODE               (-1)
@@ -25,7 +25,7 @@ void Sim_2D<N_DIMS, Y_LEN, X_LEN>::Dimension::calculate() {
         DBL_T    sum = 0;
         for (int i   = 0; i < parent->y_cut_len; ++i) {
             for (int j = 0; j < parent->x_cut_len; ++j) {
-                sum += pow((*den_mat_out)(i, j) - T3_REF_DEN[i][j], 2);
+                sum += pow((*den_mat_out)(i, j) - D3_REF_DEN[i][j], 2);
             }
         }
 
@@ -34,8 +34,9 @@ void Sim_2D<N_DIMS, Y_LEN, X_LEN>::Dimension::calculate() {
 }
 
 DBL_T calculate_ess(const std::vector<DBL_T> &resamp_prob) {
-    DBL_T      sum = 0, square_sum = 0;
-    for (DBL_T v: resamp_prob) {
+    DBL_T sum = 0, square_sum = 0;
+
+    for (const DBL_T &v: resamp_prob) {
         sum += v;
         square_sum += pow(v, 2);
     }
@@ -45,13 +46,22 @@ DBL_T calculate_ess(const std::vector<DBL_T> &resamp_prob) {
 template<unsigned N_DIMS, unsigned Y_LEN, unsigned X_LEN>
 void Sim_2D<N_DIMS, Y_LEN, X_LEN>::calculate_bw() {
     assert(!infos.empty());
-    DBL_T power[power_len];
-    assert(seq_by<DBL_T>(power, POWER_MIN, POWER_MAX, POWER_STEP) == power_len);
+    assert(!std::isnan(power_len));
+    assert(!std::isnan(power_min));
+    assert(!std::isnan(power_max));
+    assert(!std::isnan(step_size));
+    assert(!std::isnan(ess_target));
+
+    DBL_T power[power_len + 1];
+    int   desired_power_len = seq_by<DBL_T>(power, power_min, power_max, step_size);
+    assert(desired_power_len <= power_len + 1);
+    power_len = desired_power_len;
 
     std::map<unsigned, DBL_T> wt;
     DBL_T w_min, w_max, ess;
 
     for (int i = 0; i < power_len; ++i) {
+        wt.clear();
         for (auto &[idx, info]: infos) {
             wt[idx] = pow(info.least_square, -power[i]);
         }
@@ -77,7 +87,7 @@ void Sim_2D<N_DIMS, Y_LEN, X_LEN>::calculate_bw() {
 
     DBL_T ess_diff_min = INFINITY, ess_diff;
     for (auto const &[p, e]: ess_map) {
-        ess_diff = abs(e - ESS_TARGET);
+        ess_diff = abs(e - ess_target);
         if (ess_diff < ess_diff_min) {
             ess_obj      = e;
             ess_diff_min = ess_diff;
@@ -94,7 +104,7 @@ void Sim_2D<N_DIMS, Y_LEN, X_LEN>::calculate_bw() {
 #endif
     assert(!std::isnan(bw_obj) && !std::isnan(ess_obj));
 
-    DBL_T wt_min = INFINITY, wt_max = (DBL_T) -INFINITY, info_wt;
+    DBL_T wt_min            = INFINITY, wt_max = (DBL_T) -INFINITY, info_wt;
     for (auto &[_, info]: infos) {
         info_wt = pow(info.least_square, -bw_obj);
         info.wt = info_wt;
@@ -123,11 +133,16 @@ Parameters<N_DIMS> *Sim_2D<N_DIMS, Y_LEN, X_LEN>::simulate(bool multithreading) 
     calculate_sse(multithreading);
     calculate_bw();
     Parameters<N_DIMS> *p_nr = abc_bcd();
+#ifdef CONSOLE_REPORT
+    std::cout << "Ess:                     " << ess_obj << std::endl;
+#endif
+#ifdef EXPORT_CSV
     if (need_export) {
         export_summary(CSV_SMRY_FNAME(name));
         export_least_square(CSV_DIFF_FNAME(name));
         p_nr->export_csv(CSV_PARS_FNAME(name));
     }
+#endif
     return p_nr;
 }
 
@@ -194,7 +209,7 @@ void progress_report(const Sim_2D<N_DIMS, Y_LEN, X_LEN> *simulation) {
                   << " secs" << std::endl
                   << "Valid results:           " << simulation->infos.size() << std::endl
                   << "Mean Square Differences: " << simulation->sum_diff / simulation->infos.size()
-                  << std::endl << std::endl;
+                  << std::endl;
         FINISHED_TASK = 0;
     }
 }

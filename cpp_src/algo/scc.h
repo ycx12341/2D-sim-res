@@ -19,6 +19,12 @@ private:
 
     bool        need_export = false;
     std::string name;
+
+    int power_len = (int) NAN;
+    DBL_T ess_target = NAN;
+    DBL_T power_min  = NAN;
+    DBL_T power_max  = NAN;
+    DBL_T step_size  = NAN;
 public:
     const DBL_T        h;
     const DBL_T        space_length_y;
@@ -30,7 +36,6 @@ public:
     const int          day_time_steps;
     const DBL_T        pde_time_steps;                         // Diffusion starts having an impact after a certain amount of time
     const DBL_T        mat_size;
-    const int          power_len = (int) ceil((POWER_MAX - POWER_MIN) / POWER_STEP);
     int                y_cut_len;
     int                x_cut_len;
     Parameters<N_DIMS> *pars;
@@ -39,9 +44,9 @@ public:
     std::unordered_map<unsigned, DBL_T>  least_square;  // <idx, least_square>
     std::unordered_map<unsigned, Info_T> infos;         // <idx, { non-NAN least_square, ess, ... } >
     std::unordered_map<DBL_T, DBL_T>     ess_map;       // <power, ess>
-    DBL_T ess_obj  = NAN;
-    DBL_T bw_obj   = NAN;
-    DBL_T sum_diff = NAN;
+    DBL_T ess_obj    = NAN;
+    DBL_T bw_obj     = NAN;
+    DBL_T sum_diff   = NAN;
 
     Sim_2D(const unsigned int seed,
            DBL_T h,
@@ -75,13 +80,12 @@ public:
         delete pars;
     }
 
-    Parameters<N_DIMS> *simulate(bool multithreading = false);
-
     void reset() {
         least_square.clear();
         infos.clear();
         nnan_idxs.clear();
         ess_map.clear();
+
         ess_obj  = NAN;
         bw_obj   = NAN;
         sum_diff = NAN;
@@ -97,6 +101,17 @@ public:
         need_export = true;
         name        = simulation_name;
     }
+
+    void set_bw(const DBL_T target, const DBL_T lb_bw, const DBL_T ub_bw, const DBL_T step) {
+        assert(lb_bw <= ub_bw);
+        ess_target = target;
+        power_min  = lb_bw;
+        power_max  = ub_bw;
+        step_size  = step;
+        power_len  = (int) ceil((power_max - power_min) / step_size);
+    }
+
+    Parameters<N_DIMS> *simulate(bool multithreading = false);
 
 private:
     void calculate_sse(bool multithreading = false);

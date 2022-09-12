@@ -1,13 +1,13 @@
 #ifndef SIM_2D_CPP_CONFIG_H
 #define SIM_2D_CPP_CONFIG_H
 
-#define DBL_T                       double      // { long double, double }
+#define DBL_T                       double      // Float value type. { long double, double }
 
 #define MULTI_THREADING             true        // { true, false }
 #define DEFAULT_N_DIMS              10000
-#define SEED                        0           // use system timestamp as see by setting to 0
-#define USE_PRELOAD_REF                         // using preloaded T3_REF_DEN csv data
-#define CONSOLE_REPORT                          // enable console report
+#define SEED                        0           // Must be an int value. Use system timestamp as seed by setting it to 0.
+#define USE_PRELOAD_REF                         // Using preloaded REF_DEN csv data.
+#define CONSOLE_REPORT                          // Enable console report.
 
 /* Initial Parameters */
 #define DN_MIN                      0.000069L
@@ -56,12 +56,6 @@
 #define SCC_TIME_STEPS_375          (SCC_T_375 / SCC_DT_375)
 #define SCC_INT_TIME_STEPS_375      (1.0 / SCC_DT_375)
 #define SCC_DAY_TIME_STEPS_375      375
-
-#define POWER_MIN                   0.0
-#define POWER_MAX                   2.0
-#define POWER_STEP                  0.01
-
-#define ESS_TARGET                  722
 
 /* CSV settings */
 #define EXPORT_CSV
