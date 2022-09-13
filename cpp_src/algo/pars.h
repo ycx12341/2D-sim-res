@@ -18,24 +18,24 @@ enum FEATURE_T {
 template<unsigned N_DIMS>
 class Parameters {
 public:
-    constexpr static const DBL_T NaN          = (DBL_T) NAN;
-    constexpr static const int   FEATURES_NUM = 9;
+    constexpr static const DBL_T    NaN          = (DBL_T) NAN;
+    constexpr static const unsigned FEATURES_NUM = 9;
 
-    DBL_T                        DN[N_DIMS]              = {0};
-    DBL_T                        GAMMA[N_DIMS]           = {0};
-    DBL_T                        RN[N_DIMS]              = {0};
-    DBL_T                        ETA[N_DIMS]             = {0};
-    DBL_T                        DM[N_DIMS]              = {0};
-    DBL_T                        ALPHA[N_DIMS]           = {0};
-    DBL_T                        INIT_CELLS_COLS[N_DIMS] = {0};
-    DBL_T                        PROB_DEATH[N_DIMS]      = {0};
-    DBL_T                        PROB_PROF[N_DIMS]       = {0};
+    DBL_T                           DN[N_DIMS]              = {0};
+    DBL_T                           GAMMA[N_DIMS]           = {0};
+    DBL_T                           RN[N_DIMS]              = {0};
+    DBL_T                           ETA[N_DIMS]             = {0};
+    DBL_T                           DM[N_DIMS]              = {0};
+    DBL_T                           ALPHA[N_DIMS]           = {0};
+    DBL_T                           INIT_CELLS_COLS[N_DIMS] = {0};
+    DBL_T                           PROB_DEATH[N_DIMS]      = {0};
+    DBL_T                           PROB_PROF[N_DIMS]       = {0};
 
     explicit Parameters() = default;
 
     Parameters(Parameters<N_DIMS> &that) {
-        for (int i = 0; i < FEATURES_NUM; ++i) {
-            for (int j = 0; j < N_DIMS; ++j) {
+        for (unsigned i = 0; i < FEATURES_NUM; ++i) {
+            for (unsigned j = 0; j < N_DIMS; ++j) {
                 this->operator()((FEATURE_T) i, j) = that((FEATURE_T) i, j);
             }
         }
@@ -57,8 +57,8 @@ public:
     friend std::ostream &operator<<(std::ostream &os, Parameters &that) {
         os << "        DN      GAMMA         RN        ETA         DM      ALPHA        ICC         PD         PP"
            << std::endl;
-        for (int j = 0; j < N_DIMS; ++j) {
-            for (int i = 0; i < FEATURES_NUM; ++i) {
+        for (unsigned j = 0; j < N_DIMS; ++j) {
+            for (unsigned i = 0; i < FEATURES_NUM; ++i) {
                 os << std::fixed << std::setw(10) << std::setprecision(5)
                    << that((FEATURE_T) i, j) << " ";
             }
@@ -80,12 +80,12 @@ public:
         runif_seq(N_DIMS, (DBL_T *) PROB_PROF, PROB_PROF_MIN, PROB_PROF_MAX);
     }
 
-    Parameters<N_DIMS> *resample(const std::vector<int> &idxes, const std::vector<int> &nnan_idxs) {
+    Parameters<N_DIMS> *resample(const std::vector<unsigned> &idxes, const std::vector<unsigned> &nnan_idxs) {
         assert(idxes.size() == N_DIMS);
         auto *p = new Parameters<N_DIMS>;
 
-        for (int i = 0; i < FEATURES_NUM; ++i) {
-            for (int j = 0, js = (int) idxes.size(); j < js; ++j) {
+        for (unsigned i = 0; i < FEATURES_NUM; ++i) {
+            for (unsigned j = 0, js = (int) idxes.size(); j < js; ++j) {
                 (*p)((FEATURE_T) i, j) = this->operator()((FEATURE_T) i, nnan_idxs.at(idxes.at(j)));
             }
         }
@@ -126,8 +126,8 @@ public:
                   << " DIMs: " << N_DIMS << std::endl;
         csv << CSV_TITLE_LINE << std::endl;
 
-        for (int j = 0; j < N_DIMS; ++j) {
-            for (int i = 0; i < FEATURES_NUM; ++i) {
+        for (unsigned j = 0; j < N_DIMS; ++j) {
+            for (unsigned i = 0; i < FEATURES_NUM; ++i) {
                 csv << std::fixed << std::setprecision(CSV_DBL_PRECISION)
                     << this->operator()((FEATURE_T) i, j) << CSV_SEPARATOR;
             }

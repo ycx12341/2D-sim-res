@@ -46,22 +46,22 @@ unsigned int unif_index(const unsigned int dn) {
     return (int) dv;
 }
 
-std::vector<int> unif_index(const int index_num, const int dn) {
-    std::vector<int> ry;
+std::vector<unsigned int> unif_index(const unsigned int index_num, const unsigned int dn) {
+    std::vector<unsigned int> ry;
     if (dn <= 0) { return ry; }
 
-    int x[dn], n = dn;
+    unsigned x[dn], n = dn;
 
-    for (int i = 0; i < dn; i++) { x[i] = i; }
-    for (int i = 0; i < index_num; i++) {
-        int j = unif_index(n);
+    for (unsigned i = 0; i < dn; i++) { x[i] = i; }
+    for (unsigned i = 0; i < index_num; i++) {
+        unsigned j = unif_index(n);
         ry.push_back(x[j]);
-        x[j]  = x[--n];
+        x[j]       = x[--n];
     }
     return ry;
 }
 
-void fixupProb(DBL_T *p, int n, int require_k) {
+void fixupProb(DBL_T *p, unsigned n, int require_k) {
     DBL_T sum  = 0.0, pi;
     int   npos = 0;
 
@@ -126,8 +126,8 @@ void revsort(DBL_T *a, int *ib, int n) {
     }
 }
 
-int sample_int_index(const int dn, const DBL_T *prob) {
-    int   perm[dn], nm1 = dn - 1;
+unsigned int sample_int_index(const unsigned int dn, const DBL_T *prob) {
+    int   perm[dn], nm1 = (int) dn - 1;
     DBL_T prob_cpy[dn];
 
     for (int i = 0; i < dn; i++) {
@@ -136,10 +136,10 @@ int sample_int_index(const int dn, const DBL_T *prob) {
     }
 
     fixupProb(prob_cpy, dn, false);
-    revsort(prob_cpy, perm, dn);
+    revsort(prob_cpy, perm, (int) dn);
 
     DBL_T rT = unif_rand(), mass = 0;
-    int      i;
+    unsigned i;
     for (i = 0; i < nm1; i++) {
         mass += prob_cpy[i];
         if (rT <= mass) { break; }
@@ -147,20 +147,20 @@ int sample_int_index(const int dn, const DBL_T *prob) {
     return perm[i];
 }
 
-std::vector<int> sample_indices(
-        const int sample_num,
+std::vector<unsigned int> sample_indices(
+        const unsigned int sample_num,
         const std::vector<DBL_T> &prob,
         const bool replace
 ) {
-    int              dn = (int) prob.size(), nm1 = dn - 1;
+    int                       dn = (int) prob.size(), nm1 = dn - 1;
     assert(dn <= INT_MAX);
 
     if (!replace) { assert(sample_num <= dn); }
 
-    DBL_T            prob_cpy[dn];
-    int              i  = 0, j = 0;
-    int              perm[dn];
-    std::vector<int> res;
+    DBL_T                     prob_cpy[dn];
+    int                       i  = 0, j;
+    int                       perm[dn];
+    std::vector<unsigned int> res;
 
     for (const DBL_T p: prob) {
         prob_cpy[i] = p;

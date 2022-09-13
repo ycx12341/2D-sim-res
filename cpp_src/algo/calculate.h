@@ -23,9 +23,10 @@ void Sim_2D<N_DIMS, Y_LEN, X_LEN>::Dimension::calculate() {
         den_mat_out == nullptr && ind_pos_out == nullptr) {
         diff = NAN;
     } else {
-        DBL_T    sum = 0;
-        for (int i   = 0; i < parent->y_cut_len; ++i) {
-            for (int j = 0; j < parent->x_cut_len; ++j) {
+        DBL_T sum = 0;
+
+        for (unsigned i = 0; i < parent->y_cut_len; ++i) {
+            for (unsigned j = 0; j < parent->x_cut_len; ++j) {
                 sum += pow((*den_mat_out)(i, j) - D3_REF_DEN[i][j], 2);
             }
         }
@@ -55,14 +56,14 @@ void Sim_2D<N_DIMS, Y_LEN, X_LEN>::calculate_bw() {
     assert(!std::isnan(ess_target));
 
     DBL_T power[power_len + 1];
-    int   desired_power_len = seq_by<DBL_T>(power, power_min, power_max, step_size);
+    unsigned desired_power_len = seq_by<DBL_T>(power, power_min, power_max, step_size);
     assert(desired_power_len <= power_len + 1);
     power_len = desired_power_len;
 
     std::map<unsigned, DBL_T> wt;
     DBL_T w_min, w_max, ess;
 
-    for (int i = 0; i < power_len; ++i) {
+    for (unsigned i = 0; i < power_len; ++i) {
         wt.clear();
         for (auto &[idx, info]: infos) {
             wt[idx] = pow(info.least_square, -power[i]);
@@ -106,7 +107,7 @@ void Sim_2D<N_DIMS, Y_LEN, X_LEN>::calculate_bw() {
 #endif
     assert(!std::isnan(bw_obj) && !std::isnan(ess_obj));
 
-    DBL_T wt_min            = INFINITY, wt_max = (DBL_T) -INFINITY, info_wt;
+    DBL_T    wt_min            = INFINITY, wt_max = (DBL_T) -INFINITY, info_wt;
     for (auto &[_, info]: infos) {
         info_wt = pow(info.least_square, -bw_obj);
         info.wt = info_wt;
@@ -161,13 +162,13 @@ template<unsigned N_DIMS, unsigned Y_LEN, unsigned X_LEN>
 Parameters<N_DIMS> *Sim_2D<N_DIMS, Y_LEN, X_LEN>::abc_bcd() {
     assert(Parameters<N_DIMS>::FEATURES_NUM == PARS_NUM);
 
-    std::vector<DBL_T> probs;
-    for (const int     idx: nnan_idxs) {
+    std::vector<DBL_T>  probs;
+    for (const unsigned idx: nnan_idxs) {
         probs.push_back(infos[idx].resample);
         assert(!std::isnan(infos[idx].least_square));
     }
 
-    std::vector<int> resamp_idx = sample_indices(N_DIMS, probs, true);
+    std::vector<unsigned> resamp_idx = sample_indices(N_DIMS, probs, true);
     assert(resamp_idx.size() == N_DIMS);
 
     Parameters<N_DIMS> *paras_nr_unperturbed = pars->resample(resamp_idx, nnan_idxs);
@@ -179,8 +180,8 @@ Parameters<N_DIMS> *Sim_2D<N_DIMS, Y_LEN, X_LEN>::abc_bcd() {
     const DBL_T UB[PARS_NUM] = ABC_BCD_PAR_UB;
     DBL_T p;
 
-    for (int i = 0; i < Parameters<N_DIMS>::FEATURES_NUM; ++i) {
-        for (int j = 0; j < N_DIMS; ++j) {
+    for (unsigned i = 0; i < Parameters<N_DIMS>::FEATURES_NUM; ++i) {
+        for (unsigned j = 0; j < N_DIMS; ++j) {
             do {
                 (*paras_nr_perturbed)(FT(i), j) = rnorm(
                         H * (*paras_nr_unperturbed)(FT(i), j) + (1 - H) * (*paras_nr_unperturbed).feature_mean(FT(i)),
@@ -205,7 +206,7 @@ void progress_report(const Sim_2D<N_DIMS, Y_LEN, X_LEN> *simulation) {
     if (FINISHED_TASK == 1) { std::cerr << "-"; }
     if (FINISHED_TASK %
         (N_DIMS > MINIMUM_MULTI_THREAD_DIMS
-         ? (int) round((DBL_T) N_DIMS / MINIMUM_MULTI_THREAD_DIMS)
+         ? (unsigned) round((DBL_T) N_DIMS / MINIMUM_MULTI_THREAD_DIMS)
          : 1) == 0) {
         std::cerr << "-";
     }
@@ -239,12 +240,12 @@ void Sim_2D<N_DIMS, Y_LEN, X_LEN>::calculate_sse(bool multithreading) {
         std::mutex               lock;
         std::vector<std::thread> threads;
 
-        const int threads_num = N_DIMS > suggestion ? suggestion : N_DIMS;
-        const int batch_size  = ceil((double) N_DIMS / suggestion);
+        const unsigned threads_num = N_DIMS > suggestion ? suggestion : N_DIMS;
+        const unsigned batch_size  = ceil((double) N_DIMS / suggestion);
 
-        for (int batch = 0; batch < threads_num; ++batch) {
+        for (unsigned batch = 0; batch < threads_num; ++batch) {
             threads.push_back(std::thread([&lock, this, batch, batch_size]() {
-                for (int d = batch * batch_size; d < (batch + 1) * batch_size && d < N_DIMS; d++) {
+                for (unsigned d = batch * batch_size; d < (batch + 1) * batch_size && d < N_DIMS; d++) {
                     Dimension dimension(this, d);
                     dimension.calculate();
                     DBL_T df = dimension.get_diff();
@@ -277,7 +278,7 @@ void Sim_2D<N_DIMS, Y_LEN, X_LEN>::calculate_sse(bool multithreading) {
     } else {
         single_thread:
         DBL_T    df;
-        for (int i = 0; i < N_DIMS; ++i) {
+        for (unsigned i = 0; i < N_DIMS; ++i) {
             Dimension dimension(this, i);
             dimension.calculate();
 

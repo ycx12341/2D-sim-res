@@ -43,8 +43,8 @@ public:
     virtual T &operator()(unsigned i, unsigned j) = 0;
 
     friend std::ostream &operator<<(std::ostream &os, Matrix<T> &that) {
-        for (int i = 0, r = that.rows(); i < r; ++i) {
-            for (int j = 0, c = that.cols(); j < c; ++j) {
+        for (unsigned i = 0, r = that.rows(); i < r; ++i) {
+            for (unsigned j = 0, c = that.cols(); j < c; ++j) {
                 os << that.operator()(i, j) << " ";
             }
             os << std::endl;
@@ -57,8 +57,8 @@ public:
      * @param val Value of all elements to set.
      */
     void setAll(T val) {
-        for (int i = 0, r = rows(); i < r; ++i) {
-            for (int j = 0, c = cols(); j < c; ++j) {
+        for (unsigned i = 0, r = rows(); i < r; ++i) {
+            for (unsigned j = 0, c = cols(); j < c; ++j) {
                 this->operator()(i, j) = val;
             }
         }
@@ -73,8 +73,8 @@ public:
         if (this == that) { return true; }
         if (this->cols() != that->cols() || this->rows() != that->rows()) { return false; }
 
-        for (int i = 0, r = rows(); i < r; ++i) {
-            for (int j = 0, c = cols(); j < c; ++j) {
+        for (unsigned i = 0, r = rows(); i < r; ++i) {
+            for (unsigned j = 0, c = cols(); j < c; ++j) {
                 if (this->operator()(i, j) != that->operator()(i, j)) { return false; }
             }
         }
@@ -84,8 +84,8 @@ public:
     /**
      * Iterate through all elements in matrix and apply a function to each of them.
      * Equivalent to:
-     *      for (int i = 0; i < rows; ++i) {
-     *          for (int j = 0; j < cols; ++j) {
+     *      for (unsigned i = 0; i < rows; ++i) {
+     *          for (unsigned j = 0; j < cols; ++j) {
      *              f( &MATRIX[i][j] )
      *          }
      *      }
@@ -95,8 +95,8 @@ public:
      */
     template<typename F>
     void iter(F f) {
-        for (int i = 0, r = rows(); i < r; ++i) {
-            for (int j = 0, c = cols(); j < c; ++j) {
+        for (unsigned i = 0, r = rows(); i < r; ++i) {
+            for (unsigned j = 0, c = cols(); j < c; ++j) {
                 f(this->operator()(i, j));
             }
         }
@@ -105,19 +105,19 @@ public:
     /**
      * Iterate through all elements in matrix and apply a function to indexes of each element.
      * Equivalent to:
-     *      for (int i = 0; i < rows; ++i) {
-     *          for (int j = 0; j < cols; ++j) {
+     *      for (unsigned i = 0; i < rows; ++i) {
+     *          for (unsigned j = 0; j < cols; ++j) {
      *              f( i, j )
      *          }
      *      }
      * @tparam F Function type.
-     * @param f  Function in form of: void f(int i, int j) { ... }
+     * @param f  Function in form of: void f(unsigned i, unsigned j) { ... }
      *           The position of each element will be passed to this function.
      */
     template<typename F>
     void iter_index(F f) {
-        for (int i = 0, r = rows(); i < r; ++i) {
-            for (int j = 0, c = cols(); j < c; ++j) {
+        for (unsigned i = 0, r = rows(); i < r; ++i) {
+            for (unsigned j = 0, c = cols(); j < c; ++j) {
                 f(i, j);
             }
         }
@@ -132,8 +132,8 @@ public:
      *        |                 |
      *        + <------ r ----> +
      * Equivalent to:
-     *      for (int ii = i; ii < i + r; ++ii) {
-     *          for (int jj = j; jj < j + c; ++jj) {
+     *      for (unsigned ii = i; ii < i + r; ++ii) {
+     *          for (unsigned jj = j; jj < j + c; ++jj) {
      *              f( &MATRIX[ii][jj] )
      *          }
      *      }
@@ -146,9 +146,9 @@ public:
      *           The reference of each element will be passed to this function.
      */
     template<typename F>
-    void iter_range(const int i, const int j, const int r, const int c, F f) {
-        for (int ii = i, il = i + r; ii < il; ++ii) {
-            for (int jj = j, jl = j + c; jj < jl; ++jj) {
+    void iter_range(const unsigned i, const unsigned j, const unsigned r, const unsigned c, F f) {
+        for (unsigned ii = i, il = i + r; ii < il; ++ii) {
+            for (unsigned jj = j, jl = j + c; jj < jl; ++jj) {
                 f(this->operator()(ii, jj));
             }
         }
@@ -163,8 +163,8 @@ public:
      *        |                 |
      *        + <------ r ----> +
      * Equivalent to:
-     *      for (int ii = i; ii < i + r; ++ii) {
-     *          for (int jj = j; jj < j + c; ++jj) {
+     *      for (unsigned ii = i; ii < i + r; ++ii) {
+     *          for (unsigned jj = j; jj < j + c; ++jj) {
      *              f( ii, jj )
      *          }
      *      }
@@ -173,13 +173,13 @@ public:
      * @param j  The top-left element that is in column j.
      * @param r  The number of rows of the sub-matrix.
      * @param c  The number of columns of the sub-matrix.
-     * @param f  Function in form of: void f(int i, int j) { ... }
+     * @param f  Function in form of: void f(unsigned i, unsigned j) { ... }
      *           The position of each element will be passed to this function.
      */
     template<typename F>
-    void iter_range_index(const int i, const int j, const int r, const int c, F f) {
-        for (int ii = i, il = i + r; ii < il; ++ii) {
-            for (int jj = j, jl = j + c; jj < jl; ++jj) {
+    void iter_range_index(const unsigned i, const unsigned j, const unsigned r, const unsigned c, F f) {
+        for (unsigned ii = i, il = i + r; ii < il; ++ii) {
+            for (unsigned jj = j, jl = j + c; jj < jl; ++jj) {
                 f(ii, jj);
             }
         }
@@ -188,16 +188,16 @@ public:
     /**
      * Iterate through all columns in the matrix and apply a function to each of columns.
      * Equivalent to:
-     *      for (int j = 0, c = cols(); j < c; ++j) {
+     *      for (unsigned j = 0, c = cols(); j < c; ++j) {
      *          f(j);
      *      }
      * @tparam F Function type.
-     * @param f  Function in form of: void f(int j) { ... }
+     * @param f  Function in form of: void f(unsigned j) { ... }
      *           The index of each column will be passed to this function.
      */
     template<typename F>
     void iter_cols(F f) {
-        for (int j = 0, c = cols(); j < c; ++j) {
+        for (unsigned j = 0, c = cols(); j < c; ++j) {
             f(j);
         }
     }
@@ -205,16 +205,16 @@ public:
     /**
      * Iterate through all rows in the matrix and apply a function to each of rows.
      * Equivalent to:
-     *      for (int i = 0, r = rows(); i < r; ++i) {
+     *      for (unsigned i = 0, r = rows(); i < r; ++i) {
      *          f(i);
      *      }
      * @tparam F Function type.
-     * @param f  Function in form of: void f(int i) { ... }
+     * @param f  Function in form of: void f(unsigned i) { ... }
      *           The index of each row will be passed to this function.
      */
     template<typename F>
     void iter_rows(F f) {
-        for (int i = 0, r = rows(); i < r; ++i) {
+        for (unsigned i = 0, r = rows(); i < r; ++i) {
             f(i);
         }
     }
@@ -228,8 +228,8 @@ public:
      */
     template<typename F>
     bool any(F f) {
-        for (int i = 0, r = rows(); i < r; ++i) {
-            for (int j = 0, c = cols(); j < c; ++j) {
+        for (unsigned i = 0, r = rows(); i < r; ++i) {
+            for (unsigned j = 0, c = cols(); j < c; ++j) {
                 if (f(this->operator()(i, j))) { return true; }
             }
         }

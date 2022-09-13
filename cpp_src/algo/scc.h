@@ -20,7 +20,7 @@ private:
     bool        need_export = false;
     std::string name;
 
-    int power_len = (int) NAN;
+    unsigned power_len = (unsigned) NAN;
     DBL_T ess_target = NAN;
     DBL_T power_min  = NAN;
     DBL_T power_max  = NAN;
@@ -36,14 +36,14 @@ public:
     const DBL_T        dt;
     const DBL_T        time_steps;
     const DBL_T        int_time_steps;
-    const int          day_time_steps;
+    const unsigned     day_time_steps;
     const DBL_T        pde_time_steps;                         // Diffusion starts having an impact after a certain amount of time
     const DBL_T        mat_size;
-    int                y_cut_len;
-    int                x_cut_len;
+    unsigned           y_cut_len;
+    unsigned           x_cut_len;
     Parameters<N_DIMS> *pars;
 
-    std::vector<int>                     nnan_idxs;     // IDXes of which has non-NAN least_square
+    std::vector<unsigned>                nnan_idxs;     // IDXes of which has non-NAN least_square
     std::unordered_map<unsigned, DBL_T>  least_square;  // <idx, least_square>
     std::unordered_map<unsigned, Info_T> infos;         // <idx, { non-NAN least_square, ess, ... } >
     std::unordered_map<DBL_T, DBL_T>     ess_map;       // <power, ess>
@@ -59,7 +59,7 @@ public:
            DBL_T dt,
            DBL_T time_steps,
            DBL_T int_time_steps,
-           int day_time_steps,
+           unsigned day_time_steps,
            DBL_T pde_time_steps,
            DBL_T mat_size)
             :
@@ -74,8 +74,8 @@ public:
             pde_time_steps(pde_time_steps),
             mat_size(mat_size) {
         set_seed(seed);
-        y_cut_len = (int) ceil((double) ((space_length_y - 1.0) / mat_size));
-        x_cut_len = (int) ceil((double) ((space_length_x - 1.0) / mat_size));
+        y_cut_len = ceil((double) ((space_length_y - 1.0) / mat_size));
+        x_cut_len = ceil((double) ((space_length_x - 1.0) / mat_size));
         pars      = new Parameters<N_DIMS>();
     }
 
@@ -135,7 +135,7 @@ private:
     private:
         Sim_2D<N_DIMS, Y_LEN, X_LEN> *parent;
 
-        int IDX = 0;
+        unsigned IDX = 0;
         DBL_T diff = NAN;
 
         std::vector<COORD_T > coord;
@@ -158,7 +158,7 @@ private:
         std::chrono::time_point<std::chrono::system_clock> end_time;
 
     public:
-        explicit Dimension(Sim_2D<N_DIMS, Y_LEN, X_LEN> *parent, const int idx) : parent(parent), IDX(idx) {
+        explicit Dimension(Sim_2D<N_DIMS, Y_LEN, X_LEN> *parent, const unsigned int idx) : parent(parent), IDX(idx) {
         };
 
         ~Dimension() {
@@ -267,22 +267,22 @@ private:
 
         void pde();
 
-        bool solve_pde(int time);
+        bool solve_pde(unsigned int time);
 
-        void movement(int time);
+        void movement(unsigned int time);
 
-        bool end_of_day(int time);
+        bool end_of_day(unsigned int time);
 
         void proliferation(unsigned PROF_CELLS_NUM, unsigned *prof_cells);
 
-        template<int Nbr_Num>
+        template<unsigned Nbr_Num>
         void cell_proliferate(
                 const std::array<int, Nbr_Num> &nbr_temp,
                 const std::array<COORD_T, Nbr_Num> &nghr_cord,
                 COORD_T cell_pos
         );
 
-        void density_matrix(int time);
+        void density_matrix(unsigned int time);
     };
 };
 

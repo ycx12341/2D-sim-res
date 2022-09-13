@@ -20,7 +20,7 @@
  * @return           The number of elements generated in the array.
  */
 template<typename T>
-int seq_length_out(T *buf, T from, T to, const int length_out) {
+unsigned int seq_length_out(T *buf, T from, T to, const unsigned int length_out) {
     if (length_out <= 0) { return 0; }
     if (from > to) {
         long double tmp = from;
@@ -52,7 +52,7 @@ int seq_length_out(T *buf, T from, T to, const int length_out) {
  * @return     The number of elements generated in the array.
  */
 template<typename T>
-int seq_by(T *buf, T from, T to, T by) {
+unsigned seq_by(T *buf, T from, T to, T by) {
     if (from > to) {
         T tmp = from;
         from = to;
@@ -60,8 +60,8 @@ int seq_by(T *buf, T from, T to, T by) {
     }
     if (from < -INFINITY || to > INFINITY) { return 0; }
 
-    double value = from;
-    int    i;
+    double   value = from;
+    unsigned i;
     for (i = 0; value < to; ++i) {
         buf[i] = value;
         value += by;
@@ -78,12 +78,12 @@ int seq_by(T *buf, T from, T to, T by) {
  * @return     A vector of indexes.
  */
 template<typename T, int Len>
-std::vector<int> std_array_which_equals(const std::array<int, Len> &arr, const T val) {
-    std::vector<int> res;
+std::vector<unsigned> std_array_which_equals(const std::array<T, Len> &arr, const T val) {
+    std::vector<unsigned> res;
 
     if (Len <= 0) { return res; }
 
-    for (int i = 0; i < Len; ++i) {
+    for (unsigned i = 0; i < Len; ++i) {
         if (arr[i] == val) {
             res.push_back(i);
         }
@@ -101,7 +101,7 @@ std::vector<int> std_array_which_equals(const std::array<int, Len> &arr, const T
  */
 template<typename T>
 bool array_contains(T val, const unsigned int len, T *arr) {
-    for (int i = 0; i < len; ++i) {
+    for (unsigned i = 0; i < len; ++i) {
         if (val == arr[i]) { return true; }
     }
     return false;
@@ -145,9 +145,9 @@ std::vector<unsigned int> vector_which_max(const std::vector<T> &vector) {
 
     T max = -INFINITY, v;
 
-    if ((int) vector.size() <= 0) { return maxes; }
+    if ((unsigned) vector.size() <= 0) { return maxes; }
 
-    for (int i = 0, len = (int) vector.size(); i < len; ++i) {
+    for (unsigned i = 0, len = (int) vector.size(); i < len; ++i) {
         v = vector.at(i);
         if (v < max) { continue; }
         if (v > max) {
@@ -168,10 +168,11 @@ std::vector<unsigned int> vector_which_max(const std::vector<T> &vector) {
  * @return A vector with specified elements removed.
  */
 template<typename T>
-std::vector<T> vector_remove_many_by_index(const std::vector<T> &vector, const unsigned int len, unsigned int *indexes) {
+std::vector<T>
+vector_remove_many_by_index(const std::vector<T> &vector, const unsigned int len, unsigned int *indexes) {
     std::vector<T> res;
 
-    for (int i = 0, l = vector.size(); i < l; ++i) {
+    for (unsigned i = 0, l = vector.size(); i < l; ++i) {
         if (array_contains<unsigned>(i, len, indexes)) { continue; }
         res.push_back(vector.at(i));
     }
@@ -202,7 +203,7 @@ DBL_T map_values_min(const std::map<K, DBL_T> &map) {
  */
 template<typename K>
 DBL_T map_values_max(const std::map<K, DBL_T> &map) {
-    DBL_T max = (DBL_T) -INFINITY;
+    auto max = (DBL_T) -INFINITY;
     for (auto const &[_, d]: map) {
         max = d > max ? d : max;
     }

@@ -28,26 +28,26 @@ void Sim_2D<N_DIMS, Y_LEN, X_LEN>::Dimension::initial_condition() {
     f = new MatrixS<DBL_T, Y_LEN, X_LEN>(0);
     m = new MatrixS<DBL_T, Y_LEN, X_LEN>(0);
 
-    for (int j = 0; j < X_LEN; ++j) {
+    for (unsigned j = 0; j < X_LEN; ++j) {
         N(0, j) = x[j] <= 0.1 ? cos(M_PI * x[j] * 5) : 0;
     }
 
-    for (int i = 1; i < Y_LEN; ++i) {
-        for (int j = 0; j < X_LEN; ++j) {
+    for (unsigned i = 1; i < Y_LEN; ++i) {
+        for (unsigned j = 0; j < X_LEN; ++j) {
             N(i, j) = N(0, j);
         }
     }
 
-    f->iter_index([&](int i, int j) { F(i, j) = 1 - 0.5 * N(i, j); });
-    m->iter_index([&](int i, int j) { M(i, j) = 0.5 * N(i, j); });
+    f->iter_index([&](unsigned i, unsigned j) { F(i, j) = 1 - 0.5 * N(i, j); });
+    m->iter_index([&](unsigned i, unsigned j) { M(i, j) = 0.5 * N(i, j); });
 
     MatrixS<DBL_T, Y_LEN, X_LEN> n_sort(N);
-    const int                    N_CELLS = (int) round((double) SLY * (double) PARS->INIT_CELLS_COLS[IDX]);
+    const unsigned               N_CELLS = round((double) SLY * (double) PARS->INIT_CELLS_COLS[IDX]);
     std::vector<COORD_T >        maxes;
 
-    for (int ind_idx, maxes_size; coord.size() < N_CELLS;) {
+    for (unsigned ind_idx, maxes_size; coord.size() < N_CELLS;) {
         maxes      = n_sort.matrix_which_max();
-        maxes_size = (int) maxes.size();
+        maxes_size = (unsigned) maxes.size();
         ind_idx    = maxes_size > 1 ? unif_index(maxes_size) : 0;
         assert(0 <= ind_idx && ind_idx < maxes_size);
 

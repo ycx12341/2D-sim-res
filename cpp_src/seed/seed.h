@@ -57,7 +57,7 @@ unsigned int unif_index(const unsigned int dn);
  * @param dn        The upper limit of sample area.
  * @return A vector containing samples with size `index_num`.
  */
-std::vector<int> unif_index(int index_num, int dn);
+std::vector<unsigned int> unif_index(const unsigned int index_num, const unsigned int dn);
 
 /**
  * Takes a sample from [1, dn] based on their probability weights.
@@ -68,7 +68,7 @@ std::vector<int> unif_index(int index_num, int dn);
  *             The size of the array must be equal to dn.
  * @return An integer in range [1, dn]
  */
-int sample_int_index(int dn, const DBL_T *prob);
+unsigned int sample_int_index(const unsigned int dn, const DBL_T *prob);
 
 /**
  * Takes samples from [1, prob.size()-1] based on their probability weights.
@@ -81,7 +81,8 @@ int sample_int_index(int dn, const DBL_T *prob);
  *                   If false, sample_num must be equal to or less than prob.size().
  * @return A vector containing samples with size `sample_num`.
  */
-std::vector<int> sample_indices(int sample_num, const std::vector<DBL_T> &prob, bool replace);
+std::vector<unsigned int>
+sample_indices(const unsigned int sample_num, const std::vector<DBL_T> &prob, const bool replace);
 
 /**
  * Random Normal Distribution.
