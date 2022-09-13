@@ -36,42 +36,55 @@ static const ROUND_SETTING_T ROUND[MAX_ROUND] = {
 
 
 void scc_simple_d3() {
-    Parameters<N> *p;
+    Parameters<N> *p = nullptr;
     DBL_T         mean_before;
 
     /* Round 1 */
-    auto scc_r1 = *Sim_2D_Factory<N, Y_375, X_375>::SCC_375(SEED);
-    scc_r1.export_csv("ROUND1");
-    scc_r1.pars->init();
-    scc_r1.set_bw(ROUND[0].ess_target, ROUND[0].lb_bw, ROUND[0].ub_bw, ROUND[0].step_size);
-    p = scc_r1.simulate(MULTI_THREADING);
+    p = Sim_2D_Builder<N, Y_375, X_375>::SCC_375_Builder(SEED)
+            .export_csv("ROUND1")
+            .bw(ROUND[0].ess_target, ROUND[0].lb_bw, ROUND[0].ub_bw, ROUND[0].step_size)
+#ifdef USE_PRELOAD_REF
+            .ref_den(MatrixS<DBL_T, REF_DEN_ROWS, REF_DEN_COLS>::of(D3_REF_DEN))
+#endif
+            .build()
+            ->simulate(MULTI_THREADING);
 
     /* Round 2 ~ Round 3 */
     for (int i = 1; i <= 2; ++i) {
-        auto scc = *Sim_2D_Factory<N, Y_375, X_375>::SCC_375(SEED);
-        scc.export_csv("ROUND" + std::to_string(i + 1));
-        scc.pars = p;
-        scc.set_bw(ROUND[i].ess_target, ROUND[i].lb_bw, ROUND[i].ub_bw, ROUND[i].step_size);
-        p           = scc.simulate(MULTI_THREADING);
-        mean_before = scc.sum_diff / (DBL_T) scc.nnan_idxs.size();
+        auto scc = Sim_2D_Builder<N, Y_375, X_375>::SCC_375_Builder(SEED)
+                .export_csv("ROUND" + std::to_string(i + 1))
+                .bw(ROUND[0].ess_target, ROUND[0].lb_bw, ROUND[0].ub_bw, ROUND[0].step_size)
+#ifdef USE_PRELOAD_REF
+                .ref_den(MatrixS<DBL_T, REF_DEN_ROWS, REF_DEN_COLS>::of(D3_REF_DEN))
+#endif
+                .load_pars(p)
+                .build();
+
+        p           = scc->simulate(MULTI_THREADING);
+        mean_before = scc->sum_diff / (DBL_T) scc->nnan_idxs.size();
+        delete scc;
     }
 
     /* Round 4 ~ Round X */
     for (int i = 3;; ++i) {
-        auto scc = *Sim_2D_Factory<N, Y, X>::SCC(SEED);
-        scc.export_csv("ROUND" + std::to_string(i + 1));
-        scc.pars = p;
+        auto builder = Sim_2D_Builder<N, Y, X>::SCC_Builder(SEED)
+                .export_csv("ROUND" + std::to_string(i + 1))
+#ifdef USE_PRELOAD_REF
+                .ref_den(MatrixS<DBL_T, REF_DEN_ROWS, REF_DEN_COLS>::of(D3_REF_DEN))
+#endif
+                .load_pars(p);
 
         if (i >= MAX_ROUND) {
-            scc.set_bw(ROUND[MAX_ROUND - 1].ess_target, ROUND[MAX_ROUND - 1].lb_bw,
+            builder.bw(ROUND[MAX_ROUND - 1].ess_target, ROUND[MAX_ROUND - 1].lb_bw,
                        ROUND[MAX_ROUND - 1].ub_bw, ROUND[MAX_ROUND - 1].step_size);
         } else {
-            scc.set_bw(ROUND[i].ess_target, ROUND[i].lb_bw, ROUND[i].ub_bw, ROUND[i].step_size);
+            builder.bw(ROUND[i].ess_target, ROUND[i].lb_bw, ROUND[i].ub_bw, ROUND[i].step_size);
         }
 
-        p = scc.simulate(MULTI_THREADING);
+        auto scc = builder.build();
+        p = scc->simulate(MULTI_THREADING);
 
-        DBL_T mean_after = scc.sum_diff / (DBL_T) scc.nnan_idxs.size();
+        DBL_T mean_after = scc->sum_diff / (DBL_T) scc->nnan_idxs.size();
         if (mean_before - mean_after < TERMINATE_CONDITION * mean_before) {
             std::cout << "Terminate simulation: the decrease in averaged Least Square Differences has dropped below 5%."
                       << std::endl;

@@ -5,7 +5,10 @@
 
 #ifdef USE_PRELOAD_REF
 
-static const DBL_T D3_REF_DEN[12][7] = {
+#define REF_DEN_ROWS 12
+#define REF_DEN_COLS 7
+
+static const DBL_T D3_REF_DEN[REF_DEN_ROWS][REF_DEN_COLS] = {
         {0.26500, 0.00000, 0.00000, 0, 0, 0, 0.00000},
         {0.35125, 0.00562, 0.00500, 0, 0, 0, 0.00000},
         {0.46812, 0.00000, 0.00000, 0, 0, 0, 0.00000},

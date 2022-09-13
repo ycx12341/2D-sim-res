@@ -346,6 +346,16 @@ public:
     [[nodiscard]] unsigned int rows() const {
         return ROWS;
     }
+
+    static Matrix<T> *of(const T arr_matrix[ROWS][COLS]) {
+        Matrix<T>     *m = new MatrixS<T, ROWS, COLS>;
+        for (unsigned i  = 0; i < ROWS; ++i) {
+            for (unsigned j = 0; j < COLS; ++j) {
+                m->operator()(i, j) = arr_matrix[i][j];
+            }
+        }
+        return m;
+    }
 };
 
 /**

@@ -129,6 +129,8 @@ void Sim_2D<N_DIMS, Y_LEN, X_LEN>::calculate_bw() {
 
 template<unsigned N_DIMS, unsigned Y_LEN, unsigned X_LEN>
 Parameters<N_DIMS> *Sim_2D<N_DIMS, Y_LEN, X_LEN>::simulate(bool multithreading) {
+    assert(ref_den != nullptr);
+
     reset();
     start_time = std::chrono::system_clock::now();
 #ifdef EXPORT_CSV
@@ -277,7 +279,7 @@ void Sim_2D<N_DIMS, Y_LEN, X_LEN>::calculate_sse(bool multithreading) {
         }
     } else {
         single_thread:
-        DBL_T    df;
+        DBL_T         df;
         for (unsigned i = 0; i < N_DIMS; ++i) {
             Dimension dimension(this, i);
             dimension.calculate();
