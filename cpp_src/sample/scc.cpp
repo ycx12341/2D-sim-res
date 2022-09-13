@@ -92,5 +92,21 @@ void scc_simple_d3() {
         }
         mean_before = mean_after;
     }
+
+    /* Final Simulation Output */
+    std::cout << "Final Simulation Output" << std::endl;
+    Parameters<1U> pp = p->features_mean();
+    std::cout << "Mean Parameters Value" << std::endl
+              << pp << std::endl;
+
+    auto scc = Sim_2D_Builder<1U, Y, X>::SCC_Builder(SEED)
+            .export_csv("OUTPUT ROUND")
+#ifdef USE_PRELOAD_REF
+            .ref_den(MatrixS<DBL_T, REF_DEN_ROWS, REF_DEN_COLS>::of(D3_REF_DEN))
+#endif
+            .load_pars(&pp)
+            .build();
+    scc->calculate_sse();
+
     delete p;
 }

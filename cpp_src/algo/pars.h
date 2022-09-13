@@ -150,7 +150,7 @@ public:
 
         unsigned int i, j = 0;
         while (std::getline(csv, line)) {
-            assert(j < N_DIMS);
+            if (j >= N_DIMS) { break; }
             i = 0;
             std::istringstream line_s(line);
             while (std::getline(line_s, value, CSV_SEPARATOR)) {
@@ -169,6 +169,19 @@ public:
 #undef CSV_TITLE_LINE
 
 #endif
+
+    Parameters<1U> features_mean() {
+        Parameters<1U> mean;
+        for (unsigned j = 0; j < N_DIMS; ++j) {
+            for (unsigned i = 0; i < FEATURES_NUM; ++i) {
+                mean.operator()((FEATURE_T) i, 0) += this->operator()((FEATURE_T) i, j);
+            }
+        }
+        for (unsigned i = 0; i < FEATURES_NUM; ++i) {
+            mean.operator()((FEATURE_T) i, 0) /= N_DIMS;
+        }
+        return mean;
+    }
 };
 
 #endif //SIM_2D_CPP_PARS_H

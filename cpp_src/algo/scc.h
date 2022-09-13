@@ -130,9 +130,9 @@ public:
         return (std::chrono::duration_cast<std::chrono::seconds>(end_time - start_time)).count();
     }
 
-private:
     void calculate_sse(bool multithreading = false);
 
+private:
     void calculate_bw();
 
     Parameters<N_DIMS> *abc_bcd();

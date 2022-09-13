@@ -16,6 +16,7 @@
 
 template<unsigned N_DIMS, unsigned Y_LEN, unsigned X_LEN>
 void Sim_2D<N_DIMS, Y_LEN, X_LEN>::Dimension::calculate() {
+    assert(parent->ref_den != nullptr);
     start_time = std::chrono::system_clock::now();
     generate_pattern();
 
@@ -27,7 +28,7 @@ void Sim_2D<N_DIMS, Y_LEN, X_LEN>::Dimension::calculate() {
 
         for (unsigned i = 0; i < parent->y_cut_len; ++i) {
             for (unsigned j = 0; j < parent->x_cut_len; ++j) {
-                sum += pow((*den_mat_out)(i, j) - D3_REF_DEN[i][j], 2);
+                sum += pow((*den_mat_out)(i, j) - (*parent->ref_den)(i, j), 2);
             }
         }
 
