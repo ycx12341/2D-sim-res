@@ -354,11 +354,11 @@ void Sim_2D<N_DIMS, Y_LEN, X_LEN>::Dimension::density_matrix(unsigned int time) 
 
         for (unsigned i = 0; i < Y_CUT_LEN; ++i) {
             for (unsigned j = 0; j < X_CUT_LEN; ++j) {
-                unsigned ones = 0;
-                IND_POS.iter_range(y_cut[i], x_cut[j], MAT_SIZE - 1, MAT_SIZE - 1, [&](DBL_T val) {
-                    if (val == 1) { ones++; }
+                DBL_T sum = 0;
+                IND_POS.iter_range(y_cut[i] - 1, x_cut[j] - 1, MAT_SIZE , MAT_SIZE , [&](DBL_T val) {
+                    sum += val;
                 });
-                (*den_mat_out)(i, j) = ones / (MAT_SIZE * MAT_SIZE);
+                (*den_mat_out)(i, j) = sum / (MAT_SIZE * MAT_SIZE);
             }
         }
 

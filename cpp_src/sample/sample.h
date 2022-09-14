@@ -28,4 +28,6 @@
  */
 void scc_simple_d3();
 
+void test();
+
 #endif //SIM_2D_CPP_SAMPLE_H

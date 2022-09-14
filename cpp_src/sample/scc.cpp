@@ -110,3 +110,19 @@ void scc_simple_d3() {
 
     delete p;
 }
+
+// TODO DELETE
+void test() {
+    Parameters<10000U> p;
+    p.load_csv("D:\\Parameters_2022-09-12_23-15-59.csv");
+    Parameters<1U> pp = p.features_mean();
+    std::cout << pp;
+    auto scc = Sim_2D_Builder<1U, Y, X>::SCC_Builder(SEED)
+            .export_csv("OUTPUT ROUND")
+#ifdef USE_PRELOAD_REF
+            .ref_den(MatrixS<DBL_T, REF_DEN_ROWS, REF_DEN_COLS>::of(D3_REF_DEN))
+#endif
+            .load_pars(&pp)
+            .build();
+    scc->calculate_sse();
+}
