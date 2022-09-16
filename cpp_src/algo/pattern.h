@@ -41,6 +41,10 @@ void Sim_2D<N_DIMS, Y_LEN, X_LEN>::Dimension::initial_condition() {
     f->iter_index([&](unsigned i, unsigned j) { F(i, j) = 1 - 0.5 * N(i, j); });
     m->iter_index([&](unsigned i, unsigned j) { M(i, j) = 0.5 * N(i, j); });
 
+    /*
+     * Initial glioma cells will be allocated to the locations with the highest densities in the domain (left boundary).
+     */
+
     MatrixS<DBL_T, Y_LEN, X_LEN> n_sort(N);
     const unsigned               N_CELLS = round((double) SLY * (double) PARS->INIT_CELLS_COLS[IDX]);
     std::vector<COORD_T >        maxes;
@@ -62,6 +66,10 @@ void Sim_2D<N_DIMS, Y_LEN, X_LEN>::Dimension::initial_condition() {
     }
 
     ind_pos_init = new MatrixS<DBL_T, Y_LEN, X_LEN>IND_POS;
+
+    /*
+     * Set the cut points for the domain (to be used later for density matching & discrepancy calculation.)
+     */
 
     x_cut = new DBL_T[X_CUT_LEN];
     y_cut = new DBL_T[Y_CUT_LEN];

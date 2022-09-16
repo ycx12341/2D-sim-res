@@ -240,6 +240,7 @@ private:
         Matrix<DBL_T> *ind_pos_init = nullptr;          // initial ind.position
         Matrix<DBL_T> *den_mat_out  = nullptr;          // density matrix for output
 
+        /* Set the cut points for the domain (for density matching & discrepancy calculation.) */
         DBL_T *y_cut = nullptr;
         DBL_T *x_cut = nullptr;
 
