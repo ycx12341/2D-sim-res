@@ -12,6 +12,7 @@
                                                 // To reproduce the same result:
                                                 // -    set MULTI_THREADING to false
                                                 // -    set a fixed seed number
+#define AUTO_CORRECT_BW
 
 /* Initial Parameters Boundaries */
 #define DN_MIN                      0.000069L

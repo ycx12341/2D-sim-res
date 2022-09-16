@@ -133,6 +133,8 @@ public:
     void calculate_sse(bool multithreading = false);
 
 private:
+    void correct_bw_boundary();
+
     void calculate_bw();
 
     Parameters<N_DIMS> *abc_bcd();

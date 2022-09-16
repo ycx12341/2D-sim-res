@@ -49,6 +49,8 @@ DBL_T calculate_ess(const std::vector<DBL_T> &resamp_prob) {
 
 template<unsigned N_DIMS, unsigned Y_LEN, unsigned X_LEN>
 void Sim_2D<N_DIMS, Y_LEN, X_LEN>::calculate_bw() {
+    ess_map.clear();
+
     assert(!infos.empty());
     assert(!std::isnan(power_len));
     assert(!std::isnan(power_min));
@@ -128,6 +130,30 @@ void Sim_2D<N_DIMS, Y_LEN, X_LEN>::calculate_bw() {
     }
 }
 
+#ifdef AUTO_CORRECT_BW
+#define SEARCH_INTERVALS 100
+
+template<unsigned N_DIMS, unsigned Y_LEN, unsigned X_LEN>
+void Sim_2D<N_DIMS, Y_LEN, X_LEN>::correct_bw_boundary() {
+    calculate_bw();
+
+    std::cout << "Bw:                      " << bw_obj << " ( " << power_min << " ~ " << power_max << " )" << std::endl;
+    if (bw_obj != step_size && bw_obj - step_size <= power_min) {
+        power_max = power_min + step_size;
+        power_min = power_min - SEARCH_INTERVALS * step_size;
+        power_min = power_min < 0 ? 0 : power_min;
+        correct_bw_boundary();
+    } else if (bw_obj + step_size >= power_max) {
+        power_min = power_max - step_size;
+        power_max = power_max + SEARCH_INTERVALS * step_size;
+        power_max = power_max > DBL_MAX ? DBL_MAX : power_max;
+        correct_bw_boundary();
+    }
+}
+
+#undef SEARCH_INTERVALS
+#endif
+
 template<unsigned N_DIMS, unsigned Y_LEN, unsigned X_LEN>
 Parameters<N_DIMS> *Sim_2D<N_DIMS, Y_LEN, X_LEN>::simulate(bool multithreading) {
     assert(ref_den != nullptr);
@@ -144,11 +170,17 @@ Parameters<N_DIMS> *Sim_2D<N_DIMS, Y_LEN, X_LEN>::simulate(bool multithreading) 
               << "Mean Square Differences: " << sum_diff / infos.size()
               << std::endl;
 #endif
+
+#ifdef AUTO_CORRECT_BW
+    correct_bw_boundary();
+#else
     calculate_bw();
+#endif
+
     Parameters<N_DIMS> *p_nr = abc_bcd();
     end_time = std::chrono::system_clock::now();
 #ifdef CONSOLE_REPORT
-    std::cout << "Ess:                     " << ess_obj << std::endl;
+    std::cout << "Ess:                     " << ess_obj << " TARGET: " << ess_target << std::endl;
     std::cout << "Total time:              " << get_time() << " secs" << std::endl;
 #endif
 #ifdef EXPORT_CSV
