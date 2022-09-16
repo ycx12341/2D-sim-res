@@ -47,7 +47,7 @@ void runif_seq(unsigned len, DBL_T *seq, DBL_T min, DBL_T max);
  * @param dn The upper limit of sample area.
  * @return An integer in range of [0, dn-1].
  */
-unsigned int unif_index(const unsigned int dn);
+unsigned int unif_index(unsigned int dn);
 
 /**
  * Takes multiple samples from [0, dn-1]
@@ -57,7 +57,7 @@ unsigned int unif_index(const unsigned int dn);
  * @param dn        The upper limit of sample area.
  * @return A vector containing samples with size `index_num`.
  */
-std::vector<unsigned int> unif_index(const unsigned int index_num, const unsigned int dn);
+std::vector<unsigned int> unif_index(unsigned int index_num, unsigned int dn);
 
 /**
  * Takes a sample from [1, dn] based on their probability weights.
@@ -68,7 +68,7 @@ std::vector<unsigned int> unif_index(const unsigned int index_num, const unsigne
  *             The size of the array must be equal to dn.
  * @return An integer in range [1, dn]
  */
-unsigned int sample_int_index(const unsigned int dn, const DBL_T *prob);
+unsigned int sample_int_index(unsigned int dn, const DBL_T *prob);
 
 /**
  * Takes samples from [1, prob.size()-1] based on their probability weights.
@@ -82,7 +82,7 @@ unsigned int sample_int_index(const unsigned int dn, const DBL_T *prob);
  * @return A vector containing samples with size `sample_num`.
  */
 std::vector<unsigned int>
-sample_indices(const unsigned int sample_num, const std::vector<DBL_T> &prob, const bool replace);
+sample_indices(unsigned int sample_num, const std::vector<DBL_T> &prob, bool replace);
 
 /**
  * Random Normal Distribution.
