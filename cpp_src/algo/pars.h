@@ -1,3 +1,7 @@
+/**
+ * Parameters to be evaluated for the simulation of SCC pattern and returns the parameters to be evaluated.
+ */
+
 #ifndef SIM_2D_CPP_PARS_H
 #define SIM_2D_CPP_PARS_H
 
@@ -9,12 +13,17 @@
 #include <iostream>
 #include <fstream>
 
+/* All parameters needed */
 enum FEATURE_T {
     DN_E, GAMMA_E, RN_E,
     ETA_E, DM_E, ALPHA_E,
     INIT_CELLS_COLS_E, PROB_DEATH_E, PROB_PROF_E
 };
 
+/**
+ * Parameters.
+ * @tparam N_DIMS Number of dimensions.
+ */
 template<unsigned N_DIMS>
 class Parameters {
 public:
@@ -33,6 +42,10 @@ public:
 
     explicit Parameters() = default;
 
+    /**
+     * Copy constructor.
+     * @param that The other Parameter object.
+     */
     Parameters(Parameters<N_DIMS> &that) {
         for (unsigned i = 0; i < FEATURES_NUM; ++i) {
             for (unsigned j = 0; j < N_DIMS; ++j) {
@@ -41,6 +54,12 @@ public:
         }
     }
 
+    /**
+     * Get the reference of a value of a specified parameter type and a specified dimension.
+     * @param i Feature/Parameter type.
+     * @param j The index of the dimension is being simulated.
+     * @return Feature[Dimension]
+     */
     DBL_T &operator()(const FEATURE_T i, const int j) {
         if (i == DN_E) { return DN[j]; }
         if (i == GAMMA_E) { return GAMMA[j]; }
@@ -67,6 +86,10 @@ public:
         return os;
     }
 
+    /**
+     * Initialize parameters.
+     * @param random_seed Seed for randomness generator.
+     */
     void init(bool random_seed = false) const {
         if (random_seed) { set_seed(0); }
         runif_seq(N_DIMS, (DBL_T *) DN, DN_MIN, DN_MAX);
@@ -80,6 +103,12 @@ public:
         runif_seq(N_DIMS, (DBL_T *) PROB_PROF, PROB_PROF_MIN, PROB_PROF_MAX);
     }
 
+    /**
+     * Resample parameters based on the resampling probabilities.
+     * @param idxes Resampled indexes of parameters.
+     * @param nnan_idxs Indexes of dimensions which have Non-NAN difference.
+     * @return Resampled parameters.
+     */
     Parameters<N_DIMS> *resample(const std::vector<unsigned> &idxes, const std::vector<unsigned> &nnan_idxs) {
         assert(idxes.size() == N_DIMS);
         auto *p = new Parameters<N_DIMS>;
@@ -92,6 +121,11 @@ public:
         return p;
     }
 
+    /**
+     * Mean value of the specified feature for all dimensions.
+     * @param i Feature.
+     * @return mean(Feature[:])
+     */
     DBL_T feature_mean(const FEATURE_T i) {
         DBL_T    mean = 0;
         for (int j    = 0; j < N_DIMS; ++j) {
@@ -101,6 +135,11 @@ public:
         return mean;
     }
 
+    /**
+     * Standard deviation of the specified feature for all dimensions.
+     * @param i Feature.
+     * @return sd(Feature[:])
+     */
     DBL_T feature_sd(const FEATURE_T i) {
         DBL_T    var = 0, mean = feature_mean(i);
         for (int j   = 0; j < N_DIMS; ++j) {
@@ -114,6 +153,11 @@ public:
 
 #define CSV_TITLE_LINE "DN,GAMMA,RN,ETA,DM,ALPHA,ICC,PD,PP"
 
+    /**
+     * Export parameters to a csv file.
+     * Create file when it does not exist.
+     * @param fn File name.
+     */
     void export_csv(const std::string &fn) {
         std::ofstream csv;
 
@@ -137,6 +181,10 @@ public:
         csv.close();
     }
 
+    /**
+     * Load parameters from a CSV file.
+     * @param fn File name.
+     */
     void load_csv(const std::string &fn) {
         std::cout << "[SYSTEM] Loading Parameters from " << fn
                   << " DIMs: " << N_DIMS << std::endl;
@@ -170,6 +218,10 @@ public:
 
 #endif
 
+    /**
+     * Mean values of all features for all dimensions.
+     * @return 1 dimension Parameters.
+     */
     Parameters<1U> features_mean() {
         Parameters<1U> mean;
         for (unsigned j = 0; j < N_DIMS; ++j) {
