@@ -1,3 +1,7 @@
+/**
+ * 2D simulation.
+ */
+
 #ifndef SIM_2D_CPP_SCC_H
 #define SIM_2D_CPP_SCC_H
 
@@ -7,51 +11,64 @@
 #include <unordered_map>
 #include <filesystem>
 
+/**
+ * A 2D simulation task.
+ * Simulate cells evolution in X_LEN * Y_LEN grids.
+ * @tparam N_DIMS Number of dimensions.
+ * @tparam Y_LEN  Number of rows in one grid.
+ * @tparam X_LEN  Number of columns in one grid.
+ */
 template<unsigned N_DIMS, unsigned Y_LEN, unsigned X_LEN>
 class Sim_2D {
 private:
     typedef struct {
-        DBL_T least_square;                             // excluding NAN value
-        DBL_T wt;                                       // wt.obj
-        DBL_T resample;                                 // resamp.prob
+        DBL_T least_square;                             // least square         (diff)
+        DBL_T wt;                                       // weight               (wt.obj)
+        DBL_T resample;                                 // resample probability (resamp.prob)
+    }     Info_T;
 
-    } Info_T;
+    bool        need_export = false;                    // export csv?
+    std::string name;                                   // name of this simulation: for directory name
 
-    bool        need_export = false;
-    std::string name;
+    unsigned power_len = (unsigned) NAN;                // number of powers
+    DBL_T ess_target = NAN;                             // desirable ESS
+    DBL_T power_min  = NAN;                             // lower bound of the decimal number sequence to be searched for the correct bandwidth factor.
+    DBL_T power_max  = NAN;                             // upper bound of the decimal number sequence to be searched for the correct bandwidth factor.
+    DBL_T step_size  = NAN;                             // step of increment for the search of correct bandwidth factor in the sequence.
 
-    unsigned power_len = (unsigned) NAN;
-    DBL_T ess_target = NAN;
-    DBL_T power_min  = NAN;
-    DBL_T power_max  = NAN;
-    DBL_T step_size  = NAN;
+    std::chrono::time_point<std::chrono::system_clock> start_time;  // when the simulation started
+    std::chrono::time_point<std::chrono::system_clock> end_time;    // when the simulation ended
 
-    std::chrono::time_point<std::chrono::system_clock> start_time;
-    std::chrono::time_point<std::chrono::system_clock> end_time;
-
-    Matrix<DBL_T> *ref_den = nullptr;
+    Matrix<DBL_T> *ref_den = nullptr;                   // cells density
 public:
-    const DBL_T        h;
-    const DBL_T        space_length_y;
-    const DBL_T        space_length_x;
-    const DBL_T        t;
-    const DBL_T        dt;
-    const unsigned     time_steps;
-    const unsigned     int_time_steps;
-    const unsigned     day_time_steps;
-    const unsigned     pde_time_steps;                         // Diffusion starts having an impact after a certain amount of time
-    const DBL_T        mat_size;
-    unsigned           y_cut_len;
-    unsigned           x_cut_len;
-    Parameters<N_DIMS> *pars;
+    /* Space discretization */
+    const DBL_T h;                                      // 1 / (Y_LEN - 1)
+    const DBL_T space_length_y;                         // Space length of grids in Y dimension
+    const DBL_T space_length_x;                         // Space length of grids in X dimension
+
+    /* Time discretization */
+    const DBL_T    t;
+    const DBL_T    dt;                                  // dt chosen as 0.0025 so the stability condition ( dn < ( ( h^2 ) / 4dt ) ) can be maintained
+    const unsigned time_steps;                          // Total dimensionless time steps and the dimensionless time steps for one single day.
+    const unsigned int_time_steps;                      // initial time steps
+    const unsigned day_time_steps;                      // time step
+    const unsigned pde_time_steps;                      // diffusion starts having an impact after a certain amount of time
+
+    /* Cut Y_LEN * X_LEN grids into smaller fragments (density matrix). */
+    const DBL_T mat_size;                               // size of density matrix
+    unsigned    y_cut_len;                              // Y length of density matrix
+    unsigned    x_cut_len;                              // X length of density matrix
+
+    Parameters<N_DIMS> *pars;                           // Parameters
 
     std::vector<unsigned>                nnan_idxs;     // IDXes of which has non-NAN least_square
     std::unordered_map<unsigned, DBL_T>  least_square;  // <idx, least_square>
     std::unordered_map<unsigned, Info_T> infos;         // <idx, { non-NAN least_square, ess, ... } >
     std::unordered_map<DBL_T, DBL_T>     ess_map;       // <power, ess>
-    DBL_T ess_obj    = NAN;
-    DBL_T bw_obj     = NAN;
-    DBL_T sum_diff   = NAN;
+
+    DBL_T ess_obj  = NAN;                               // ess.obj
+    DBL_T bw_obj   = NAN;                               // bw.obj
+    DBL_T sum_diff = NAN;                               // sum of least squares in all dimensions
 
     Sim_2D(const unsigned int seed,
            DBL_T h,
@@ -86,6 +103,9 @@ public:
         delete ref_den;
     }
 
+    /**
+     * Reset simulation status to initial state.
+     */
     void reset() {
         least_square.clear();
         infos.clear();
@@ -97,6 +117,10 @@ public:
         sum_diff = NAN;
     }
 
+    /**
+     * Export simulation results to CSV file.
+     * @param simulation_name Name of this simulation. (for file/directory name)
+     */
     void export_csv(const std::string &simulation_name) {
         std::string dir = CSV_DIR(simulation_name);
         if (!std::filesystem::exists(dir) && !std::filesystem::create_directory(dir)) {
@@ -108,6 +132,13 @@ public:
         name        = simulation_name;
     }
 
+    /**
+     * Set conditions for calculating bw that would yield the desirable ESS.
+     * @param target desirable ESS.
+     * @param lb_bw  lower bound of the decimal number sequence to be searched for the correct bandwidth factor.
+     * @param ub_bw  upper bound of the decimal number sequence to be searched for the correct bandwidth factor.
+     * @param step   step of increment for the search of correct bandwidth factor in the sequence.
+     */
     void set_bw(const DBL_T target, const DBL_T lb_bw, const DBL_T ub_bw, const DBL_T step) {
         if (std::isnan(target) || std::isnan(lb_bw) || std::isnan(ub_bw) || std::isnan(step)) {
             return;
@@ -120,48 +151,94 @@ public:
         power_len  = (int) ceil((power_max - power_min) / step_size);
     }
 
+    /**
+     * Set cells density at a particular day.
+     * @param ref_den_matrix Reference Density Matrix.
+     */
     void set_ref_den(Matrix<DBL_T> *ref_den_matrix) {
         ref_den = ref_den_matrix;
     }
 
+    /**
+     * Simulate and generate parameters for the next round.
+     * Basic workflow:
+     *      1. Reset simulation state.
+     *      2. Generate a SCC invasion pattern with the given parameters.
+     *      3. Calculates the least square difference between the simulated invasion pattern and the reference invasion pattern.
+     *      4. Calculate the correct bw that would yield the desirable ESS.
+     *      5. Given the current set of parameters and the corresponding results of summary statistics, generate a new
+     *         set of parameters to be evaluated in the next round.
+     * @param multithreading True to use multi threading.
+     * @return parameters for the next round.
+     */
     Parameters<N_DIMS> *simulate(bool multithreading = false);
 
+    /**
+     * @return the number of seconds spent in the simulation.
+     */
     long long get_time() const {
         return (std::chrono::duration_cast<std::chrono::seconds>(end_time - start_time)).count();
     }
 
+    /**
+     * Calculates the least square difference between the simulated invasion pattern and the reference invasion pattern.
+     * @param multithreading True to use multi threading.
+     */
     void calculate_sse(bool multithreading = false);
 
 private:
+    /**
+     * Automatically correct the range of searching the correct bandwidth factor.
+     */
     void correct_bw_boundary();
 
+    /**
+     * Calculate the correct bandwidth factor which can yield the desirable effective sample size (ESS).
+     */
     void calculate_bw();
 
+    /**
+     * Given the current set of parameters and the corresponding results of summary statistics, generate a new
+     * set of parameters to be evaluated in the next round.
+     * @return parameters for the next round.
+     */
     Parameters<N_DIMS> *abc_bcd();
 
+    /**
+     * Export least squares for all dimensions.
+     * @param fn File name.
+     */
     void export_least_square(const std::string &fn);
 
+    /**
+     * Export summary of this simulation.
+     * @param fn File name.
+     */
     void export_summary(const std::string &fn);
 
+    /**
+     * Dimension.
+     * A standard simulation task requires N_DIMS Dimensions.
+     */
     class Dimension {
     private:
-        Sim_2D<N_DIMS, Y_LEN, X_LEN> *parent;
+        Sim_2D<N_DIMS, Y_LEN, X_LEN> *parent;           // Simulation task
 
-        unsigned IDX = 0;
-        DBL_T diff = NAN;
+        unsigned IDX = 0;                               // Index of the dimension
+        DBL_T diff = NAN;                               // Least square
 
-        std::vector<COORD_T > coord;
+        std::vector<COORD_T > coord;                    // cbind(x.coord, y.corrd)
 
-        Matrix<DBL_T> *n            = nullptr;
-        Matrix<DBL_T> *f            = nullptr;
-        Matrix<DBL_T> *m            = nullptr;
-        Matrix<DBL_T> *ind_pos      = nullptr;
-        Matrix<DBL_T> *n_out        = nullptr;
-        Matrix<DBL_T> *f_out        = nullptr;
-        Matrix<DBL_T> *m_out        = nullptr;
-        Matrix<DBL_T> *ind_pos_out  = nullptr;
-        Matrix<DBL_T> *ind_pos_init = nullptr;
-        Matrix<DBL_T> *den_mat_out  = nullptr;
+        Matrix<DBL_T> *n            = nullptr;          // n
+        Matrix<DBL_T> *f            = nullptr;          // f
+        Matrix<DBL_T> *m            = nullptr;          // m
+        Matrix<DBL_T> *ind_pos      = nullptr;          // ind.position
+        Matrix<DBL_T> *n_out        = nullptr;          // n for output
+        Matrix<DBL_T> *f_out        = nullptr;          // f for output
+        Matrix<DBL_T> *m_out        = nullptr;          // m for output
+        Matrix<DBL_T> *ind_pos_out  = nullptr;          // ind.position for output
+        Matrix<DBL_T> *ind_pos_init = nullptr;          // initial ind.position
+        Matrix<DBL_T> *den_mat_out  = nullptr;          // density matrix for output
 
         DBL_T *y_cut = nullptr;
         DBL_T *x_cut = nullptr;
@@ -196,6 +273,10 @@ private:
 
 #ifdef EXPORT_CSV
 
+        /**
+         * Export the details of a Dimension.
+         * @param fn File name.
+         */
         void export_details(const std::string &fn) {
             if (std::isnan(get_diff())) { return; }
 
@@ -273,20 +354,58 @@ private:
 #endif
 
     private:
+        /**
+         * Initial condition.
+         */
         void initial_condition();
 
+        /**
+         * Generate a SCC invasion pattern with the given parameters.
+         */
         void generate_pattern();
 
+        /**
+         * Numerical scheme which solves the PDE system.
+         */
         void pde();
 
+        /**
+         * Solve PDE system at a specific time unit.
+         * @param time Time in range [0:time_step].
+         * @return True if the specific time unit does not yield a NAN value.
+         */
         bool solve_pde(unsigned int time);
 
+        /**
+         * Roll the dice based on the calculated probabilities, see which direction the cell will choose to move to.
+         * Once the direction of movement is confirmed, if the designated position is not occupied, the cell will move to that location.
+         * @param time Time in range [0:time_step].
+         */
         void movement(unsigned int time);
 
+        /**
+         * At the end of everyday, some of the current cells in the domain will undergo extinction or mitosis.
+         * @param time Time in range [0:time_step].
+         * @return True if the specific time unit does not yield a NAN value.
+         */
         bool end_of_day(unsigned int time);
 
+        /**
+         * Proliferation mechanism.
+         * @param PROF_CELLS_NUM Number of cells in prof_cells.
+         * @param prof_cells Cell mitosis: some of the current cells at the locations with the highest densities will undergo mitosis.
+         */
         void proliferation(unsigned PROF_CELLS_NUM, unsigned *prof_cells);
 
+        /**
+         * If the cell has more than two neighbouring positions which are not occupied, it will proliferate.
+         * The original cell will vanish and split into two daughter cells,
+         * which will be randomly distributed into two unoccupied neighbouring locations.
+         * @tparam Nbr_Num  Number of neighbouring cells.
+         * @param nbr_temp  The position of neighbouring cells.
+         * @param nghr_cord The value of neighbouring cells.
+         * @param cell_pos  The position of current cell.
+         */
         template<unsigned Nbr_Num>
         void cell_proliferate(
                 const std::array<int, Nbr_Num> &nbr_temp,
@@ -294,10 +413,20 @@ private:
                 COORD_T cell_pos
         );
 
+        /**
+         * Compute the density matrix at the end of day.
+         * @param time Time in range [0:time_step].
+         */
         void density_matrix(unsigned int time);
     };
 };
 
+/**
+ * Builder for simulation task.
+ * @tparam N_DIMS Number of dimensions.
+ * @tparam Y_LEN  Number of rows in one grid.
+ * @tparam X_LEN  Number of columns in one grid.
+ */
 template<unsigned N_DIMS, unsigned Y_LEN, unsigned X_LEN>
 class Sim_2D_Builder {
 private:
