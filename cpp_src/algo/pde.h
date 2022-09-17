@@ -49,6 +49,7 @@ void Sim_2D<N_DIMS, Y_LEN, X_LEN>::Dimension::proliferation(const unsigned PROF_
         const unsigned x = cell_pos[0];
         const unsigned y = cell_pos[1];
 
+        /* Possible locations for daughter cells (8 surrounding points.) */
         COORD_T        _r_pos = {x, y + 1};
         COORD_T        rd_pos = {x + 1, y + 1};
         COORD_T        _d_pos = {x + 1, y};
@@ -66,6 +67,12 @@ void Sim_2D<N_DIMS, Y_LEN, X_LEN>::Dimension::proliferation(const unsigned PROF_
 #define LU (int) (*ind_pos)(lu_pos[0], lu_pos[1])
 #define L_ (int) (*ind_pos)(_l_pos[0], _l_pos[1])
 #define LD (int) (*ind_pos)(ld_pos[0], ld_pos[1])
+
+        /*
+         * If the cell has more than two neighbouring positions which are not occupied, it will proliferate.
+         * The original cell will vanish and split into two daughter cells,
+         * which will be randomly distributed into two unoccupied neighbouring locations.
+         */
 
         if (x == 0) {
             if (y == 0) {
@@ -119,6 +126,10 @@ bool Sim_2D<N_DIMS, Y_LEN, X_LEN>::Dimension::end_of_day(unsigned int time) {
             cell_den.push_back(N(c[0], c[1]));
         }
 
+        /*
+         * Cell extinction: some of the current cells at the locations with the lowest cell densities will undergo extinction.
+         */
+
         const unsigned DEAD_CELLS_NUM = round((double) ((DBL_T) coord.size() * PARS->PROB_DEATH[IDX]));
         unsigned       dead_cells[DEAD_CELLS_NUM];
 
@@ -143,6 +154,10 @@ bool Sim_2D<N_DIMS, Y_LEN, X_LEN>::Dimension::end_of_day(unsigned int time) {
 
         if ((unsigned) cell_den.size() == 0) { return false; }
 
+        /*
+         * Cell mitosis: some of the current cells at the locations with the highest densities will undergo mitosis.
+         */
+
         const unsigned PROF_CELLS_NUM = round((double) ((DBL_T) coord.size() * PARS->PROB_PROF[IDX]));
         unsigned       prof_cells[PROF_CELLS_NUM];
 
@@ -161,6 +176,7 @@ bool Sim_2D<N_DIMS, Y_LEN, X_LEN>::Dimension::end_of_day(unsigned int time) {
         IND_POS.setAll(0);
         for (COORD_T &i: coord) { IND_POS(i[0], i[1]) = 1; }
 
+        /* Proliferation mechanism */
         proliferation(PROF_CELLS_NUM, prof_cells);
 
         coord.clear();
@@ -198,7 +214,7 @@ bool Sim_2D<N_DIMS, Y_LEN, X_LEN>::Dimension::solve_pde(unsigned int time) {
 
     ITER_RANGE(F, { F(i, j) *= 1.0 - F1 * M(i, j); });
 
-    if ((time + 1) > PDE_TIME_STEPS) {
+    if ((time + 1) > PDE_TIME_STEPS) {      // Diffusion starts having an impact after a certain amount of time in day 1.
         MatrixS<DBL_T, Y_LEN, X_LEN> n_cpy(N);
         ITER_RANGE(N, {
             N(i, j) = n_cpy(i, j) * (N1 - N3 * NF(i, j) + N2 * (1.0 - n_cpy(i, j) - F(i, j))) +
@@ -213,7 +229,7 @@ bool Sim_2D<N_DIMS, Y_LEN, X_LEN>::Dimension::solve_pde(unsigned int time) {
                     m_cpy(i, j + 1) + m_cpy(i, j - 1) + m_cpy(i - 1, j) + m_cpy(i + 1, j)
             );
         });
-    } else {
+    } else {                                // Otherwise the cell stay stationary.
         ITER_RANGE(N, { N(i, j) *= (1 + N2 * (1 - N(i, j) - F(i, j))); });
         ITER_RANGE(M, { M(i, j) += M2 * N(i, j); });
     }
@@ -235,6 +251,7 @@ bool Sim_2D<N_DIMS, Y_LEN, X_LEN>::Dimension::solve_pde(unsigned int time) {
         M(i, X_LEN - 1) = M(i, X_LEN - 2);
     });
 
+    /* Boundary condition */
     DBL_T nv, fv, mv;
     for (unsigned i  = 0; i < Y_LEN; ++i) {
         for (unsigned j = 0; j < X_LEN; ++j) {
@@ -259,6 +276,7 @@ bool Sim_2D<N_DIMS, Y_LEN, X_LEN>::Dimension::solve_pde(unsigned int time) {
 
 template<unsigned N_DIMS, unsigned Y_LEN, unsigned X_LEN>
 void Sim_2D<N_DIMS, Y_LEN, X_LEN>::Dimension::movement(unsigned int time) {
+    /* Movements only occur after diffusion starts having an impact on cells. */
     if ((time + 1) > round(PDE_TIME_STEPS)) {
         unsigned x, y;
         DBL_T f_ip1j, f_im1j, f_ijp1, f_ijm1;
