@@ -1,3 +1,7 @@
+/**
+ * Simulation Pattern.
+ */
+
 #include "scc.h"
 
 #include <iostream>

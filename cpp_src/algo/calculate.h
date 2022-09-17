@@ -1,3 +1,7 @@
+/**
+ * Calculations.
+ */
+
 #ifndef CPP_SRC_2D_SIM_ALGO_H
 #define CPP_SRC_2D_SIM_ALGO_H
 
@@ -37,6 +41,11 @@ void Sim_2D<N_DIMS, Y_LEN, X_LEN>::Dimension::calculate() {
     end_time   = std::chrono::system_clock::now();
 }
 
+/**
+ * ESS calculation based on the rescaled weights obtained using the current bandwidth factor.
+ * @param resamp_prob Resampled probabilities.
+ * @return ESS.
+ */
 DBL_T calculate_ess(const std::vector<DBL_T> &resamp_prob) {
     DBL_T sum = 0, square_sum = 0;
 
@@ -58,15 +67,18 @@ void Sim_2D<N_DIMS, Y_LEN, X_LEN>::calculate_bw() {
     assert(!std::isnan(step_size));
     assert(!std::isnan(ess_target));
 
+    /* Construct the sequence of bandwidth factor to be searched. */
     DBL_T power[power_len + 1];
     unsigned desired_power_len = seq_by<DBL_T>(power, power_min, power_max, step_size);
     assert(desired_power_len <= power_len + 1);
     power_len = desired_power_len;
 
-    std::map<unsigned, DBL_T> wt;
+    std::map<unsigned, DBL_T> wt;   // weights
     DBL_T w_min, w_max, ess;
 
+    /* For every bandwidth factor in the sequence. */
     for (unsigned i = 0; i < power_len; ++i) {
+        /* Calculate the weights. */
         wt.clear();
         for (auto &[idx, info]: infos) {
             wt[idx] = pow(info.least_square, -power[i]);
@@ -91,6 +103,7 @@ void Sim_2D<N_DIMS, Y_LEN, X_LEN>::calculate_bw() {
     }
     assert(ess_map.size() <= power_len);
 
+    /* Locate the bandwidth factor which gives an ESS closest to the desirable one. */
     DBL_T ess_diff_min = INFINITY, ess_diff;
     for (auto const &[p, e]: ess_map) {
         ess_diff = abs(e - ess_target);
@@ -110,6 +123,7 @@ void Sim_2D<N_DIMS, Y_LEN, X_LEN>::calculate_bw() {
 #endif
     assert(!std::isnan(bw_obj) && !std::isnan(ess_obj));
 
+    /* Calculate the corresponding weights and resampling probabilities using the bandwidth factor located previously. */
     DBL_T    wt_min            = INFINITY, wt_max = (DBL_T) -INFINITY, info_wt;
     for (auto &[_, info]: infos) {
         info_wt = pow(info.least_square, -bw_obj);
@@ -203,11 +217,12 @@ Parameters<N_DIMS> *Sim_2D<N_DIMS, Y_LEN, X_LEN>::abc_bcd() {
         assert(!std::isnan(infos[idx].least_square));
     }
 
+    /* Resample the indices based on the resampling probabilities. */
     std::vector<unsigned> resamp_idx = sample_indices(N_DIMS, probs, true);
     assert(resamp_idx.size() == N_DIMS);
 
-    Parameters<N_DIMS> *paras_nr_unperturbed = pars->resample(resamp_idx, nnan_idxs);
-    auto               *paras_nr_perturbed   = new Parameters<N_DIMS>();
+    Parameters<N_DIMS> *paras_nr_unperturbed = pars->resample(resamp_idx, nnan_idxs);   // Resampled parameter vectors, without perturbation.
+    auto               *paras_nr_perturbed   = new Parameters<N_DIMS>();                // Perturbed parameter values.
 
 #define FT(x) (FEATURE_T) (x)
     const DBL_T H            = ABC_BCD_H;

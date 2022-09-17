@@ -1,3 +1,6 @@
+/**
+ * PDE mechanism.
+ */
 #include <iostream>
 
 #include "scc.h"
