@@ -14,11 +14,11 @@ This repository contains all the simulation code and results of parameter optimi
 
 ### SCC Patterns
 
-![SCC_res](.\img\SCC_res.png)
+![SCC_res](img/SCC_res.png)
 
 ---
 
-![SCC_res2](.\img\SCC_res2.png)
+![SCC_res2](img/SCC_res2.png)
 
 SCC cells invasion patterns observed in organotypic culture (Up) v.s. Simulated patterns from the numerical scheme (Down) at the end of day 3, 6, 9, 12, 14 (Grey shades density plot). The discrepancy of the 5 patterns was minimized one by one. Sum of squared differences between SCC cell density in observed patterns and final simulated patterns: 2.16.
 
