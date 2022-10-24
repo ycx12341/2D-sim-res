@@ -57,7 +57,7 @@ See [Release](https://github.com/ycx12341/2D-sim-res/releases).
 	scc.h			Simulation for SCC
 	sim2d.h
 \collection
-	collection.h	Extended functions for collections
+	collection.h		Extended functions for collections
 	matrix.h		Highly customized matrix designed for Sim2D
 \red_den			Cell density
 \sample				Sampling 
