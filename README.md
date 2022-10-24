@@ -10,10 +10,18 @@ This repository contains all the simulation code and results of parameter optimi
 
 ## Contents
 
-- `Simulation results of SCC invasion (2nd experiment)/`
-  Code and simulation results of SCC invasion of the second experiment as described in the thesis.
-  Refer to [README.md](./Simulation results of SCC invasion (2nd experiment)/README.md)
-- 
+- `Simulation results of SCC invasion (2nd experiment)/` </br>
+  Code and simulation results of SCC invasion of the second experiment as described in the thesis. </br>
+  Refer to [README.md](https://github.com/ycx12341/2D-sim-res/blob/main/Simulation%20results%20of%20SCC%20invasion%20(2nd%20experiment)/README.md)
+- `Simulation results of SCC invasion (3rd experiment)/`</br>
+  Code and simulation results of SCC invasion of the third experiment as described in the thesis.</br>
+  Refer to [README.md](https://github.com/ycx12341/2D-sim-res/blob/main/Simulation%20results%20of%20SCC%20invasion%20(3rd%20experiment)/README.md)
+- `Simulation results of T98G glioma spheroid invasion/`<br>
+  Code and simulation results of T98G glioma spheroid invasion.</br>
+  Refer to [README.md](https://github.com/ycx12341/2D-sim-res/blob/main/Simulation%20results%20of%20T98G%20glioma%20spheroid%20invasion/README.md)
+- `Simulation SCC Day3 CPP/` </br>
+  The post-day-3 simulation in the second experiment with SCC invasion patterns, implemented in C++.</br>
+  Refer to [README.md](https://github.com/ycx12341/2D-sim-res/blob/main/Simulation%20SCC%20Day3%20CPP/README.md)
 
 ## Citation
 
