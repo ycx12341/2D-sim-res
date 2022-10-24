@@ -16,15 +16,13 @@ This repository contains all the simulation code and results of parameter optimi
 
 ![SCC_res](img/SCC_res.png)
 
----
-
-![SCC_res2](img/SCC_res2.png)
-
 SCC cells invasion patterns observed in organotypic culture (Up) v.s. Simulated patterns from the numerical scheme (Down) at the end of day 3, 6, 9, 12, 14 (Grey shades density plot). The discrepancy of the 5 patterns was minimized one by one. Sum of squared differences between SCC cell density in observed patterns and final simulated patterns: 2.16.
 
 ### T98G Glioma Invasion Pattern
 
+<img src="img/T98g_res.png" alt="T98g_res" style="zoom:50%;" />
 
+T98G glioma cells invasion patterns observed in organotypic culture (Up) v.s. Simulated patterns (grey shades plots) produced by the numerical scheme (Down). The scaling of the numerical domain was based on the realistic size of the glioma cells. Sum of squared differences between T98G glioma cell density in observed patterns and final simulated patterns: 1.22.
 
 ## Contents
 
