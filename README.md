@@ -9,6 +9,8 @@ This repository contains all the simulation code and results of parameter optimi
 [^1]: Xiao, Y., Thomas, L. & Chaplain, M. (2021), ‘Calibrating models of cancer invasion and metastasis: parameter inference using approximate Bayesian computation and gradient matching.’, R. Soc. Open Sci. 8(202237).
 [^2]: Nystrom, S., Thomas, G., Stone, M., Mackenzie, I., Hart, I. & Marshall, J. (2005), ‘Development of a quantitative method to analyse tumour cell invasion in organotypic culture’, J. Pathol 205, 468–475.
 [^3]: Matsumura, H., Ohnishi, T., Kanemura, Y., Maruno, M. & Yoshimine, T. (2000), ‘Quantitative analysis of glioma cell invasion by confocal laser scanning microscopy in a novel brain slice model’, Biochem. Biophys. Res. Commun. 269, 513–520.
+[^4]: Xiao, Y., Thomas, L., Chaplain, MAJ. (2022), ‘Applications of likelihood-free parameter inference methods on numerical models of cancer invasion’, PhD thesis.
+
 
 ## Results
 
